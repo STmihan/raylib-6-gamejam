@@ -2,7 +2,7 @@ name: build
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ master ]
   pull_request:
   workflow_dispatch:
 
@@ -43,12 +43,14 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force dist | Out-Null
           Copy-Item build/Release/raylib-game.exe dist/
+          Copy-Item build/Release/assets dist/assets -Recurse
 
       - name: Stage artifact (Linux)
         if: runner.os == 'Linux'
         run: |
           mkdir -p dist
           cp build/raylib-game dist/
+          cp -r build/assets dist/assets
 
       - uses: actions/upload-artifact@v4
         with:
@@ -78,8 +80,38 @@ jobs:
           cp build-web/raylib-game.html dist/index.html
           cp build-web/raylib-game.js dist/
           cp build-web/raylib-game.wasm dist/
+          cp build-web/raylib-game.data dist/
 
       - uses: actions/upload-artifact@v4
         with:
           name: raylib-game-web
           path: dist/
+
+  deploy-pages:
+    name: Deploy Web to GitHub Pages
+    needs: web
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: raylib-game-web
+          path: dist
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

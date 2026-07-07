@@ -33,6 +33,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     SCREEN_HEIGHT=${SCREEN_HEIGHT}
 )
 
+set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets")
+
 if(EMSCRIPTEN)
     set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".html")
     target_link_options(${PROJECT_NAME} PRIVATE
@@ -40,8 +42,17 @@ if(EMSCRIPTEN)
         -sASYNCIFY
         -sALLOW_MEMORY_GROWTH=1
         --shell-file "${CMAKE_SOURCE_DIR}/src/shell.html"
+        "--preload-file=${ASSETS_DIR}@assets"
     )
-elseif(APPLE)
-    target_link_libraries(${PROJECT_NAME} PRIVATE
-        "-framework IOKit" "-framework Cocoa" "-framework OpenGL")
+else()
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${ASSETS_DIR}"
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets"
+        COMMENT "Copying assets next to the executable")
+
+    if(APPLE)
+        target_link_libraries(${PROJECT_NAME} PRIVATE
+            "-framework IOKit" "-framework Cocoa" "-framework OpenGL")
+    endif()
 endif()

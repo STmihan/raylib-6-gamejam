@@ -12,11 +12,19 @@
 #define SCREEN_HEIGHT 720
 #endif
 
-static void UpdateDrawFrame(void);
+static Texture2D grassTile;
 
-int main(void)
+static void UpdateDrawFrame();
+
+int main()
 {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "raylib-game");
+
+#if !defined(__EMSCRIPTEN__)
+    ChangeDirectory(GetApplicationDirectory());
+#endif
+
+    grassTile = LoadTexture("assets/hex_grass.png");
 
 #if defined(__EMSCRIPTEN__)
     int browserManagedLoop = 1;
@@ -32,21 +40,26 @@ int main(void)
     }
 #endif
 
+    UnloadTexture(grassTile);
     CloseWindow();
     return 0;
 }
 
-static void UpdateDrawFrame(void)
+static void UpdateDrawFrame()
 {
-    const char *message = "raylib is running at 720x720";
+    int tileX = (SCREEN_WIDTH - grassTile.width)/2;
+    int tileY = (SCREEN_HEIGHT - grassTile.height)/2;
+
+    const char *message = "TESTING";
     int fontSize = 20;
     int messageWidth = MeasureText(message, fontSize);
     int messageX = (SCREEN_WIDTH - messageWidth)/2;
-    int messageY = SCREEN_HEIGHT/2 - fontSize;
+    int messageY = tileY + grassTile.height + 24;
 
     BeginDrawing();
 
         ClearBackground(RAYWHITE);
+        DrawTexture(grassTile, tileX, tileY, WHITE);
         DrawText(message, messageX, messageY, fontSize, DARKGRAY);
         DrawFPS(10, 10);
 
