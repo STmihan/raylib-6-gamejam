@@ -2,7 +2,7 @@
 
 [![build](https://github.com/STmihan/raylib-6-gamejam/actions/workflows/build.yml/badge.svg)](https://github.com/STmihan/raylib-6-gamejam/actions/workflows/build.yml)
 
-🎮 **[Play in browser](https://stmihan.github.io/raylib-6-gamejam/)** (Web build, auto-deployed from `master`)
+**[Play in browser](https://stmihan.github.io/raylib-6-gamejam/)**
 
 ![$(Game Title)](screenshots/screenshot000.png "$(Game Title)")
 
