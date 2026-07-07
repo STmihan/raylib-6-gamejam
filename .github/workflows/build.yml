@@ -21,7 +21,7 @@ jobs:
             name: Linux
             artifact: raylib-game-linux
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
@@ -52,7 +52,7 @@ jobs:
           cp build/raylib-game dist/
           cp -r build/assets dist/assets
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact }}
           path: dist/
@@ -61,12 +61,13 @@ jobs:
     name: Web
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Emscripten
-        uses: mymindstorm/setup-emsdk@v14
+        uses: emscripten-core/setup-emsdk@v15
         with:
-          version: 3.1.64
+          version: 5.0.3
+          actions-cache-folder: emsdk-cache
 
       - name: Configure
         run: emcmake cmake -B build-web -DCMAKE_BUILD_TYPE=Release
@@ -82,7 +83,7 @@ jobs:
           cp build-web/raylib-game.wasm dist/
           cp build-web/raylib-game.data dist/
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: raylib-game-web
           path: dist/
@@ -102,7 +103,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: raylib-game-web
           path: dist
