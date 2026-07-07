@@ -1,0 +1,32 @@
+name: windows
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Stage artifact
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Copy-Item build/Release/raylib-game.exe dist/
+          Copy-Item build/Release/assets dist/assets -Recurse
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: raylib-game-windows
+          path: dist/

@@ -1,0 +1,68 @@
+name: web
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Emscripten
+        uses: emscripten-core/setup-emsdk@v15
+        with:
+          version: 5.0.3
+          actions-cache-folder: emsdk-cache
+
+      - name: Configure
+        run: emcmake cmake -B build-web -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build-web
+
+      - name: Stage artifact
+        run: |
+          mkdir -p dist
+          cp build-web/raylib-game.html dist/index.html
+          cp build-web/raylib-game.js dist/
+          cp build-web/raylib-game.wasm dist/
+          cp build-web/raylib-game.data dist/
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: raylib-game-web
+          path: dist/
+
+  deploy-pages:
+    name: Deploy Web to GitHub Pages
+    needs: build
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: raylib-game-web
+          path: dist
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+      - id: deployment
+        uses: actions/deploy-pages@v5

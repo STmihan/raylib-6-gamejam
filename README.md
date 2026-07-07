@@ -1,6 +1,8 @@
 ## $(Game Title)
 
-[![build](https://github.com/STmihan/raylib-6-gamejam/actions/workflows/build.yml/badge.svg)](https://github.com/STmihan/raylib-6-gamejam/actions/workflows/build.yml)
+[![windows](https://github.com/STmihan/raylib-6-gamejam/actions/workflows/windows.yml/badge.svg)](https://github.com/STmihan/raylib-6-gamejam/actions/workflows/windows.yml)
+[![linux](https://github.com/STmihan/raylib-6-gamejam/actions/workflows/linux.yml/badge.svg)](https://github.com/STmihan/raylib-6-gamejam/actions/workflows/linux.yml)
+[![web](https://github.com/STmihan/raylib-6-gamejam/actions/workflows/web.yml/badge.svg)](https://github.com/STmihan/raylib-6-gamejam/actions/workflows/web.yml)
 
 **[Play in browser](https://stmihan.github.io/raylib-6-gamejam/)**
 
