@@ -24,10 +24,12 @@
 </head>
 <body>
     <canvas class="emscripten" id="canvas" width="720" height="720"
-            oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+            oncontextmenu="preventDefault()" tabindex="-1"></canvas>
     <script>
-        var Module = {
-            canvas: (function () { return document.getElementById('canvas'); })()
+        const Module = {
+            canvas: (function () {
+                return document.getElementById('canvas');
+            })()
         };
     </script>
     {{{ SCRIPT }}}

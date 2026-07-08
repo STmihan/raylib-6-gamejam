@@ -25,8 +25,10 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(raylib)
 
 file(GLOB_RECURSE GAME_SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.cpp")
+file(GLOB_RECURSE GAME_HEADERS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.h")
 
-add_executable(${PROJECT_NAME} ${GAME_SOURCES})
+add_executable(${PROJECT_NAME} ${GAME_SOURCES} ${GAME_HEADERS})
+target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     SCREEN_WIDTH=${SCREEN_WIDTH}
