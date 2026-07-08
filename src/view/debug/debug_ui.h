@@ -3,9 +3,11 @@
 
 namespace view {
 
+class WaterEffect;
+
 void DebugUiSetup();
 void DebugUiShutdown();
-void DrawDebugOverlay(float& cameraBoundsRadius);
+void DrawDebugOverlay(float& cameraBoundsRadius, WaterEffect& water);
 
 }
 

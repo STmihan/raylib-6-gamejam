@@ -13,7 +13,7 @@ void Renderer::Init()
     shadow_.Init(shaders_.Shadow());
     toon_.Init(shaders_.Toon());
     outline_.Init(shaders_.Geom(), shaders_.Outline());
-    water_.Load(shaders_.Water(), models_);
+    water_.Load(shaders_.Water(), shaders_.WaterLine(), models_);
 
     colorTarget_ = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
 }
@@ -35,8 +35,6 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
     (void)current;
     (void)alpha;
 
-    if (IsKeyPressed(KEY_F2)) debugShadow_ = !debugShadow_;
-
     water_.Update(static_cast<float>(GetTime()));
     Scene scene(models_);
 
@@ -57,8 +55,9 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
     BeginDrawing();
     ClearBackground(BLACK);
     outline_.Composite(colorTarget_, cavityParams_, camera);
-    if (debugShadow_) shadow_.DrawDebugPreview();
+#if defined(DEBUG_BUILD)
     DrawFPS(10, 10);
+#endif
     if (overlay) overlay();
     EndDrawing();
 }

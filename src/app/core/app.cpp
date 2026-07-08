@@ -37,7 +37,7 @@ void StepApp(App& app)
     app.cameraRig.Update();
 
     auto alpha = static_cast<float>(app.accumulator / data::TickDelta);
-    auto overlay = [&app]() { view::DrawDebugOverlay(app.cameraRig.BoundsRadiusRef()); };
+    auto overlay = [&app]() { view::DrawDebugOverlay(app.cameraRig.BoundsRadiusRef(), app.renderer.Water()); };
     app.renderer.Draw(app.previousState, app.currentState, alpha, app.cameraRig.Camera(), app.map, overlay);
 }
 

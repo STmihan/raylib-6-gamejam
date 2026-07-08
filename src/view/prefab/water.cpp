@@ -14,33 +14,69 @@ namespace
     constexpr int SdfSlot = 11;
 }
 
-void WaterEffect::Load(Shader shader, ModelRegistry& models)
+void WaterEffect::Load(Shader classic, Shader lines, ModelRegistry& models)
 {
-    shader_ = shader;
+    classic_ = classic;
+    lines_ = lines;
+    models_ = &models;
     sdfTexture_ = BuildCoastSdf(sdfOrigin_, sdfWorldSize_);
 
+    PushStatic(classic_);
+    PushStatic(lines_);
+
+    active_ = mode_ == 1 ? lines_ : classic_;
+    CacheLocations(active_);
+    models.SetWaterShader(active_);
+}
+
+void WaterEffect::PushStatic(Shader shader) const
+{
     float sdfMaxDist = data::Render.sdfMaxDist;
-    SetShaderValue(shader_, GetShaderLocation(shader_, "sdfOrigin"), &sdfOrigin_, SHADER_UNIFORM_VEC2);
-    SetShaderValue(shader_, GetShaderLocation(shader_, "sdfWorldSize"), &sdfWorldSize_, SHADER_UNIFORM_FLOAT);
-    SetShaderValue(shader_, GetShaderLocation(shader_, "sdfMaxDist"), &sdfMaxDist, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(shader, GetShaderLocation(shader, "sdfOrigin"), &sdfOrigin_, SHADER_UNIFORM_VEC2);
+    SetShaderValue(shader, GetShaderLocation(shader, "sdfWorldSize"), &sdfWorldSize_, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(shader, GetShaderLocation(shader, "sdfMaxDist"), &sdfMaxDist, SHADER_UNIFORM_FLOAT);
+}
 
-    timeLoc_ = GetShaderLocation(shader_, "time");
-    sdfMapLoc_ = GetShaderLocation(shader_, "sdfMap");
-    deepLoc_ = GetShaderLocation(shader_, "deepColor");
-    shallowLoc_ = GetShaderLocation(shader_, "shallowColor");
-    foamLoc_ = GetShaderLocation(shader_, "foamColor");
-    outlineLoc_ = GetShaderLocation(shader_, "outlineColor");
-    colorRangeLoc_ = GetShaderLocation(shader_, "colorRange");
-    foamDistanceLoc_ = GetShaderLocation(shader_, "foamDistance");
-    foamCutoffLoc_ = GetShaderLocation(shader_, "foamCutoff");
-    noiseScaleLoc_ = GetShaderLocation(shader_, "noiseScale");
-    distortAmountLoc_ = GetShaderLocation(shader_, "distortAmount");
-    scrollSpeedLoc_ = GetShaderLocation(shader_, "scrollSpeed");
-    outlineWidthLoc_ = GetShaderLocation(shader_, "outlineWidth");
-    flowSpeedLoc_ = GetShaderLocation(shader_, "flowSpeed");
-    flowAmountLoc_ = GetShaderLocation(shader_, "flowAmount");
+void WaterEffect::CacheLocations(Shader shader)
+{
+    timeLoc_ = GetShaderLocation(shader, "time");
+    sdfMapLoc_ = GetShaderLocation(shader, "sdfMap");
+    deepLoc_ = GetShaderLocation(shader, "deepColor");
+    shallowLoc_ = GetShaderLocation(shader, "shallowColor");
+    foamLoc_ = GetShaderLocation(shader, "foamColor");
+    outlineLoc_ = GetShaderLocation(shader, "outlineColor");
+    colorRangeLoc_ = GetShaderLocation(shader, "colorRange");
+    foamDistanceLoc_ = GetShaderLocation(shader, "foamDistance");
+    foamCutoffLoc_ = GetShaderLocation(shader, "foamCutoff");
+    noiseScaleLoc_ = GetShaderLocation(shader, "noiseScale");
+    distortAmountLoc_ = GetShaderLocation(shader, "distortAmount");
+    scrollSpeedLoc_ = GetShaderLocation(shader, "scrollSpeed");
+    outlineWidthLoc_ = GetShaderLocation(shader, "outlineWidth");
+    flowSpeedLoc_ = GetShaderLocation(shader, "flowSpeed");
+    flowAmountLoc_ = GetShaderLocation(shader, "flowAmount");
 
-    models.SetWaterShader(shader_);
+    lineThickLoc_ = GetShaderLocation(shader, "lineThick");
+    lineGapLoc_ = GetShaderLocation(shader, "lineGap");
+    lineThinLoc_ = GetShaderLocation(shader, "lineThin");
+    lineTravelLoc_ = GetShaderLocation(shader, "lineTravel");
+    lineSpeedLoc_ = GetShaderLocation(shader, "lineSpeed");
+    lineIntervalLoc_ = GetShaderLocation(shader, "lineInterval");
+    lineWobbleLoc_ = GetShaderLocation(shader, "lineWobble");
+    lineWobbleScaleLoc_ = GetShaderLocation(shader, "lineWobbleScale");
+    lineWobbleSpeedLoc_ = GetShaderLocation(shader, "lineWobbleSpeed");
+    detailAmountLoc_ = GetShaderLocation(shader, "detailAmount");
+    detailScaleLoc_ = GetShaderLocation(shader, "detailScale");
+    detailSpeedLoc_ = GetShaderLocation(shader, "detailSpeed");
+    detailReachLoc_ = GetShaderLocation(shader, "detailReach");
+}
+
+void WaterEffect::SetMode(int mode)
+{
+    if (mode == mode_) return;
+    mode_ = mode;
+    active_ = mode_ == 1 ? lines_ : classic_;
+    CacheLocations(active_);
+    if (models_) models_->SetWaterShader(active_);
 }
 
 void WaterEffect::Unload()
@@ -50,26 +86,40 @@ void WaterEffect::Unload()
 
 void WaterEffect::Update(float time)
 {
-    SetShaderValue(shader_, timeLoc_, &time, SHADER_UNIFORM_FLOAT);
-    SetShaderValue(shader_, deepLoc_, &params_.deep, SHADER_UNIFORM_VEC3);
-    SetShaderValue(shader_, shallowLoc_, &params_.shallow, SHADER_UNIFORM_VEC3);
-    SetShaderValue(shader_, foamLoc_, &params_.foam, SHADER_UNIFORM_VEC3);
-    SetShaderValue(shader_, outlineLoc_, &params_.outline, SHADER_UNIFORM_VEC3);
-    SetShaderValue(shader_, colorRangeLoc_, &params_.colorRange, SHADER_UNIFORM_FLOAT);
-    SetShaderValue(shader_, foamDistanceLoc_, &params_.foamDistance, SHADER_UNIFORM_FLOAT);
-    SetShaderValue(shader_, foamCutoffLoc_, &params_.foamCutoff, SHADER_UNIFORM_FLOAT);
-    SetShaderValue(shader_, noiseScaleLoc_, &params_.noiseScale, SHADER_UNIFORM_FLOAT);
-    SetShaderValue(shader_, distortAmountLoc_, &params_.distortAmount, SHADER_UNIFORM_FLOAT);
-    SetShaderValue(shader_, scrollSpeedLoc_, &params_.scrollSpeed, SHADER_UNIFORM_FLOAT);
-    SetShaderValue(shader_, outlineWidthLoc_, &params_.outlineWidth, SHADER_UNIFORM_FLOAT);
-    SetShaderValue(shader_, flowSpeedLoc_, &params_.flowSpeed, SHADER_UNIFORM_FLOAT);
-    SetShaderValue(shader_, flowAmountLoc_, &params_.flowAmount, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, timeLoc_, &time, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, deepLoc_, &params_.deep, SHADER_UNIFORM_VEC3);
+    SetShaderValue(active_, shallowLoc_, &params_.shallow, SHADER_UNIFORM_VEC3);
+    SetShaderValue(active_, foamLoc_, &params_.foam, SHADER_UNIFORM_VEC3);
+    SetShaderValue(active_, outlineLoc_, &params_.outline, SHADER_UNIFORM_VEC3);
+    SetShaderValue(active_, colorRangeLoc_, &params_.colorRange, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, foamDistanceLoc_, &params_.foamDistance, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, foamCutoffLoc_, &params_.foamCutoff, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, noiseScaleLoc_, &params_.noiseScale, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, distortAmountLoc_, &params_.distortAmount, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, scrollSpeedLoc_, &params_.scrollSpeed, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, outlineWidthLoc_, &params_.outlineWidth, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, flowSpeedLoc_, &params_.flowSpeed, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, flowAmountLoc_, &params_.flowAmount, SHADER_UNIFORM_FLOAT);
+
+    SetShaderValue(active_, lineThickLoc_, &params_.lineThick, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, lineGapLoc_, &params_.lineGap, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, lineThinLoc_, &params_.lineThin, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, lineTravelLoc_, &params_.lineTravel, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, lineSpeedLoc_, &params_.lineSpeed, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, lineIntervalLoc_, &params_.lineInterval, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, lineWobbleLoc_, &params_.lineWobble, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, lineWobbleScaleLoc_, &params_.lineWobbleScale, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, lineWobbleSpeedLoc_, &params_.lineWobbleSpeed, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, detailAmountLoc_, &params_.detailAmount, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, detailScaleLoc_, &params_.detailScale, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, detailSpeedLoc_, &params_.detailSpeed, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(active_, detailReachLoc_, &params_.detailReach, SHADER_UNIFORM_FLOAT);
 }
 
 void WaterEffect::Draw(const ModelRegistry& models) const
 {
     int sdfSlot = SdfSlot;
-    rlEnableShader(shader_.id);
+    rlEnableShader(active_.id);
     rlActiveTextureSlot(sdfSlot);
     rlEnableTexture(sdfTexture_.id);
     rlSetUniform(sdfMapLoc_, &sdfSlot, SHADER_UNIFORM_INT, 1);

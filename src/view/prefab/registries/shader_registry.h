@@ -16,6 +16,7 @@ public:
     const Shader& Shadow() const { return shadow_; }
     const Shader& Outline() const { return outline_; }
     const Shader& Water() const { return water_; }
+    const Shader& WaterLine() const { return waterLine_; }
 
 private:
     Shader toon_{};
@@ -23,6 +24,7 @@ private:
     Shader shadow_{};
     Shader outline_{};
     Shader water_{};
+    Shader waterLine_{};
     bool loaded_ = false;
 };
 }

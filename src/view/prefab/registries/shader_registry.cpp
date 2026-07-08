@@ -22,12 +22,14 @@ void ShaderRegistry::Load()
     shadow_ = LoadShader(TextFormat("%sshadow.vert", dir), TextFormat("%sshadow.frag", dir));
     outline_ = LoadShader(0, TextFormat("%soutline.frag", dir));
     water_ = LoadShader(TextFormat("%swater.vert", dir), TextFormat("%swater.frag", dir));
+    waterLine_ = LoadShader(TextFormat("%swater.vert", dir), TextFormat("%swater_line.frag", dir));
     loaded_ = true;
 }
 
 void ShaderRegistry::Unload()
 {
     if (!loaded_) return;
+    UnloadShader(waterLine_);
     UnloadShader(water_);
     UnloadShader(outline_);
     UnloadShader(shadow_);

@@ -26,6 +26,10 @@ public:
     void Draw(const logic::GameState& previous, const logic::GameState& current, float alpha, Camera3D camera,
               const logic::Map& map, const std::function<void()>& overlay);
 
+    WaterEffect& Water() { return water_; }
+    data::ShadowParams& ShadowParamsRef() { return shadowParams_; }
+    data::CavityParams& CavityParamsRef() { return cavityParams_; }
+
 private:
     ShaderRegistry shaders_;
     ModelRegistry models_;
@@ -36,7 +40,6 @@ private:
     RenderTexture2D colorTarget_{};
     data::ShadowParams shadowParams_;
     data::CavityParams cavityParams_;
-    bool debugShadow_ = false;
 };
 }
 

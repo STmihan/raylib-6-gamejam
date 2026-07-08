@@ -12,7 +12,7 @@ class ModelRegistry;
 class WaterEffect
 {
 public:
-    void Load(Shader shader, ModelRegistry& models);
+    void Load(Shader classic, Shader lines, ModelRegistry& models);
     void Unload();
 
     void Update(float time);
@@ -20,8 +20,19 @@ public:
 
     data::WaterParams& ParamsRef() { return params_; }
 
+    int Mode() const { return mode_; }
+    void SetMode(int mode);
+
 private:
-    Shader shader_{};
+    void PushStatic(Shader shader) const;
+    void CacheLocations(Shader shader);
+
+    Shader classic_{};
+    Shader lines_{};
+    Shader active_{};
+    ModelRegistry* models_ = nullptr;
+    int mode_ = 1;
+
     data::WaterParams params_{};
     Texture2D sdfTexture_{};
     Vector2 sdfOrigin_{};
@@ -42,6 +53,20 @@ private:
     int outlineWidthLoc_ = 0;
     int flowSpeedLoc_ = 0;
     int flowAmountLoc_ = 0;
+
+    int lineThickLoc_ = 0;
+    int lineGapLoc_ = 0;
+    int lineThinLoc_ = 0;
+    int lineTravelLoc_ = 0;
+    int lineSpeedLoc_ = 0;
+    int lineIntervalLoc_ = 0;
+    int lineWobbleLoc_ = 0;
+    int lineWobbleScaleLoc_ = 0;
+    int lineWobbleSpeedLoc_ = 0;
+    int detailAmountLoc_ = 0;
+    int detailScaleLoc_ = 0;
+    int detailSpeedLoc_ = 0;
+    int detailReachLoc_ = 0;
 };
 }
 
