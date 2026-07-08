@@ -3,7 +3,7 @@
 
 #include "raylib.h"
 
-#include "data/tile.h"
+#include "data/tile/tile.h"
 
 namespace view
 {

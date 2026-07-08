@@ -3,11 +3,11 @@
 
 #include "raylib.h"
 
-#include "logic/game_state.h"
-#include "logic/map.h"
-#include "logic/simulation.h"
-#include "view/camera_rig.h"
-#include "view/renderer.h"
+#include "logic/state/game_state.h"
+#include "logic/world/map.h"
+#include "logic/sim/simulation.h"
+#include "view/camera/camera_rig.h"
+#include "view/render/renderer.h"
 
 namespace app
 {

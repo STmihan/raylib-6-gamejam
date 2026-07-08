@@ -4,7 +4,7 @@
 #include <array>
 #include <cstdint>
 
-#include "data/vec.h"
+#include "data/space/vec.h"
 
 namespace logic {
 

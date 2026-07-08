@@ -1,11 +1,11 @@
-#include "app/entrypoint.h"
+#include "app/core/entrypoint.h"
 
 #if !defined(__EMSCRIPTEN__)
 
 #include "raylib.h"
 
-#include "app/app.h"
-#include "view/debug_ui.h"
+#include "app/core/app.h"
+#include "view/debug/debug_ui.h"
 
 #ifndef SCREEN_WIDTH
 #define SCREEN_WIDTH 720

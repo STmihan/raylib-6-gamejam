@@ -3,8 +3,8 @@
 
 #include <array>
 
-#include "data/tile.h"
-#include "data/world_config.h"
+#include "data/tile/tile.h"
+#include "data/space/world_config.h"
 
 namespace logic {
 

@@ -14,6 +14,10 @@ uniform float ambient;
 uniform float bands;
 uniform mat4 lightViewProj;
 uniform float shadowStrength;
+uniform float shadowTexel;
+uniform float shadowSoftness;
+uniform float biasSlope;
+uniform float biasConstant;
 
 float computeShadow(vec3 normal, vec3 lightVec)
 {
@@ -21,10 +25,18 @@ float computeShadow(vec3 normal, vec3 lightVec)
     vec3 proj = lightClip.xyz / lightClip.w;
     proj = proj * 0.5 + 0.5;
     if (proj.x < 0.0 || proj.x > 1.0 || proj.y < 0.0 || proj.y > 1.0 || proj.z > 1.0) return 1.0;
-    float bias = max(0.0016 * (1.0 - dot(normal, lightVec)), 0.0004);
-    float stored = texture2D(shadowMap, proj.xy).r;
-    if (proj.z - bias > stored) return 0.0;
-    return 1.0;
+    float bias = max(biasSlope * (1.0 - dot(normal, lightVec)), biasConstant);
+    float spread = shadowTexel * shadowSoftness;
+    float sum = 0.0;
+    for (int x = -2; x <= 2; x++)
+    {
+        for (int y = -2; y <= 2; y++)
+        {
+            float stored = texture2D(shadowMap, proj.xy + vec2(float(x), float(y)) * spread).r;
+            sum += (proj.z - bias > stored) ? 0.0 : 1.0;
+        }
+    }
+    return sum / 25.0;
 }
 
 void main()

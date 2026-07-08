@@ -1,9 +1,9 @@
-#include "view/camera_rig.h"
+#include "view/camera/camera_rig.h"
 
 #include <cmath>
 
-#include "data/hex.h"
-#include "data/world_config.h"
+#include "data/space/hex.h"
+#include "data/space/world_config.h"
 
 namespace view
 {
@@ -26,7 +26,7 @@ void CameraRig::Init()
     offset_ = {-8.0f, 16.0f, 13.0f};
     panSpeed_ = 0.03f;
 
-    float margin = 3.0f;
+    float margin = 1.0f;
     boundsMin_ = {-margin, -margin};
     boundsMax_ = {extent.x * data::RenderScale + margin, extent.y * data::RenderScale + margin};
 }

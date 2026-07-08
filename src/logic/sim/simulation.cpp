@@ -1,7 +1,7 @@
-#include "logic/simulation.h"
+#include "logic/sim/simulation.h"
 
-#include "data/hex.h"
-#include "data/world_config.h"
+#include "data/space/hex.h"
+#include "data/space/world_config.h"
 
 namespace logic {
 

@@ -3,8 +3,8 @@
 
 #include <cstdlib>
 
-#include "data/vec.h"
-#include "data/world_config.h"
+#include "data/space/vec.h"
+#include "data/space/world_config.h"
 
 namespace data
 {

@@ -1,8 +1,8 @@
 #ifndef VIEW_INTERPOLATOR_H
 #define VIEW_INTERPOLATOR_H
 
-#include "data/vec.h"
-#include "logic/game_state.h"
+#include "data/space/vec.h"
+#include "logic/state/game_state.h"
 
 namespace view {
 

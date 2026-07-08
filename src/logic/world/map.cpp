@@ -1,4 +1,4 @@
-#include "logic/map.h"
+#include "logic/world/map.h"
 
 namespace logic {
 

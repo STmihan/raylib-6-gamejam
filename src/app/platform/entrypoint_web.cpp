@@ -1,4 +1,4 @@
-#include "app/entrypoint.h"
+#include "app/core/entrypoint.h"
 
 #if defined(__EMSCRIPTEN__)
 
@@ -6,7 +6,7 @@
 
 #include "raylib.h"
 
-#include "app/app.h"
+#include "app/core/app.h"
 
 #ifndef SCREEN_WIDTH
 #define SCREEN_WIDTH 720

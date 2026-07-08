@@ -1,4 +1,4 @@
-#include "view/model_registry.h"
+#include "view/prefab/model_registry.h"
 
 namespace view
 {

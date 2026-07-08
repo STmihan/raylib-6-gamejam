@@ -1,7 +1,7 @@
 #ifndef LOGIC_SIMULATION_H
 #define LOGIC_SIMULATION_H
 
-#include "logic/game_state.h"
+#include "logic/state/game_state.h"
 
 namespace logic {
 

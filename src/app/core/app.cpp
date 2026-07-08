@@ -1,9 +1,9 @@
-#include "app/app.h"
+#include "app/core/app.h"
 
-#include "data/hex.h"
-#include "data/time_config.h"
-#include "data/world_config.h"
-#include "view/debug_ui.h"
+#include "data/space/hex.h"
+#include "data/time/time_config.h"
+#include "data/space/world_config.h"
+#include "view/debug/debug_ui.h"
 
 namespace app
 {
@@ -25,7 +25,7 @@ void StepApp(App& app)
     while (app.accumulator >= data::TickDelta && steps < data::MaxTicksPerFrame)
     {
         app.previousState = app.currentState;
-        app.simulation.Step(app.currentState, static_cast<float>(data::TickDelta));
+        app.simulation.Step(app.currentState, data::TickDelta);
         app.accumulator -= data::TickDelta;
         steps++;
     }
@@ -37,7 +37,7 @@ void StepApp(App& app)
     app.cameraRig.Update();
 
     auto alpha = static_cast<float>(app.accumulator / data::TickDelta);
-    auto overlay = [&app]() { view::DrawDebugOverlay(app.renderer.WaterParamsRef()); };
+    auto overlay = []() { view::DrawDebugOverlay(); };
     app.renderer.Draw(app.previousState, app.currentState, alpha, app.cameraRig.Camera(), app.map, overlay);
 }
 

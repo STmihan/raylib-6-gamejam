@@ -1,4 +1,4 @@
-#include "app/entrypoint.h"
+#include "app/core/entrypoint.h"
 
 int main(void) {
 #if defined(__EMSCRIPTEN__)
