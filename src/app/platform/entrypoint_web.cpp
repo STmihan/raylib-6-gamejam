@@ -7,14 +7,7 @@
 #include "raylib.h"
 
 #include "app/core/app.h"
-
-#ifndef SCREEN_WIDTH
-#define SCREEN_WIDTH 720
-#endif
-
-#ifndef SCREEN_HEIGHT
-#define SCREEN_HEIGHT 720
-#endif
+#include "data/app/app_config.h"
 
 namespace app {
 
@@ -29,7 +22,7 @@ void FrameTrampoline() {
 }
 
 int RunWeb() {
-    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "raylib-6-gamejam");
+    InitWindow(data::ScreenWidth, data::ScreenHeight, data::WindowTitle);
 
     static App app;
     g_app = &app;

@@ -5,23 +5,16 @@
 #include "raylib.h"
 
 #include "app/core/app.h"
+#include "data/app/app_config.h"
 #include "view/debug/debug_ui.h"
-
-#ifndef SCREEN_WIDTH
-#define SCREEN_WIDTH 720
-#endif
-
-#ifndef SCREEN_HEIGHT
-#define SCREEN_HEIGHT 720
-#endif
 
 namespace app
 {
 int RunDesktop()
 {
-    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "raylib-6-gamejam");
+    InitWindow(data::ScreenWidth, data::ScreenHeight, data::WindowTitle);
     ChangeDirectory(GetApplicationDirectory());
-    SetTargetFPS(60);
+    SetTargetFPS(data::TargetFps);
     view::DebugUiSetup();
 
     App app{};

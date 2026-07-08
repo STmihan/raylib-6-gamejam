@@ -1,9 +1,9 @@
-#ifndef VIEW_RENDER_SHADOW_PARAMS_H
-#define VIEW_RENDER_SHADOW_PARAMS_H
+#ifndef DATA_RENDER_SHADOW_PARAMS_H
+#define DATA_RENDER_SHADOW_PARAMS_H
 
 #include "raylib.h"
 
-namespace view
+namespace data
 {
 struct ShadowParams
 {

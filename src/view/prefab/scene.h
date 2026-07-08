@@ -12,10 +12,12 @@ class Scene
 public:
     explicit Scene(const ModelRegistry& models) : models_(&models) {}
 
+    void Draw(const logic::Map& map, bool includeFloors = true) const;
+
+private:
     void DrawFloors(const logic::Map& map) const;
     void DrawStructures(const logic::Map& map) const;
 
-private:
     const ModelRegistry* models_;
 };
 }

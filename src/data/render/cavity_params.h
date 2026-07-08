@@ -1,7 +1,7 @@
-#ifndef VIEW_RENDER_CAVITY_PARAMS_H
-#define VIEW_RENDER_CAVITY_PARAMS_H
+#ifndef DATA_RENDER_CAVITY_PARAMS_H
+#define DATA_RENDER_CAVITY_PARAMS_H
 
-namespace view
+namespace data
 {
 struct CavityParams
 {

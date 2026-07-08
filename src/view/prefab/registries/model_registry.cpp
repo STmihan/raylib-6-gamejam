@@ -1,4 +1,6 @@
-#include "view/prefab/model_registry.h"
+#include "view/prefab/registries/model_registry.h"
+
+#include "data/render/render_params.h"
 
 namespace view
 {
@@ -17,7 +19,7 @@ void ModelRegistry::Load()
     treePine_ = LoadModel("assets/models/tree_pine.glb");
     treeRound_ = LoadModel("assets/models/tree_round.glb");
 
-    water_ = LoadModelFromMesh(GenMeshPlane(800.0f, 800.0f, 1, 1));
+    water_ = LoadModelFromMesh(GenMeshPlane(data::Render.waterPlaneSize, data::Render.waterPlaneSize, 1, 1));
     waterTexture_ = LoadTexture("assets/water.png");
     SetTextureWrap(waterTexture_, TEXTURE_WRAP_REPEAT);
     SetTextureFilter(waterTexture_, TEXTURE_FILTER_BILINEAR);

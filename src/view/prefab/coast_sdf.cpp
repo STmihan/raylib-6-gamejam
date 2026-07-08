@@ -1,8 +1,9 @@
-#include "view/effect/coast_sdf.h"
+#include "view/prefab/coast_sdf.h"
 
 #include <cmath>
 #include <vector>
 
+#include "data/render/render_params.h"
 #include "data/space/hex.h"
 #include "data/space/vec.h"
 #include "data/space/world_config.h"
@@ -11,9 +12,6 @@ namespace view
 {
 namespace
 {
-    constexpr int SdfResolution = 1024;
-    constexpr float HexCircumradius = 1.0f;
-
     void RoundToCell(float q, float r, int& col, int& row)
     {
         float x = q;
@@ -43,8 +41,10 @@ namespace
         row = cubeZ;
     }
 
-    void SquaredDistance1D(const std::vector<float>& f, std::vector<float>& d, std::vector<int>& v,
-                           std::vector<float>& z, int n)
+    void SquaredDistance1D(const std::vector<float>& f, std::vector<float>& d,
+        std::vector<int>& v,
+        std::vector<float>& z,
+        int n)
     {
         const float inf = 1e18f;
         int k = 0;
@@ -95,10 +95,10 @@ Texture2D BuildCoastSdf(Vector2& originOut, float& worldSizeOut)
 
     float centerX = (minX + maxX) * 0.5f;
     float centerZ = (minZ + maxZ) * 0.5f;
-    float half = fmaxf(maxX - minX, maxZ - minZ) * 0.5f + HexCircumradius + SdfMaxDist;
+    float half = fmaxf(maxX - minX, maxZ - minZ) * 0.5f + data::Render.hexCircumradius + data::Render.sdfMaxDist;
     Vector2 origin = {centerX - half, centerZ - half};
     float worldSize = half * 2.0f;
-    int res = SdfResolution;
+    int res = data::Render.sdfResolution;
     float worldPerTexel = worldSize / static_cast<float>(res);
 
     const float inf = 1e18f;
@@ -134,7 +134,7 @@ Texture2D BuildCoastSdf(Vector2& originOut, float& worldSizeOut)
     }
 
     std::vector<unsigned char> pixels(static_cast<std::size_t>(res) * res);
-    float invMax = 1.0f / SdfMaxDist;
+    float invMax = 1.0f / data::Render.sdfMaxDist;
     for (std::size_t k = 0; k < pixels.size(); k++)
     {
         float dist = std::sqrt(grid[k]) * worldPerTexel;

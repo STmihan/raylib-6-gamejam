@@ -12,12 +12,14 @@ public:
     void Update();
     Camera3D Camera() const;
 
+    float& BoundsRadiusRef() { return boundsRadius_; }
+
 private:
     Vector3 focus_{};
     Vector3 offset_{};
-    Vector2 boundsMin_{};
-    Vector2 boundsMax_{};
-    float panSpeed_ = 0.03f;
+    Vector2 center_{};
+    float boundsRadius_{};
+    float panSpeed_{};
 };
 }
 

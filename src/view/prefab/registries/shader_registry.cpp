@@ -1,0 +1,38 @@
+#include "view/prefab/registries/shader_registry.h"
+
+namespace view
+{
+namespace
+{
+    const char* ShaderDir()
+    {
+#if defined(__EMSCRIPTEN__)
+        return "assets/shaders/glsl100/";
+#else
+        return "assets/shaders/glsl330/";
+#endif
+    }
+}
+
+void ShaderRegistry::Load()
+{
+    const char* dir = ShaderDir();
+    toon_ = LoadShader(TextFormat("%stoon.vert", dir), TextFormat("%stoon.frag", dir));
+    geom_ = LoadShader(TextFormat("%sgeom.vert", dir), TextFormat("%sgeom.frag", dir));
+    shadow_ = LoadShader(TextFormat("%sshadow.vert", dir), TextFormat("%sshadow.frag", dir));
+    outline_ = LoadShader(0, TextFormat("%soutline.frag", dir));
+    water_ = LoadShader(TextFormat("%swater.vert", dir), TextFormat("%swater.frag", dir));
+    loaded_ = true;
+}
+
+void ShaderRegistry::Unload()
+{
+    if (!loaded_) return;
+    UnloadShader(water_);
+    UnloadShader(outline_);
+    UnloadShader(shadow_);
+    UnloadShader(geom_);
+    UnloadShader(toon_);
+    loaded_ = false;
+}
+}

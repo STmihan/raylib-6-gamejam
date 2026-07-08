@@ -19,7 +19,7 @@ void DebugUiShutdown()
     rlImGuiShutdown();
 }
 
-void DrawDebugOverlay()
+void DrawDebugOverlay(float& cameraBoundsRadius)
 {
     static bool visible = false;
     if (IsKeyPressed(KEY_F1)) visible = !visible;
@@ -28,6 +28,10 @@ void DrawDebugOverlay()
     ImGui::DockSpaceOverViewport(0, nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
     if (visible && ImGui::Begin("Debug (F1)"))
     {
+        if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::SliderFloat("Bounds Radius", &cameraBoundsRadius, 0.0f, 40.0f);
+        }
     }
     if (visible) ImGui::End();
     rlImGuiEnd();
@@ -46,7 +50,7 @@ void DebugUiShutdown()
 {
 }
 
-void DrawDebugOverlay()
+void DrawDebugOverlay(float&)
 {
 }
 }

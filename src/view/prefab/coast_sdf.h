@@ -5,8 +5,6 @@
 
 namespace view
 {
-inline constexpr float SdfMaxDist = 16.0f;
-
 Texture2D BuildCoastSdf(Vector2& originOut, float& worldSizeOut);
 }
 

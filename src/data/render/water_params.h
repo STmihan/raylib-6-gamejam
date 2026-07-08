@@ -1,9 +1,9 @@
-#ifndef VIEW_WATER_PARAMS_H
-#define VIEW_WATER_PARAMS_H
+#ifndef DATA_RENDER_WATER_PARAMS_H
+#define DATA_RENDER_WATER_PARAMS_H
 
 #include "raylib.h"
 
-namespace view
+namespace data
 {
 struct WaterParams
 {

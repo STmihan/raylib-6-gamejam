@@ -1,9 +1,9 @@
-#ifndef VIEW_EFFECT_WATER_H
-#define VIEW_EFFECT_WATER_H
+#ifndef VIEW_PREFAB_WATER_H
+#define VIEW_PREFAB_WATER_H
 
 #include "raylib.h"
 
-#include "view/effect/water_params.h"
+#include "data/render/water_params.h"
 
 namespace view
 {
@@ -12,17 +12,17 @@ class ModelRegistry;
 class WaterEffect
 {
 public:
-    void Load(const char* shaderDir, ModelRegistry& models);
+    void Load(Shader shader, ModelRegistry& models);
     void Unload();
 
     void Update(float time);
     void Draw(const ModelRegistry& models) const;
 
-    WaterParams& ParamsRef() { return params_; }
+    data::WaterParams& ParamsRef() { return params_; }
 
 private:
     Shader shader_{};
-    WaterParams params_{};
+    data::WaterParams params_{};
     Texture2D sdfTexture_{};
     Vector2 sdfOrigin_{};
     float sdfWorldSize_ = 1.0f;

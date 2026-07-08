@@ -5,7 +5,7 @@ namespace view {
 
 void DebugUiSetup();
 void DebugUiShutdown();
-void DrawDebugOverlay();
+void DrawDebugOverlay(float& cameraBoundsRadius);
 
 }
 

@@ -4,6 +4,11 @@
 
 namespace view
 {
+namespace
+{
+    constexpr int DepthTextureFormat = 19;
+}
+
 RenderTexture2D LoadShadowmap(int width, int height)
 {
     RenderTexture2D target = {0};
@@ -16,7 +21,7 @@ RenderTexture2D LoadShadowmap(int width, int height)
         target.depth.id = rlLoadTextureDepth(width, height, false);
         target.depth.width = width;
         target.depth.height = height;
-        target.depth.format = 19;
+        target.depth.format = DepthTextureFormat;
         target.depth.mipmaps = 1;
         rlFramebufferAttach(target.id, target.depth.id, RL_ATTACHMENT_DEPTH, RL_ATTACHMENT_TEXTURE2D, 0);
         rlFramebufferComplete(target.id);

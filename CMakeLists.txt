@@ -4,9 +4,6 @@ project(raylib-game LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(SCREEN_WIDTH 720 CACHE STRING "Window width")
-set(SCREEN_HEIGHT 720 CACHE STRING "Window height")
-
 include(FetchContent)
 
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
@@ -30,10 +27,6 @@ file(GLOB_RECURSE GAME_HEADERS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.h")
 add_executable(${PROJECT_NAME} ${GAME_SOURCES} ${GAME_HEADERS})
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
-target_compile_definitions(${PROJECT_NAME} PRIVATE
-        SCREEN_WIDTH=${SCREEN_WIDTH}
-        SCREEN_HEIGHT=${SCREEN_HEIGHT}
-)
 
 if (NOT EMSCRIPTEN)
     FetchContent_Declare(

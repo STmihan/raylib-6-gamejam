@@ -4,11 +4,10 @@
 #include <array>
 #include <cstdint>
 
+#include "data/sim/sim_config.h"
 #include "data/space/vec.h"
 
 namespace logic {
-
-inline constexpr int MaxEntities = 256;
 
 struct Entity {
     bool active;
@@ -20,7 +19,7 @@ struct Entity {
 struct GameState {
     std::uint64_t tick;
     int entityCount;
-    std::array<Entity, MaxEntities> entities;
+    std::array<Entity, data::MaxEntities> entities;
 };
 
 }
