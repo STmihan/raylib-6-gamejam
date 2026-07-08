@@ -4,6 +4,7 @@
 #include "raylib.h"
 
 #include "logic/game_state.h"
+#include "logic/map.h"
 #include "logic/simulation.h"
 #include "view/renderer.h"
 
@@ -13,6 +14,7 @@ struct App {
     logic::Simulation simulation;
     logic::GameState previousState;
     logic::GameState currentState;
+    logic::Map map;
     view::Renderer renderer;
     Camera3D camera;
     double accumulator;

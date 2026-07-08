@@ -13,7 +13,7 @@ Camera3D BuildCamera() {
     Vector3 focus = { center.x * data::RenderScale, 0.0f, center.y * data::RenderScale };
 
     Camera3D camera = {};
-    camera.position = { focus.x, 20.0f, focus.z + 16.0f };
+    camera.position = { focus.x, 28.0f, focus.z + 22.0f };
     camera.target = focus;
     camera.up = { 0.0f, 1.0f, 0.0f };
     camera.fovy = 45.0f;
@@ -27,6 +27,7 @@ void InitApp(App &app) {
     app.renderer.Init();
     app.camera = BuildCamera();
     app.accumulator = 0.0;
+    app.map = logic::BuildMap();
     app.simulation.Init(app.currentState);
     app.previousState = app.currentState;
 }
@@ -46,7 +47,7 @@ void StepApp(App &app) {
     }
 
     float alpha = static_cast<float>(app.accumulator / data::TickDelta);
-    app.renderer.Draw(app.previousState, app.currentState, alpha, app.camera);
+    app.renderer.Draw(app.previousState, app.currentState, alpha, app.camera, app.map);
 }
 
 void ShutdownApp(App &app) {
