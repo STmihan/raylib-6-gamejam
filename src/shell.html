@@ -24,9 +24,9 @@
 </head>
 <body>
     <canvas class="emscripten" id="canvas" width="720" height="720"
-            oncontextmenu="preventDefault()" tabindex="-1"></canvas>
+            oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
     <script>
-        const Module = {
+        var Module = {
             canvas: (function () {
                 return document.getElementById('canvas');
             })()

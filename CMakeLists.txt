@@ -34,21 +34,16 @@ if (NOT EMSCRIPTEN)
             GIT_REPOSITORY https://github.com/ocornut/imgui.git
             GIT_TAG v1.92.8-docking
             GIT_SHALLOW TRUE
+            SOURCE_SUBDIR _fetch_only_
     )
     FetchContent_Declare(
             rlimgui
             GIT_REPOSITORY https://github.com/raylib-extras/rlImGui.git
             GIT_TAG Raylib_6_0
             GIT_SHALLOW TRUE
+            SOURCE_SUBDIR _fetch_only_
     )
-    FetchContent_GetProperties(imgui)
-    if (NOT imgui_POPULATED)
-        FetchContent_Populate(imgui)
-    endif ()
-    FetchContent_GetProperties(rlimgui)
-    if (NOT rlimgui_POPULATED)
-        FetchContent_Populate(rlimgui)
-    endif ()
+    FetchContent_MakeAvailable(imgui rlimgui)
 
     target_sources(${PROJECT_NAME} PRIVATE
             ${imgui_SOURCE_DIR}/imgui.cpp
@@ -64,11 +59,11 @@ endif ()
 set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets")
 
 if (EMSCRIPTEN)
-    set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".html")
+    set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".html" OUTPUT_NAME "index")
     target_link_options(${PROJECT_NAME} PRIVATE
             -sUSE_GLFW=3
             -sASYNCIFY
-            -sALLOW_MEMORY_GROWTH=1
+            -sINITIAL_MEMORY=268435456
             --shell-file "${CMAKE_SOURCE_DIR}/src/shell.html"
             "--preload-file=${ASSETS_DIR}@assets"
     )
