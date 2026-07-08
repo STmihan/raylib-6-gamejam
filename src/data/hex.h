@@ -6,72 +6,74 @@
 #include "data/vec.h"
 #include "data/world_config.h"
 
-namespace data {
-
-struct Offset {
+namespace data
+{
+struct Offset
+{
     int col;
     int row;
 };
 
-struct Cube {
+struct Cube
+{
     int x;
     int y;
     int z;
 };
 
-inline Cube OffsetToCube(Offset o) {
-    int x = o.col;
-    int z = o.row - (o.col - (o.col & 1)) / 2;
-    int y = -x - z;
-    return { x, y, z };
+inline Cube OffsetToCube(Offset o)
+{
+    int x = o.col - (o.row - (o.row & 1)) / 2;
+    int z = o.row;
+    return {x, -x - z, z};
 }
 
-inline Offset CubeToOffset(Cube c) {
-    int col = c.x;
-    int row = c.z + (c.x - (c.x & 1)) / 2;
-    return { col, row };
+inline Offset CubeToOffset(Cube c)
+{
+    return {c.x + (c.z - (c.z & 1)) / 2, c.z};
 }
 
-inline int HexDistance(Offset a, Offset b) {
+inline int HexDistance(Offset a, Offset b)
+{
     Cube ca = OffsetToCube(a);
     Cube cb = OffsetToCube(b);
     return (std::abs(ca.x - cb.x) + std::abs(ca.y - cb.y) + std::abs(ca.z - cb.z)) / 2;
 }
 
-inline Offset Neighbor(Offset o, int direction) {
+inline Offset Neighbor(Offset o, int direction)
+{
     static const Cube directions[6] = {
-        { +1, -1, 0 }, { +1, 0, -1 }, { 0, +1, -1 },
-        { -1, +1, 0 }, { -1, 0, +1 }, { 0, -1, +1 },
+        {+1, -1, 0}, {+1, 0, -1}, {0, +1, -1},
+        {-1, +1, 0}, {-1, 0, +1}, {0, -1, +1},
     };
     Cube c = OffsetToCube(o);
     Cube d = directions[direction];
-    return CubeToOffset({ c.x + d.x, c.y + d.y, c.z + d.z });
+    return CubeToOffset({c.x + d.x, c.y + d.y, c.z + d.z});
 }
 
-inline Vec2 CellToLogic(int col, int row) {
-    float x = ColSpacingLogic * static_cast<float>(col);
-    float y = RowSpacingLogic * static_cast<float>(row) + OddColumnOffsetLogic * static_cast<float>(col & 1);
-    return { x, y };
+inline Vec2 CellToLogic(int col, int row)
+{
+    float x = RowSpacingLogic * static_cast<float>(col) + OddColumnOffsetLogic * static_cast<float>(row & 1);
+    float y = ColSpacingLogic * static_cast<float>(row);
+    return {x, y};
 }
 
-inline Vec2 CellToLogic(Offset o) {
+inline Vec2 CellToLogic(Offset o)
+{
     return CellToLogic(o.col, o.row);
 }
 
-inline Vec2 FieldCenterLogic() {
-    return {
-        ColSpacingLogic * static_cast<float>(FieldCols - 1) * 0.5f,
-        RowSpacingLogic * static_cast<float>(FieldRows - 1) * 0.5f,
-    };
+inline Vec2 FieldCenterLogic()
+{
+    Vec2 a = CellToLogic(0, 0);
+    Vec2 b = CellToLogic(FieldCols - 1, FieldRows - 1);
+    return {(a.x + b.x) * 0.5f, (a.y + b.y) * 0.5f};
 }
 
-inline Vec2 FieldExtentLogic() {
-    return {
-        ColSpacingLogic * static_cast<float>(FieldCols - 1),
-        RowSpacingLogic * static_cast<float>(FieldRows - 1) + OddColumnOffsetLogic,
-    };
+inline Vec2 FieldExtentLogic()
+{
+    return CellToLogic(FieldCols - 1, FieldRows - 1);
 }
-
 }
 
 #endif
