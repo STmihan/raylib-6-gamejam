@@ -1,14 +1,13 @@
 #ifndef VIEW_EFFECT_SHADOW_EFFECT_H
 #define VIEW_EFFECT_SHADOW_EFFECT_H
 
-#include "raylib.h"
+#include <functional>
 
-namespace logic { struct Map; }
+#include "raylib.h"
 
 namespace view
 {
 class ModelRegistry;
-class Scene;
 
 class ShadowEffect
 {
@@ -16,7 +15,7 @@ public:
     void Init(Shader shader);
     void Shutdown();
 
-    void RenderMap(ModelRegistry& models, const Scene& scene, const logic::Map& map, Vector3 sunDir);
+    void RenderMap(ModelRegistry& models, Vector3 sunDir, const std::function<void()>& drawScene);
     void DrawDebugPreview() const;
 
     Matrix LightViewProj() const { return lightViewProj_; }

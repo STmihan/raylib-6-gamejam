@@ -1,6 +1,7 @@
 #ifndef DATA_HEX_H
 #define DATA_HEX_H
 
+#include <cmath>
 #include <cstdlib>
 
 #include "data/space/vec.h"
@@ -61,6 +62,14 @@ inline Vec2 CellToLogic(int col, int row)
 inline Vec2 CellToLogic(Offset o)
 {
     return CellToLogic(o.col, o.row);
+}
+
+inline Offset CellFromLogic(Vec2 p)
+{
+    int row = static_cast<int>(std::floor(p.y / ColSpacingLogic + 0.5f));
+    int col = static_cast<int>(std::floor((p.x - OddColumnOffsetLogic * static_cast<float>(row & 1))
+        / RowSpacingLogic + 0.5f));
+    return {col, row};
 }
 
 inline Vec2 FieldCenterLogic()

@@ -23,17 +23,17 @@ struct WaterParams
 
     float lineThick = 0.214f;
     float lineGap = 0.151f;
-    float lineThin = 0.046f;
+    float lineThin = 0.054f;
     float lineTravel = 0.691f;
     float lineSpeed = 0.329f;
-    float lineInterval = 2.486f;
+    float lineInterval = 1.928f;
     float lineWobble = 0.120f;
     float lineWobbleScale = 2.035f;
     float lineWobbleSpeed = 0.720f;
-    float detailAmount = 0.058f;
-    float detailScale = 10.667f;
-    float detailSpeed = 0.018f;
-    float detailReach = 2.176f;
+    float detailAmount = 0.074f;
+    float detailScale = 8.420f;
+    float detailSpeed = 0.288f;
+    float detailReach = 2.543f;
 };
 }
 

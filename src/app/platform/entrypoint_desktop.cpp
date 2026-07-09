@@ -6,7 +6,7 @@
 
 #include "app/core/app.h"
 #include "data/app/app_config.h"
-#include "view/debug/debug_ui.h"
+#include "debug/debug_ui.h"
 
 namespace app
 {
@@ -15,7 +15,7 @@ int RunDesktop()
     InitWindow(data::ScreenWidth, data::ScreenHeight, data::WindowTitle);
     ChangeDirectory(GetApplicationDirectory());
     SetTargetFPS(data::TargetFps);
-    view::DebugUiSetup();
+    debug::DebugUiSetup();
 
     App app{};
     InitApp(app);
@@ -26,7 +26,7 @@ int RunDesktop()
     }
 
     ShutdownApp(app);
-    view::DebugUiShutdown();
+    debug::DebugUiShutdown();
     CloseWindow();
     return 0;
 }

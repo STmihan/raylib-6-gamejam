@@ -9,10 +9,11 @@
 
 namespace view
 {
-void OutlineEffect::Init(Shader geomShader, Shader outlineShader)
+void OutlineEffect::Init(Shader geomShader, Shader outlineShader, Shader maskShader)
 {
     geomShader_ = geomShader;
     outlineShader_ = outlineShader;
+    maskShader_ = maskShader;
 
     float maxDepth = data::Render.geomMaxDepth;
     SetShaderValue(geomShader_, GetShaderLocation(geomShader_, "maxDepth"), &maxDepth, SHADER_UNIFORM_FLOAT);
@@ -33,31 +34,47 @@ void OutlineEffect::Init(Shader geomShader, Shader outlineShader)
     SetShaderValue(outlineShader_, GetShaderLocation(outlineShader_, "outlineColor"), &outlineColor,
                    SHADER_UNIFORM_VEC4);
     normalDepthLoc_ = GetShaderLocation(outlineShader_, "normalDepthTex");
+    unitMaskLoc_ = GetShaderLocation(outlineShader_, "unitMaskTex");
     screenRightLoc_ = GetShaderLocation(outlineShader_, "screenRight");
     screenUpLoc_ = GetShaderLocation(outlineShader_, "screenUp");
     cavityRadiusLoc_ = GetShaderLocation(outlineShader_, "cavityRadius");
     cavityValleyLoc_ = GetShaderLocation(outlineShader_, "cavityValley");
     cavityRidgeLoc_ = GetShaderLocation(outlineShader_, "cavityRidge");
+    unitOutlineScaleLoc_ = GetShaderLocation(outlineShader_, "unitOutlineScale");
+    unitCavityScaleLoc_ = GetShaderLocation(outlineShader_, "unitCavityScale");
 
     normalDepthTarget_ = LoadRenderTexture(width, height);
+    maskTarget_ = LoadRenderTexture(width, height);
 }
 
 void OutlineEffect::Shutdown()
 {
     UnloadRenderTexture(normalDepthTarget_);
+    UnloadRenderTexture(maskTarget_);
 }
 
-void OutlineEffect::RenderNormalDepth(ModelRegistry& models, const Scene& scene, const logic::Map& map,
-                                      Camera3D camera)
+void OutlineEffect::RenderNormalDepth(ModelRegistry& models, Camera3D camera,
+                                      const std::function<void()>& drawScene)
 {
     models.ApplyShader(geomShader_);
     BeginTextureMode(normalDepthTarget_);
     ClearBackground(BLANK);
     rlDisableColorBlend();
     BeginMode3D(camera);
-    scene.Draw(map, false);
+    if (drawScene) drawScene();
     EndMode3D();
     rlEnableColorBlend();
+    EndTextureMode();
+}
+
+void OutlineEffect::RenderUnitMask(ModelRegistry& models, Camera3D camera, const std::function<void()>& drawExtra)
+{
+    models.ApplyShader(maskShader_);
+    BeginTextureMode(maskTarget_);
+    ClearBackground(BLACK);
+    BeginMode3D(camera);
+    if (drawExtra) drawExtra();
+    EndMode3D();
     EndTextureMode();
 }
 
@@ -73,9 +90,12 @@ void OutlineEffect::Composite(RenderTexture2D colorTarget, const data::CavityPar
     SetShaderValue(outlineShader_, cavityRadiusLoc_, &cavity.radius, SHADER_UNIFORM_FLOAT);
     SetShaderValue(outlineShader_, cavityValleyLoc_, &valley, SHADER_UNIFORM_FLOAT);
     SetShaderValue(outlineShader_, cavityRidgeLoc_, &ridge, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(outlineShader_, unitOutlineScaleLoc_, &unitOutlineScale_, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(outlineShader_, unitCavityScaleLoc_, &unitCavityScale_, SHADER_UNIFORM_FLOAT);
 
     BeginShaderMode(outlineShader_);
     SetShaderValueTexture(outlineShader_, normalDepthLoc_, normalDepthTarget_.texture);
+    SetShaderValueTexture(outlineShader_, unitMaskLoc_, maskTarget_.texture);
     DrawTextureRec(
         colorTarget.texture,
         Rectangle{

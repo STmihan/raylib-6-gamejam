@@ -15,6 +15,7 @@ public:
     const Shader& Geom() const { return geom_; }
     const Shader& Shadow() const { return shadow_; }
     const Shader& Outline() const { return outline_; }
+    const Shader& Mask() const { return mask_; }
     const Shader& Water() const { return water_; }
     const Shader& WaterLine() const { return waterLine_; }
 
@@ -23,6 +24,7 @@ private:
     Shader geom_{};
     Shader shadow_{};
     Shader outline_{};
+    Shader mask_{};
     Shader water_{};
     Shader waterLine_{};
     bool loaded_ = false;

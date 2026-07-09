@@ -6,6 +6,7 @@ varying vec2 fragTexCoord;
 
 uniform sampler2D texture0;
 uniform sampler2D normalDepthTex;
+uniform sampler2D unitMaskTex;
 uniform vec2 texelSize;
 uniform float outlineWidth;
 uniform float creaseCos;
@@ -16,6 +17,8 @@ uniform vec3 screenUp;
 uniform float cavityRadius;
 uniform float cavityValley;
 uniform float cavityRidge;
+uniform float unitOutlineScale;
+uniform float unitCavityScale;
 
 float edgeAt(vec3 centerNormal, float centerDepth, vec2 uv)
 {
@@ -43,6 +46,11 @@ void main()
 
     vec3 color = texture2D(texture0, fragTexCoord).rgb;
 
+    float unitMask = texture2D(unitMaskTex, fragTexCoord).r;
+    float outlineFactor = mix(1.0, unitOutlineScale, unitMask);
+    float cavityFactor = mix(1.0, unitCavityScale, unitMask);
+    edge *= outlineFactor;
+
     vec2 cr = texelSize * cavityRadius;
     vec4 sR = texture2D(normalDepthTex, fragTexCoord + vec2(cr.x, 0.0));
     vec4 sL = texture2D(normalDepthTex, fragTexCoord - vec2(cr.x, 0.0));
@@ -55,8 +63,8 @@ void main()
     vec3 nU = normalize(sU.rgb * 2.0 - 1.0);
     vec3 nD = normalize(sD.rgb * 2.0 - 1.0);
     float convex = dot(nR - nL, screenRight) + dot(nU - nD, screenUp);
-    float valley = max(-convex, 0.0) * cavityValley * valid;
-    float ridge = max(convex, 0.0) * cavityRidge * valid;
+    float valley = max(-convex, 0.0) * cavityValley * valid * cavityFactor;
+    float ridge = max(convex, 0.0) * cavityRidge * valid * cavityFactor;
     color *= 1.0 - clamp(valley, 0.0, 0.9);
     color += clamp(ridge, 0.0, 0.9) * (1.0 - color);
 

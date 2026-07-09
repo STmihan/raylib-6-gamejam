@@ -37,23 +37,21 @@ if (NOT EMSCRIPTEN)
             GIT_SHALLOW TRUE
             SOURCE_SUBDIR _fetch_only_
     )
-    FetchContent_Declare(
-            rlimgui
-            GIT_REPOSITORY https://github.com/raylib-extras/rlImGui.git
-            GIT_TAG Raylib_6_0
-            GIT_SHALLOW TRUE
-            SOURCE_SUBDIR _fetch_only_
-    )
-    FetchContent_MakeAvailable(imgui rlimgui)
+    FetchContent_MakeAvailable(imgui)
 
     target_sources(${PROJECT_NAME} PRIVATE
             ${imgui_SOURCE_DIR}/imgui.cpp
             ${imgui_SOURCE_DIR}/imgui_draw.cpp
             ${imgui_SOURCE_DIR}/imgui_tables.cpp
             ${imgui_SOURCE_DIR}/imgui_widgets.cpp
-            ${rlimgui_SOURCE_DIR}/rlImGui.cpp
+            ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+            ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
     )
-    target_include_directories(${PROJECT_NAME} PRIVATE ${imgui_SOURCE_DIR} ${rlimgui_SOURCE_DIR})
+    target_include_directories(${PROJECT_NAME} PRIVATE
+            ${imgui_SOURCE_DIR}
+            ${imgui_SOURCE_DIR}/backends
+            ${raylib_SOURCE_DIR}/src/external/glfw/include)
+    target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
     target_compile_definitions(${PROJECT_NAME} PRIVATE HAS_IMGUI)
 endif ()
 

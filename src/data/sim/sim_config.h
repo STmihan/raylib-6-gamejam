@@ -4,13 +4,16 @@
 namespace data
 {
 inline constexpr int MaxEntities = 256;
-inline constexpr int DemoEntityCount = 8;
 
-inline constexpr float SpawnSpeedBase = 90.0f;
-inline constexpr float SpawnSpeedStep = 20.0f;
-inline constexpr int SpawnSpeedTiers = 4;
-inline constexpr float SpawnYOffsetStep = 40.0f;
-inline constexpr int SpawnYSpread = 3;
+inline constexpr float CellReachedEpsilon = 1.0f;
+
+inline constexpr int BaseHp = 2000;
+inline constexpr int WallHp = 300;
+
+inline constexpr int MaxProjectiles = 128;
+inline constexpr float ShellSpeedRocketeer = 700.0f;
+inline constexpr float ShellSpeedAA = 520.0f;
+inline constexpr float BurstDelay = 0.08f;
 }
 
 #endif

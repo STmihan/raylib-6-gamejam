@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "raylib.h"
+#include "raymath.h"
 
 #include "data/scene/scene_config.h"
 #include "data/space/hex.h"
@@ -15,8 +16,6 @@ namespace view
 {
 namespace
 {
-    constexpr float RadToDeg = 57.2957795f;
-
     float SwampEdgeYaw(const logic::Map& map, int col, int row)
     {
         Vector3 here = CellWorld(col, row, 0.0f);
@@ -26,7 +25,7 @@ namespace
             if (!map.InBounds(n.col, n.row)) continue;
             if (map.At(n.col, n.row) != data::TileType::SwampCenter) continue;
             Vector3 there = CellWorld(n.col, n.row, 0.0f);
-            return std::atan2(-(there.z - here.z), there.x - here.x) * RadToDeg;
+            return std::atan2(-(there.z - here.z), there.x - here.x) * RAD2DEG;
         }
         return 0.0f;
     }

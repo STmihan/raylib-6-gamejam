@@ -53,7 +53,7 @@ void ShadowEffect::Shutdown()
     UnloadRenderTexture(target_);
 }
 
-void ShadowEffect::RenderMap(ModelRegistry& models, const Scene& scene, const logic::Map& map, Vector3 sunDir)
+void ShadowEffect::RenderMap(ModelRegistry& models, Vector3 sunDir, const std::function<void()>& drawScene)
 {
     lightCamera_.position = Vector3Add(lightTarget_, Vector3Scale(Vector3Normalize(sunDir), lightDist_));
     models.ApplyShader(shader_);
@@ -62,7 +62,7 @@ void ShadowEffect::RenderMap(ModelRegistry& models, const Scene& scene, const lo
     BeginMode3D(lightCamera_);
     rlSetMatrixProjection(lightProj_);
     Matrix lightView = rlGetMatrixModelview();
-    scene.Draw(map, true);
+    if (drawScene) drawScene();
     EndMode3D();
     EndTextureMode();
     lightViewProj_ = MatrixMultiply(lightView, lightProj_);

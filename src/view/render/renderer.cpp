@@ -12,15 +12,19 @@ void Renderer::Init()
 
     shadow_.Init(shaders_.Shadow());
     toon_.Init(shaders_.Toon());
-    outline_.Init(shaders_.Geom(), shaders_.Outline());
+    outline_.Init(shaders_.Geom(), shaders_.Outline(), shaders_.Mask());
     water_.Load(shaders_.Water(), shaders_.WaterLine(), models_);
 
     colorTarget_ = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
+    hpBars_.Load();
+    muzzles_.Load();
 }
 
 void Renderer::Shutdown()
 {
     UnloadRenderTexture(colorTarget_);
+    hpBars_.Unload();
+    hexGrid_.Unload();
     outline_.Shutdown();
     shadow_.Shutdown();
     water_.Unload();
@@ -28,18 +32,45 @@ void Renderer::Shutdown()
     models_.Unload();
 }
 
-void Renderer::Draw(const logic::GameState& previous, const logic::GameState& current, float alpha, Camera3D camera,
-                    const logic::Map& map, const std::function<void()>& overlay)
+void Renderer::Draw(const logic::GameState& previous, const logic::GameState& current, float alpha, float animTime,
+                    Camera3D camera, const logic::Map& map, const std::function<void()>& overlay)
 {
-    (void)previous;
-    (void)current;
-    (void)alpha;
+    if (preview_.Active())
+    {
+        DrawPreview(overlay);
+        return;
+    }
+    if (airTest_.Active())
+    {
+        DrawAirTest(overlay);
+        return;
+    }
+    if (projTest_.Active())
+    {
+        DrawProjectileTest(overlay);
+        return;
+    }
 
-    water_.Update(static_cast<float>(GetTime()));
+    if (!hexGridLoaded_)
+    {
+        hexGrid_.Load(map);
+        hexGridLoaded_ = true;
+    }
+
+    anim_.Update(previous, current);
+    units_.UpdateFlash(current, GetFrameTime());
+    water_.Update(animTime);
     Scene scene(models_);
 
-    shadow_.RenderMap(models_, scene, map, shadowParams_.sunDir);
-    outline_.RenderNormalDepth(models_, scene, map, camera);
+    auto drawUnits = [&] {
+        units_.Draw(models_, previous, current, alpha, false, orbitParams_, animTime);
+        projectiles_.Draw(models_, muzzles_, previous, current, alpha, orbitParams_, animTime);
+    };
+    auto shadowScene = [&] { scene.Draw(map, true); drawUnits(); };
+    auto geomScene = [&] { scene.Draw(map, false); drawUnits(); };
+    shadow_.RenderMap(models_, shadowParams_.sunDir, shadowScene);
+    outline_.RenderNormalDepth(models_, camera, geomScene);
+    outline_.RenderUnitMask(models_, camera, drawUnits);
 
     toon_.Apply(models_);
     BeginTextureMode(colorTarget_);
@@ -48,6 +79,12 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
     toon_.Upload(shadowParams_, shadow_.LightViewProj());
     toon_.BindShadowMap(shadow_.DepthTextureId(), shadow_.Slot());
     scene.Draw(map, true);
+    hexGrid_.Draw();
+    unitShadowParams_.sunDir = shadowParams_.sunDir;
+    toon_.Upload(unitShadowParams_, shadow_.LightViewProj());
+    units_.Draw(models_, previous, current, alpha, true, orbitParams_, animTime);
+    projectiles_.Draw(models_, muzzles_, previous, current, alpha, orbitParams_, animTime);
+    toon_.Upload(shadowParams_, shadow_.LightViewProj());
     water_.Draw(models_);
     EndMode3D();
     EndTextureMode();
@@ -55,9 +92,123 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
     BeginDrawing();
     ClearBackground(BLACK);
     outline_.Composite(colorTarget_, cavityParams_, camera);
+    hpBars_.DrawEntities(camera, previous, current, alpha);
+    if (current.winner >= 0)
+    {
+        const char* text = current.winner == 0 ? "TOP WINS" : "BOTTOM WINS";
+        int fontSize = 60;
+        int width = MeasureText(text, fontSize);
+        DrawText(text, (GetScreenWidth() - width) / 2, GetScreenHeight() / 2 - fontSize / 2, fontSize, RAYWHITE);
+    }
 #if defined(DEBUG_BUILD)
     DrawFPS(10, 10);
 #endif
+    if (overlay) overlay();
+    EndDrawing();
+}
+
+void Renderer::DrawPreview(const std::function<void()>& overlay)
+{
+    preview_.UpdateCamera();
+    preview_.UpdateFlash(GetFrameTime());
+    Camera3D camera = preview_.Camera();
+
+    auto drawItem = [&] { preview_.Draw(models_); };
+    shadow_.RenderMap(models_, shadowParams_.sunDir, drawItem);
+    outline_.RenderNormalDepth(models_, camera, drawItem);
+    outline_.RenderUnitMask(models_, camera, [] {});
+
+    toon_.Apply(models_);
+    BeginTextureMode(colorTarget_);
+    ClearBackground(data::Render.backgroundColor);
+    BeginMode3D(camera);
+    unitShadowParams_.sunDir = shadowParams_.sunDir;
+    toon_.Upload(unitShadowParams_, shadow_.LightViewProj());
+    toon_.BindShadowMap(shadow_.DepthTextureId(), shadow_.Slot());
+    DrawGrid(20, 1.0f);
+    preview_.DrawGizmo();
+    preview_.Draw(models_);
+    EndMode3D();
+    EndTextureMode();
+
+    BeginDrawing();
+    ClearBackground(BLACK);
+    outline_.Composite(colorTarget_, cavityParams_, camera);
+    hpBars_.DrawSingle(camera, Vector3{0.0f, 1.8f, 0.0f}, preview_.HpFraction(), Color{90, 200, 90, 255});
+    if (overlay) overlay();
+    EndDrawing();
+}
+
+void Renderer::DrawAirTest(const std::function<void()>& overlay)
+{
+    airTest_.UpdateCamera();
+    Camera3D camera = airTest_.Camera();
+    const logic::GameState& state = airTest_.State();
+    units_.UpdateFlash(state, GetFrameTime());
+
+    auto drawUnits = [&] {
+        units_.Draw(models_, state, state, 0.0f, false, orbitParams_, static_cast<float>(GetTime()));
+        projectiles_.Draw(models_, muzzles_, state, state, 0.0f, orbitParams_, static_cast<float>(GetTime()));
+    };
+    shadow_.RenderMap(models_, shadowParams_.sunDir, drawUnits);
+    outline_.RenderNormalDepth(models_, camera, drawUnits);
+    outline_.RenderUnitMask(models_, camera, drawUnits);
+
+    toon_.Apply(models_);
+    BeginTextureMode(colorTarget_);
+    ClearBackground(data::Render.backgroundColor);
+    BeginMode3D(camera);
+    toon_.Upload(shadowParams_, shadow_.LightViewProj());
+    toon_.BindShadowMap(shadow_.DepthTextureId(), shadow_.Slot());
+    DrawGrid(20, 1.0f);
+    units_.Draw(models_, state, state, 0.0f, true, orbitParams_, static_cast<float>(GetTime()));
+    projectiles_.Draw(models_, muzzles_, state, state, 0.0f, orbitParams_, static_cast<float>(GetTime()));
+    EndMode3D();
+    EndTextureMode();
+
+    BeginDrawing();
+    ClearBackground(BLACK);
+    outline_.Composite(colorTarget_, cavityParams_, camera);
+    hpBars_.DrawEntities(camera, state, state, 0.0f);
+    if (overlay) overlay();
+    EndDrawing();
+}
+
+void Renderer::DrawProjectileTest(const std::function<void()>& overlay)
+{
+    projTest_.UpdateCamera();
+    projTest_.Update(GetFrameTime());
+    Camera3D camera = projTest_.Camera();
+    const logic::GameState& prev = projTest_.Previous();
+    const logic::GameState& cur = projTest_.Current();
+    float alpha = projTest_.Alpha();
+    units_.UpdateFlash(cur, GetFrameTime());
+
+    auto drawUnits = [&] {
+        units_.Draw(models_, prev, cur, alpha, false, orbitParams_, static_cast<float>(GetTime()));
+        projectiles_.Draw(models_, muzzles_, prev, cur, alpha, orbitParams_, static_cast<float>(GetTime()));
+    };
+    shadow_.RenderMap(models_, shadowParams_.sunDir, drawUnits);
+    outline_.RenderNormalDepth(models_, camera, drawUnits);
+    outline_.RenderUnitMask(models_, camera, drawUnits);
+
+    toon_.Apply(models_);
+    BeginTextureMode(colorTarget_);
+    ClearBackground(data::Render.backgroundColor);
+    BeginMode3D(camera);
+    toon_.Upload(shadowParams_, shadow_.LightViewProj());
+    toon_.BindShadowMap(shadow_.DepthTextureId(), shadow_.Slot());
+    DrawGrid(20, 1.0f);
+    units_.Draw(models_, prev, cur, alpha, true, orbitParams_, static_cast<float>(GetTime()));
+    projectiles_.Draw(models_, muzzles_, prev, cur, alpha, orbitParams_, static_cast<float>(GetTime()));
+    projectiles_.DrawMuzzleGizmos(models_, muzzles_, prev, cur, alpha, orbitParams_);
+    EndMode3D();
+    EndTextureMode();
+
+    BeginDrawing();
+    ClearBackground(BLACK);
+    outline_.Composite(colorTarget_, cavityParams_, camera);
+    hpBars_.DrawEntities(camera, prev, cur, alpha);
     if (overlay) overlay();
     EndDrawing();
 }

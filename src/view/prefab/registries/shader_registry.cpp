@@ -21,6 +21,7 @@ void ShaderRegistry::Load()
     geom_ = LoadShader(TextFormat("%sgeom.vert", dir), TextFormat("%sgeom.frag", dir));
     shadow_ = LoadShader(TextFormat("%sshadow.vert", dir), TextFormat("%sshadow.frag", dir));
     outline_ = LoadShader(0, TextFormat("%soutline.frag", dir));
+    mask_ = LoadShader(TextFormat("%smask.vert", dir), TextFormat("%smask.frag", dir));
     water_ = LoadShader(TextFormat("%swater.vert", dir), TextFormat("%swater.frag", dir));
     waterLine_ = LoadShader(TextFormat("%swater.vert", dir), TextFormat("%swater_line.frag", dir));
     loaded_ = true;
@@ -31,6 +32,7 @@ void ShaderRegistry::Unload()
     if (!loaded_) return;
     UnloadShader(waterLine_);
     UnloadShader(water_);
+    UnloadShader(mask_);
     UnloadShader(outline_);
     UnloadShader(shadow_);
     UnloadShader(geom_);
