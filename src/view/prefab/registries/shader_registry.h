@@ -18,6 +18,8 @@ public:
     const Shader& Mask() const { return mask_; }
     const Shader& Water() const { return water_; }
     const Shader& WaterLine() const { return waterLine_; }
+    const Shader& Sdf() const { return sdf_; }
+    const Shader& Crystal() const { return crystal_; }
 
 private:
     Shader toon_{};
@@ -27,6 +29,8 @@ private:
     Shader mask_{};
     Shader water_{};
     Shader waterLine_{};
+    Shader sdf_{};
+    Shader crystal_{};
     bool loaded_ = false;
 };
 }

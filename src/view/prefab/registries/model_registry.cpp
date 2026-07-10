@@ -228,7 +228,7 @@ const Model& ModelRegistry::UnitBody(data::UnitType type) const
 
 const Model& ModelRegistry::TeamRing(data::Team team) const
 {
-    return team == data::Team::Top ? ringBlue_ : ringRed_;
+    return team == data::Team::Top ? ringRed_ : ringBlue_;
 }
 
 const Model& ModelRegistry::Shell() const

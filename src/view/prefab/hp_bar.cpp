@@ -15,8 +15,8 @@ namespace
 
     const Color BackColor = {18, 18, 24, 220};
     const Color BorderColor = {0, 0, 0, 230};
-    const Color TopFill = {80, 150, 235, 255};
-    const Color BottomFill = {235, 85, 70, 255};
+    const Color TopFill = {235, 85, 70, 255};
+    const Color BottomFill = {80, 150, 235, 255};
 
     int MaxHpOf(const logic::Entity& entity)
     {
@@ -39,19 +39,10 @@ namespace
     }
 }
 
-void HpBarView::Load()
+void HpBarView::Load(Texture2D white)
 {
-    Image image = GenImageColor(1, 1, WHITE);
-    white_ = LoadTextureFromImage(image);
-    UnloadImage(image);
+    white_ = white;
     loaded_ = true;
-}
-
-void HpBarView::Unload()
-{
-    if (!loaded_) return;
-    UnloadTexture(white_);
-    loaded_ = false;
 }
 
 void HpBarView::Bar(Vector2 topCenter, float fraction, Color fill) const

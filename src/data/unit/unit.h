@@ -21,6 +21,14 @@ enum class Team
     Bottom,
 };
 
+inline constexpr Team PlayerTeam = Team::Bottom;
+inline constexpr Team EnemyTeam = Team::Top;
+
+inline int TeamIndex(Team team)
+{
+    return team == Team::Top ? 0 : 1;
+}
+
 struct UnitStats
 {
     int hp;

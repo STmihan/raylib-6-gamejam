@@ -9,6 +9,7 @@ void Renderer::Init()
 {
     models_.Load();
     shaders_.Load();
+    textures_.Load();
 
     shadow_.Init(shaders_.Shadow());
     toon_.Init(shaders_.Toon());
@@ -16,18 +17,20 @@ void Renderer::Init()
     water_.Load(shaders_.Water(), shaders_.WaterLine(), models_);
 
     colorTarget_ = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
-    hpBars_.Load();
+    hpBars_.Load(textures_.White());
     muzzles_.Load();
+    ui_.Load(shaders_, textures_);
 }
 
 void Renderer::Shutdown()
 {
+    ui_.Unload();
     UnloadRenderTexture(colorTarget_);
-    hpBars_.Unload();
     hexGrid_.Unload();
     outline_.Shutdown();
     shadow_.Shutdown();
     water_.Unload();
+    textures_.Unload();
     shaders_.Unload();
     models_.Unload();
 }
@@ -91,6 +94,7 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
         hexGridLoaded_ = true;
     }
 
+    ui_.BeginFrame();
     anim_.Update(previous, current);
     units_.UpdateFlash(current, GetFrameTime());
     water_.Update(animTime);
@@ -117,6 +121,27 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
     };
     passes.composite2D = [&] {
         hpBars_.DrawEntities(camera, previous, current, alpha);
+        if (!hudHidden_)
+        {
+            const Color panelTint = {28, 32, 24, 235};
+
+            Rectangle timer = {14.0f, 12.0f, 120.0f, 48.0f};
+            ui::Panel(ui_, timer, panelTint);
+            ui::LabelCentered(ui_, "01:45", timer, 30.0f, RAYWHITE, true);
+
+            int player = data::TeamIndex(data::PlayerTeam);
+            float res = previous.resource[player] * (1.0f - alpha) + current.resource[player] * alpha;
+            ui::Panel(ui_, Rectangle{14.0f, 654.0f, 220.0f, 44.0f}, panelTint);
+            ui::DrawResourceBar(ui_, Rectangle{26.0f, 665.0f, 196.0f, 22.0f}, res, 6, resourceHighlight_,
+                                animTime, crystalStyle_);
+
+            Rectangle mull = {586.0f, 648.0f, 120.0f, 46.0f};
+            ui::ButtonBg(ui_, mull);
+            ui::Icon(ui_, ui_.Theme().Cards(), Rectangle{mull.x + 12.0f, mull.y + 7.0f, 32.0f, 32.0f},
+                     Color{234, 230, 214, 255});
+            ui::Label(ui_, "2", Vector2{mull.x + 66.0f, mull.y + 10.0f}, 26.0f,
+                      Color{240, 236, 221, 255}, true);
+        }
         if (current.winner >= 0)
         {
             const char* text = current.winner == 0 ? "TOP WINS" : "BOTTOM WINS";
@@ -125,7 +150,7 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
             DrawText(text, (GetScreenWidth() - width) / 2, GetScreenHeight() / 2 - fontSize / 2, fontSize, RAYWHITE);
         }
 #if defined(DEBUG_BUILD)
-        DrawFPS(10, 10);
+        DrawFPS(18, 70);
 #endif
     };
 

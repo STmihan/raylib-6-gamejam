@@ -49,6 +49,7 @@ struct GameState {
     std::uint64_t tick;
     int entityCount;
     int winner;
+    std::array<float, 2> resource;
     std::array<Entity, data::MaxEntities> entities;
     std::array<Projectile, data::MaxProjectiles> projectiles;
 };

@@ -4,6 +4,7 @@
 #include <cmath>
 #include <limits>
 
+#include "data/economy/economy.h"
 #include "data/sim/sim_config.h"
 #include "data/space/hex.h"
 #include "data/tile/tile.h"
@@ -13,10 +14,6 @@
 namespace logic {
 
 namespace {
-
-int TeamIndex(data::Team team) {
-    return team == data::Team::Top ? 0 : 1;
-}
 
 bool CanDamage(const Entity &attacker, const Entity &target) {
     if (target.kind == EntityKind::Unit) {
@@ -216,14 +213,16 @@ void Simulation::Init(GameState &state, const Map &map) {
         }
     }
 
-    enemyBaseRow_[TeamIndex(data::Team::Top)] = bottomMin;
-    enemyBaseRow_[TeamIndex(data::Team::Bottom)] = topMax;
+    enemyBaseRow_[data::TeamIndex(data::Team::Top)] = bottomMin;
+    enemyBaseRow_[data::TeamIndex(data::Team::Bottom)] = topMax;
     int spawnRow[2];
-    spawnRow[TeamIndex(data::Team::Top)] = topMax + 1;
-    spawnRow[TeamIndex(data::Team::Bottom)] = bottomMin - 1;
+    spawnRow[data::TeamIndex(data::Team::Top)] = topMax + 1;
+    spawnRow[data::TeamIndex(data::Team::Bottom)] = bottomMin - 1;
 
     state.tick = 0;
     state.winner = -1;
+    state.resource[0] = 0.0f;
+    state.resource[1] = 0.0f;
     for (int i = 0; i < data::MaxEntities; i++) {
         state.entities[i].active = false;
     }
@@ -254,7 +253,7 @@ void Simulation::Init(GameState &state, const Map &map) {
         for (int i = 0; i < data::UnitTypeCount; i++) {
             int col = i * (MapCols - 1) / (data::UnitTypeCount - 1);
             auto type = static_cast<data::UnitType>(i);
-            addEntity(EntityKind::Unit, type, team, col, spawnRow[TeamIndex(team)], data::UnitStatsOf(type).hp);
+            addEntity(EntityKind::Unit, type, team, col, spawnRow[data::TeamIndex(team)], data::UnitStatsOf(type).hp);
         }
     }
 
@@ -270,7 +269,7 @@ void Simulation::Init(GameState &state, const Map &map) {
 
     int baseRow[2] = {topMax, bottomMin};
     for (data::Team team : teams) {
-        int row = baseRow[TeamIndex(team)];
+        int row = baseRow[data::TeamIndex(team)];
         int minCol = MapCols, maxCol = -1;
         for (int col = 0; col < MapCols; col++) {
             if (map.At(col, row) == data::TileType::Base) {
@@ -289,6 +288,13 @@ void Simulation::Step(GameState &state, float dt) {
     if (state.winner >= 0) return;
     if (map_ == nullptr) return;
     state.tick++;
+
+    float seconds = static_cast<float>(state.tick) * static_cast<float>(data::TickDelta);
+    float regen = data::RegenPerSec(seconds) * dt;
+    for (int t = 0; t < 2; t++) {
+        state.resource[t] += regen;
+        if (state.resource[t] > data::ResourceCap) state.resource[t] = data::ResourceCap;
+    }
 
     for (int i = 0; i < data::MaxEntities; i++) {
         Entity &entity = state.entities[i];
@@ -319,7 +325,7 @@ void Simulation::Step(GameState &state, float dt) {
             continue;
         }
 
-        int baseRow = enemyBaseRow_[TeamIndex(entity.team)];
+        int baseRow = enemyBaseRow_[data::TeamIndex(entity.team)];
         bool arrived = entity.team == data::Team::Top ? entity.row >= baseRow : entity.row <= baseRow;
         if (!arrived) AdvanceUnit(entity, *map_, dt);
     }

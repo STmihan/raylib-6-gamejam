@@ -10,8 +10,7 @@ namespace view
 class HpBarView
 {
 public:
-    void Load();
-    void Unload();
+    void Load(Texture2D white);
 
     void DrawEntities(Camera3D camera, const logic::GameState& previous, const logic::GameState& current,
                       float alpha) const;

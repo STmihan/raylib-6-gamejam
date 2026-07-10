@@ -23,8 +23,12 @@
 #include "view/prefab/projectile_view.h"
 #include "view/prefab/registries/model_registry.h"
 #include "view/prefab/registries/shader_registry.h"
+#include "view/prefab/registries/texture_registry.h"
 #include "view/prefab/unit_view.h"
 #include "view/prefab/water.h"
+#include "view/prefab/ui/resource_bar.h"
+#include "view/prefab/ui/ui_context.h"
+#include "view/prefab/ui/ui_widgets.h"
 
 namespace view
 {
@@ -47,6 +51,9 @@ public:
     PlaneOrbitParams& OrbitParams() { return orbitParams_; }
     data::ShadowParams& ShadowParamsRef() { return shadowParams_; }
     data::ShadowParams& UnitShadowParamsRef() { return unitShadowParams_; }
+    bool& HudHiddenRef() { return hudHidden_; }
+    int& HudResourceHighlightRef() { return resourceHighlight_; }
+    data::CrystalStyle& CrystalStyleRef() { return crystalStyle_; }
     data::CavityParams& CavityParamsRef() { return cavityParams_; }
 
 private:
@@ -67,6 +74,7 @@ private:
     void UseUnitShadow();
 
     ShaderRegistry shaders_;
+    TextureRegistry textures_;
     ModelRegistry models_;
     ShadowEffect shadow_;
     ToonEffect toon_;
@@ -82,6 +90,10 @@ private:
     debug::PreviewScene preview_;
     debug::AirTestScene airTest_;
     debug::ProjectileTestScene projTest_;
+    ui::UiContext ui_;
+    bool hudHidden_ = false;
+    int resourceHighlight_ = 0;
+    data::CrystalStyle crystalStyle_;
     bool hexGridLoaded_ = false;
     RenderTexture2D colorTarget_{};
     data::ShadowParams shadowParams_;

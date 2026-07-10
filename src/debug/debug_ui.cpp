@@ -240,7 +240,8 @@ void DrawProjectileTestMenu(ProjectileTestScene& projTest)
     ImGui::End();
 }
 
-void DrawDebugOverlay(float& cameraBoundsRadius, view::Renderer& renderer)
+void DrawDebugOverlay(float& cameraBoundsRadius, view::Renderer& renderer,
+                      const std::function<void()>& onResetResource)
 {
     WaterEffect& water = renderer.Water();
     HexGrid& grid = renderer.Grid();
@@ -281,6 +282,20 @@ void DrawDebugOverlay(float& cameraBoundsRadius, view::Renderer& renderer)
     if (projTest.Active()) DrawProjectileTestMenu(projTest);
     if (visible && ImGui::Begin("Debug (F1)"))
     {
+        ImGui::Checkbox("Hide HUD", &renderer.HudHiddenRef());
+        ImGui::SliderInt("Resource highlight N", &renderer.HudResourceHighlightRef(), 0, 6);
+        if (ImGui::Button("Reset player resource") && onResetResource) onResetResource();
+        if (ImGui::CollapsingHeader("Resource crystal", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            data::CrystalStyle& cs = renderer.CrystalStyleRef();
+            ImGui::ColorEdit3("Crystal Top", &cs.top.x);
+            ImGui::ColorEdit3("Crystal Bottom", &cs.bottom.x);
+            ImGui::SliderFloat("Crystal Gloss", &cs.gloss, 0.0f, 1.0f);
+            ImGui::SliderFloat("Crystal Split", &cs.split, 0.0f, 1.0f);
+            ImGui::SliderFloat("Crystal Edge", &cs.edge, 0.0f, 0.5f);
+            ImGui::ColorEdit3("Crystal Outline", &cs.outline.x);
+            ImGui::SliderFloat("Crystal Outline W", &cs.outlineWidth, 0.0f, 4.0f);
+        }
         if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
         {
             ImGui::SliderFloat("Bounds Radius", &cameraBoundsRadius, 0.0f, 40.0f);
@@ -344,6 +359,8 @@ void DrawDebugOverlay(float& cameraBoundsRadius, view::Renderer& renderer)
 
 #else
 
+#include <functional>
+
 namespace view { class Renderer; }
 
 namespace debug
@@ -356,7 +373,7 @@ void DebugUiShutdown()
 {
 }
 
-void DrawDebugOverlay(float&, view::Renderer&)
+void DrawDebugOverlay(float&, view::Renderer&, const std::function<void()>&)
 {
 }
 }

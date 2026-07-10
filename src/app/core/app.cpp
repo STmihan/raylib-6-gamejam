@@ -59,7 +59,10 @@ void StepApp(App& app)
 
     auto alpha = static_cast<float>(app.accumulator / data::TickDelta);
     auto overlay = [&app]() {
-        debug::DrawDebugOverlay(app.cameraRig.BoundsRadiusRef(), app.renderer);
+        debug::DrawDebugOverlay(app.cameraRig.BoundsRadiusRef(), app.renderer, [&app] {
+            app.currentState.resource = {0.0f, 0.0f};
+            app.previousState.resource = {0.0f, 0.0f};
+        });
     };
     app.renderer.Draw(app.previousState, app.currentState, alpha, static_cast<float>(viewClock), camera, app.map,
                       overlay);
