@@ -50,9 +50,21 @@ public:
     data::CavityParams& CavityParamsRef() { return cavityParams_; }
 
 private:
+    struct ScenePasses
+    {
+        std::function<void()> shadow;
+        std::function<void()> geom;
+        std::function<void()> mask;
+        std::function<void()> color;
+        std::function<void()> composite2D;
+    };
+
     void DrawPreview(const std::function<void()>& overlay);
     void DrawAirTest(const std::function<void()>& overlay);
     void DrawProjectileTest(const std::function<void()>& overlay);
+    void RenderPasses(Camera3D camera, const ScenePasses& passes, const std::function<void()>& overlay);
+    void UseEnvShadow();
+    void UseUnitShadow();
 
     ShaderRegistry shaders_;
     ModelRegistry models_;
