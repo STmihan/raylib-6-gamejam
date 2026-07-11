@@ -15,6 +15,10 @@ inline constexpr float EngineerHealPulseInterval = 2.0f;
 inline constexpr float HealWaveSeconds = 0.55f;
 
 inline constexpr int TankArmorHits = 3;
+
+inline constexpr int BaseTurretRange = 4;
+inline constexpr int BaseTurretDamage = 25;
+inline constexpr float BaseTurretInterval = 0.8f;
 inline constexpr float RegenDoubleEverySeconds = 120.0f;
 inline constexpr int MaxRegenDoublings = 6;
 

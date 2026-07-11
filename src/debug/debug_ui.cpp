@@ -14,7 +14,6 @@
 
 #include "data/render/shadow_params.h"
 #include "data/render/water_params.h"
-#include "debug/air_test_scene.h"
 #include "debug/preview_scene.h"
 #include "debug/projectile_test_scene.h"
 #include "view/effect/outline_effect.h"
@@ -213,24 +212,15 @@ void DrawPreviewMenu(PreviewScene& preview)
     ImGui::End();
 }
 
-void DrawAirTestMenu(AirTestScene& airTest, UnitView& units)
-{
-    ImGui::Begin("Air Combat (F3)");
-    ImGui::TextUnformatted("Right-drag: orbit   Wheel: zoom");
-    ImGui::Separator();
-    const char* modes[] = {"Air vs Air", "Air vs Ground"};
-    ImGui::Combo("Mode", &airTest.ModeRef(), modes, IM_ARRAYSIZE(modes));
-    ImGui::SliderInt("Planes", &airTest.PlaneCountRef(), 1, 8);
-    if (ImGui::Button("Hit")) units.TriggerFlashAll();
-    ImGui::End();
-}
-
 void DrawProjectileTestMenu(ProjectileTestScene& projTest)
 {
     ImGui::Begin("Projectiles (F4)");
     ImGui::TextUnformatted("Right-drag: orbit   Wheel: zoom");
     ImGui::Separator();
-    const char* attackers[] = {projTest.AttackerName(0), projTest.AttackerName(1), projTest.AttackerName(2)};
+    const char* attackers[] = {
+        projTest.AttackerName(0), projTest.AttackerName(1), projTest.AttackerName(2),
+        projTest.AttackerName(3), projTest.AttackerName(4), projTest.AttackerName(5),
+    };
     ImGui::Combo("Attacker", &projTest.AttackerRef(), attackers, projTest.AttackerCount());
     const char* targets[] = {
         projTest.TargetName(0), projTest.TargetName(1), projTest.TargetName(2),
@@ -247,7 +237,6 @@ void DrawDebugOverlay(float& cameraBoundsRadius, view::Renderer& renderer,
     HexGrid& grid = renderer.Grid();
     OutlineEffect& outline = renderer.Outline();
     PreviewScene& preview = renderer.Preview();
-    AirTestScene& airTest = renderer.AirTest();
     UnitView& units = renderer.Units();
     ProjectileView& projectiles = renderer.Projectiles();
     PlaneOrbitParams& orbit = renderer.OrbitParams();
@@ -260,17 +249,12 @@ void DrawDebugOverlay(float& cameraBoundsRadius, view::Renderer& renderer,
     if (IsKeyPressed(KEY_F2))
     {
         preview.ActiveRef() = !preview.Active();
-        if (preview.Active()) { airTest.ActiveRef() = false; projTest.ActiveRef() = false; }
-    }
-    if (IsKeyPressed(KEY_F3))
-    {
-        airTest.ActiveRef() = !airTest.Active();
-        if (airTest.Active()) { preview.ActiveRef() = false; projTest.ActiveRef() = false; }
+        if (preview.Active()) projTest.ActiveRef() = false;
     }
     if (IsKeyPressed(KEY_F4))
     {
         projTest.ActiveRef() = !projTest.Active();
-        if (projTest.Active()) { preview.ActiveRef() = false; airTest.ActiveRef() = false; }
+        if (projTest.Active()) preview.ActiveRef() = false;
     }
 
     ImGui_ImplOpenGL3_NewFrame();
@@ -278,7 +262,6 @@ void DrawDebugOverlay(float& cameraBoundsRadius, view::Renderer& renderer,
     ImGui::NewFrame();
     ImGui::DockSpaceOverViewport(0, nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
     if (preview.Active()) DrawPreviewMenu(preview);
-    if (airTest.Active()) DrawAirTestMenu(airTest, units);
     if (projTest.Active()) DrawProjectileTestMenu(projTest);
     if (visible && ImGui::Begin("Debug (F1)"))
     {

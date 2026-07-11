@@ -19,7 +19,7 @@ namespace
 {
     const char* kNames[] = {
         "Tile: Field", "Tile: Forest", "Tile: Concrete", "Tile: Red",
-        "Tile: Swamp", "Tile: Swamp Edge", "Tile: Swamp Corner",
+        "Tile: Corner", "Tile: Empty", "Tile: Field2",
         "Wall", "Base",
         "Tree: Bush", "Tree: Pine", "Tree: Round",
         "Infantry", "Rocketeer", "Engineer", "Plane", "Tank", "PVO",
@@ -130,11 +130,18 @@ void PreviewScene::Draw(const ModelRegistry& models) const
     case 1: DrawGrounded(models.FloorFor(data::TileType::Forest), 0.0f, tint); break;
     case 2: DrawGrounded(models.FloorFor(data::TileType::ConcreteRoad), 0.0f, tint); break;
     case 3: DrawGrounded(models.FloorFor(data::TileType::RedBorder), 0.0f, tint); break;
-    case 4: DrawGrounded(models.FloorFor(data::TileType::SwampCenter), 0.0f, tint); break;
-    case 5: DrawGrounded(models.FloorFor(data::TileType::SwampEdge), 0.0f, tint); break;
-    case 6: DrawGrounded(models.FloorFor(data::TileType::SwampCorner), 0.0f, tint); break;
+    case 4: DrawGrounded(models.FloorFor(data::TileType::Corner), 0.0f, tint); break;
+    case 5: DrawGrounded(models.FloorFor(data::TileType::Empty), 0.0f, tint); break;
+    case 6: DrawGrounded(models.FloorFor(data::TileType::Field), 0.0f, tint); break;
     case 7: DrawGrounded(models.Wall(), 0.0f, tint); break;
-    case 8: DrawGrounded(models.BaseSection(), 0.0f, tint); break;
+    case 8:
+    {
+        BoundingBox box = GetModelBoundingBox(models.BaseSection());
+        Vector3 pos = Vector3{0.0f, -box.min.y, 0.0f};
+        DrawModelEx(models.BaseSection(), pos, Vector3{0.0f, 1.0f, 0.0f}, 0.0f, Vector3{1.0f, 1.0f, 1.0f}, tint);
+        DrawModelEx(models.BaseTurret(), pos, Vector3{0.0f, 1.0f, 0.0f}, 0.0f, Vector3{1.0f, 1.0f, 1.0f}, tint);
+    }
+    break;
     case 9: DrawGrounded(models.Tree(0), 0.0f, tint); break;
     case 10: DrawGrounded(models.Tree(1), 0.0f, tint); break;
     case 11: DrawGrounded(models.Tree(2), 0.0f, tint); break;

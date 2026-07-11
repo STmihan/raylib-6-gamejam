@@ -4,6 +4,8 @@
 #include "logic/state/game_state.h"
 #include "view/prefab/plane_orbit.h"
 
+namespace logic { struct Map; }
+
 namespace view
 {
 class ModelRegistry;
@@ -14,6 +16,9 @@ class ProjectileView
 public:
     void Draw(const ModelRegistry& models, const MuzzleRegistry& muzzles, const logic::GameState& previous,
               const logic::GameState& current, float alpha, const PlaneOrbitParams& orbit, float time) const;
+    void DrawBeams(const ModelRegistry& models, const MuzzleRegistry& muzzles, const logic::Map& map,
+                   const logic::GameState& previous, const logic::GameState& current, float alpha,
+                   const PlaneOrbitParams& orbit, float time) const;
     void DrawMuzzleGizmos(const ModelRegistry& models, const MuzzleRegistry& muzzles,
                           const logic::GameState& previous, const logic::GameState& current, float alpha,
                           const PlaneOrbitParams& orbit) const;

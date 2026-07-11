@@ -63,14 +63,25 @@ inline int PickFriendlyUnit(const GameState& state, data::Vec2 pos, data::Team t
     return best;
 }
 
-inline int PickEnemyTarget(const GameState& state, data::Vec2 pos, data::Team team)
+inline int PickEnemyTarget(const GameState& state, data::Vec2 pos, data::Team team, const Map& map)
 {
+    data::Offset cell = data::CellFromLogic(pos);
+    bool enemyHalf = team == data::Team::Bottom ? cell.row < MapRows / 2 : cell.row >= MapRows / 2;
+    if (map.InBounds(cell.col, cell.row) && map.At(cell.col, cell.row) == data::TileType::Base && enemyHalf)
+    {
+        for (int i = 0; i < data::MaxEntities; i++)
+        {
+            const Entity& e = state.entities[i];
+            if (e.active && e.kind == EntityKind::Base && e.team != team) return i;
+        }
+    }
+
     int best = -1;
     float bestDistSq = 0.0f;
     for (int i = 0; i < data::MaxEntities; i++)
     {
         const Entity& e = state.entities[i];
-        if (!e.active || e.team == team) continue;
+        if (!e.active || e.team == team || e.kind == EntityKind::Base) continue;
         float radius = PickRadius(e);
         float dx = e.position.x - pos.x;
         float dy = e.position.y - pos.y;

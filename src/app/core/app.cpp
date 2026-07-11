@@ -40,10 +40,10 @@ void ProcessDeploy(App& app, Camera3D camera)
 }
 void InitApp(App& app)
 {
-    app.renderer.Init();
+    app.map = logic::BuildMap();
+    app.renderer.Init(app.map);
     app.cameraRig.Init();
     app.accumulator = 0.0;
-    app.map = logic::BuildMap();
     app.simulation.Init(app.currentState, app.map);
     app.previousState = app.currentState;
 }

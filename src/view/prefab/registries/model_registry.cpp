@@ -12,13 +12,13 @@ void ModelRegistry::Load()
     field_ = LoadModel("assets/models/tile_field.glb");
     forest_ = LoadModel("assets/models/tile_forest.glb");
     concrete_ = LoadModel("assets/models/tile_concrete.glb");
-    swamp_ = LoadModel("assets/models/tile_swamp.glb");
     swampEdge_ = LoadModel("assets/models/tile_swamp_edge.glb");
     swampCorner_ = LoadModel("assets/models/tile_swamp_corner.glb");
     red_ = LoadModel("assets/models/tile_red.glb");
     tileWhite_ = LoadModel("assets/models/tile_white.glb");
     wall_ = LoadModel("assets/models/wall.glb");
     base_ = LoadModel("assets/models/base_1x2.glb");
+    baseTurret_ = LoadModel("assets/models/base_turret.glb");
     treeBush_ = LoadModel("assets/models/tree_bush.glb");
     treePine_ = LoadModel("assets/models/tree_pine.glb");
     treeRound_ = LoadModel("assets/models/tree_round.glb");
@@ -97,13 +97,13 @@ void ModelRegistry::Unload()
     UnloadModel(field_);
     UnloadModel(forest_);
     UnloadModel(concrete_);
-    UnloadModel(swamp_);
     UnloadModel(swampEdge_);
     UnloadModel(swampCorner_);
     UnloadModel(red_);
     UnloadModel(tileWhite_);
     UnloadModel(wall_);
     UnloadModel(base_);
+    UnloadModel(baseTurret_);
     UnloadModel(treeBush_);
     UnloadModel(treePine_);
     UnloadModel(treeRound_);
@@ -133,8 +133,8 @@ void ModelRegistry::Unload()
 std::array<Model*, ModelRegistry::ShadedCount> ModelRegistry::ShadedModels()
 {
     return {
-        &field_, &forest_, &concrete_, &swamp_, &swampEdge_, &swampCorner_, &red_, &tileWhite_,
-        &wall_, &base_, &treeBush_, &treePine_, &treeRound_,
+        &field_, &forest_, &concrete_, &swampEdge_, &swampCorner_, &red_, &tileWhite_,
+        &wall_, &base_, &baseTurret_, &treeBush_, &treePine_, &treeRound_,
         &soldierInfantry_, &soldierRocket_, &soldierEngineer_, &plane_,
         &tankHull_, &tankTurret_, &tankWheels_, &tankBand_,
         &pvoHull_, &pvoLauncher_, &pvoWheels_, &pvoBand_, &trackLink_,
@@ -172,6 +172,14 @@ void ModelRegistry::SetWaterShader(Shader shader)
     }
 }
 
+void ModelRegistry::SetBlobShader(Shader shader)
+{
+    for (int i = 0; i < blobShadow_.materialCount; i++)
+    {
+        blobShadow_.materials[i].shader = shader;
+    }
+}
+
 const Model& ModelRegistry::FloorFor(data::TileType type) const
 {
     switch (type)
@@ -181,9 +189,8 @@ const Model& ModelRegistry::FloorFor(data::TileType type) const
     case data::TileType::ConcreteRoad: return concrete_;
     case data::TileType::Base: return concrete_;
     case data::TileType::Wall: return concrete_;
-    case data::TileType::SwampCenter: return swamp_;
-    case data::TileType::SwampEdge: return swampEdge_;
-    case data::TileType::SwampCorner: return swampCorner_;
+    case data::TileType::Corner: return swampCorner_;
+    case data::TileType::Empty: return red_;
     case data::TileType::RedBorder: return red_;
     }
     return field_;
@@ -197,6 +204,11 @@ const Model& ModelRegistry::Wall() const
 const Model& ModelRegistry::BaseSection() const
 {
     return base_;
+}
+
+const Model& ModelRegistry::BaseTurret() const
+{
+    return baseTurret_;
 }
 
 const Model& ModelRegistry::Tree(int index) const

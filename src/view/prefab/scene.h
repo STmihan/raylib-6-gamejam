@@ -21,12 +21,15 @@ public:
     void DrawGhostStructures(const logic::Map& map, const bool* occluded, const bool* wallAlive,
                              unsigned char alpha) const;
     void DrawBaseHighlight(const logic::Map& map, data::Team team, Color tint) const;
+    void SetBaseAim(data::Team team, Vector3 aim, bool hasTarget);
 
 private:
     void DrawFloors(const logic::Map& map) const;
     void DrawStructures(const logic::Map& map, const bool* occluded, const bool* wallAlive) const;
 
     const ModelRegistry* models_;
+    Vector3 baseAim_[2]{};
+    bool baseHasTarget_[2]{};
 };
 }
 

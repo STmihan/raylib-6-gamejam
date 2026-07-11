@@ -39,7 +39,7 @@ namespace
     }
 }
 
-void Renderer::Init()
+void Renderer::Init(const logic::Map& map)
 {
     models_.Load();
     shaders_.Load();
@@ -48,7 +48,8 @@ void Renderer::Init()
     shadow_.Init(shaders_.Shadow());
     toon_.Init(shaders_.Toon());
     outline_.Init(shaders_.Geom(), shaders_.Outline(), shaders_.Mask());
-    water_.Load(shaders_.Water(), shaders_.WaterLine(), models_);
+    water_.Load(shaders_.Water(), shaders_.WaterLine(), models_, map);
+    models_.SetBlobShader(shaders_.Blob());
 
     colorTarget_ = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
     cardTarget_ = LoadRenderTexture(200, 240);
@@ -82,6 +83,25 @@ void Renderer::UseUnitShadow()
 {
     unitShadowParams_.sunDir = shadowParams_.sunDir;
     toon_.Upload(unitShadowParams_, shadow_.LightViewProj());
+}
+
+void Renderer::ConfigureBlobShadow()
+{
+    Shader blob = shaders_.Blob();
+    Vector2 origin = water_.SdfOrigin();
+    float worldSize = water_.SdfWorldSize();
+    float maxDist = data::Render.sdfMaxDist;
+    float cutoff = 0.05f;
+    SetShaderValue(blob, GetShaderLocation(blob, "sdfOrigin"), &origin, SHADER_UNIFORM_VEC2);
+    SetShaderValue(blob, GetShaderLocation(blob, "sdfWorldSize"), &worldSize, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(blob, GetShaderLocation(blob, "sdfMaxDist"), &maxDist, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(blob, GetShaderLocation(blob, "waterCutoff"), &cutoff, SHADER_UNIFORM_FLOAT);
+
+    int slot = 12;
+    rlEnableShader(blob.id);
+    rlActiveTextureSlot(slot);
+    rlEnableTexture(water_.SdfTexture().id);
+    rlSetUniform(GetShaderLocation(blob, "sdfMap"), &slot, SHADER_UNIFORM_INT, 1);
 }
 
 void Renderer::DrawDeployOverlay(Camera3D camera, const logic::Map& map, float time, bool affordable)
@@ -173,14 +193,9 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
         DrawPreview(overlay);
         return;
     }
-    if (airTest_.Active())
-    {
-        DrawAirTest(overlay);
-        return;
-    }
     if (projTest_.Active())
     {
-        DrawProjectileTest(overlay);
+        DrawProjectileTest(map, overlay);
         return;
     }
 
@@ -206,6 +221,16 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
     units_.UpdateFlash(current, GetFrameTime());
     water_.Update(animTime);
     Scene scene(models_);
+    scene.SetBaseAim(data::Team::Top, Vector3{}, false);
+    scene.SetBaseAim(data::Team::Bottom, Vector3{}, false);
+    for (int i = 0; i < data::MaxEntities; i++)
+    {
+        const logic::Entity& e = current.entities[i];
+        if (!e.active || e.kind != logic::EntityKind::Base || e.targetSlot < 0) continue;
+        const logic::Entity& t = current.entities[e.targetSlot];
+        if (!t.active) continue;
+        scene.SetBaseAim(e.team, LogicToWorld(t.position, 0.4f), true);
+    }
 
     auto drawUnits = [&] {
         units_.Draw(models_, previous, current, alpha, false, orbitParams_, animTime);
@@ -221,8 +246,10 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
         scene.Draw(map, true, occluded_.data(), wallAlive_.data());
         hexGrid_.Draw();
         UseUnitShadow();
+        ConfigureBlobShadow();
         units_.Draw(models_, previous, current, alpha, true, orbitParams_, animTime);
         projectiles_.Draw(models_, muzzles_, previous, current, alpha, orbitParams_, animTime);
+        projectiles_.DrawBeams(models_, muzzles_, map, previous, current, alpha, orbitParams_, animTime);
         healWaves_.Draw(current, alpha);
         bool affordable = true;
         if (hand_.Dragging())
@@ -310,35 +337,8 @@ void Renderer::DrawPreview(const std::function<void()>& overlay)
     RenderPasses(camera, passes, overlay);
 }
 
-void Renderer::DrawAirTest(const std::function<void()>& overlay)
-{
-    airTest_.UpdateCamera();
-    Camera3D camera = airTest_.Camera();
-    const logic::GameState& state = airTest_.State();
-    units_.UpdateFlash(state, GetFrameTime());
-    float time = static_cast<float>(GetTime());
 
-    auto drawUnits = [&] {
-        units_.Draw(models_, state, state, 0.0f, false, orbitParams_, time);
-        projectiles_.Draw(models_, muzzles_, state, state, 0.0f, orbitParams_, time);
-    };
-
-    ScenePasses passes;
-    passes.shadow = drawUnits;
-    passes.geom = drawUnits;
-    passes.mask = drawUnits;
-    passes.color = [&] {
-        UseEnvShadow();
-        DrawGrid(20, 1.0f);
-        units_.Draw(models_, state, state, 0.0f, true, orbitParams_, time);
-        projectiles_.Draw(models_, muzzles_, state, state, 0.0f, orbitParams_, time);
-    };
-    passes.composite2D = [&] { hpBars_.DrawEntities(camera, state, state, 0.0f); };
-
-    RenderPasses(camera, passes, overlay);
-}
-
-void Renderer::DrawProjectileTest(const std::function<void()>& overlay)
+void Renderer::DrawProjectileTest(const logic::Map& map, const std::function<void()>& overlay)
 {
     projTest_.UpdateCamera();
     projTest_.Update(GetFrameTime());
@@ -363,6 +363,8 @@ void Renderer::DrawProjectileTest(const std::function<void()>& overlay)
         DrawGrid(20, 1.0f);
         units_.Draw(models_, prev, cur, alpha, true, orbitParams_, time);
         projectiles_.Draw(models_, muzzles_, prev, cur, alpha, orbitParams_, time);
+        projectiles_.DrawBeams(models_, muzzles_, map, prev, cur, alpha, orbitParams_, time);
+        healWaves_.Draw(cur, alpha);
         projectiles_.DrawMuzzleGizmos(models_, muzzles_, prev, cur, alpha, orbitParams_);
     };
     passes.composite2D = [&] { hpBars_.DrawEntities(camera, prev, cur, alpha); };

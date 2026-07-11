@@ -27,12 +27,14 @@ void ShaderRegistry::Load()
     sdf_ = LoadShader(nullptr, TextFormat("%ssdf.frag", dir));
     crystal_ = LoadShader(nullptr, TextFormat("%scrystal.frag", dir));
     ring_ = LoadShader(nullptr, TextFormat("%sring.frag", dir));
+    blob_ = LoadShader(TextFormat("%sblob.vert", dir), TextFormat("%sblob.frag", dir));
     loaded_ = true;
 }
 
 void ShaderRegistry::Unload()
 {
     if (!loaded_) return;
+    UnloadShader(blob_);
     UnloadShader(ring_);
     UnloadShader(crystal_);
     UnloadShader(sdf_);

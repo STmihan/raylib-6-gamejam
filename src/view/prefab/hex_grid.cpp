@@ -44,7 +44,8 @@ void HexGrid::BuildMesh()
     {
         for (int col = 0; col < logic::MapCols; col++)
         {
-            if (map_->At(col, row) == data::TileType::RedBorder) continue;
+            data::TileType tile = map_->At(col, row);
+            if (tile == data::TileType::RedBorder || tile == data::TileType::Empty) continue;
             landCells.push_back(row * logic::MapCols + col);
         }
     }

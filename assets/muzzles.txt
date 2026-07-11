@@ -1,4 +1,5 @@
 # muzzle  parent  posX posY posZ  dirX dirY dirZ   (raylib Y-up, part-local; dir = arrow +Z)
+muzzle_base base_turret 0.0000 1.1267 -0.5800 0.0000 0.0000 -1.0000
 muzzle_infantry soldier_infantry 0.1335 0.0159 0.0892 0.0000 -1.0000 0.0000
 muzzle_plane_L plane 0.4600 -0.0419 -0.5000 0.0000 0.0000 -1.0000
 muzzle_plane_R plane -0.4600 -0.0419 -0.5000 0.0000 0.0000 -1.0000

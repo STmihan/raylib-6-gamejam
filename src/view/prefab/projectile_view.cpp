@@ -6,7 +6,10 @@
 #include "raymath.h"
 
 #include "data/sim/sim_config.h"
+#include "data/time/time_config.h"
 #include "data/unit/unit.h"
+#include "logic/world/map.h"
+#include "view/prefab/base_layout.h"
 #include "view/prefab/registries/muzzle_registry.h"
 #include "view/prefab/registries/model_registry.h"
 #include "view/prefab/vehicle_view.h"
@@ -153,6 +156,87 @@ void ProjectileView::Draw(const ModelRegistry& models, const MuzzleRegistry& muz
         direction = Vector3Length(direction) < 1e-5f ? launchDir : Vector3Normalize(direction);
         DrawShell(models.Shell(), pos, direction, shellScale_);
     }
+}
+
+void ProjectileView::DrawBeams(const ModelRegistry& models, const MuzzleRegistry& muzzles, const logic::Map& map,
+                               const logic::GameState& previous, const logic::GameState& current, float alpha,
+                               const PlaneOrbitParams& orbit, float time) const
+{
+    float now = static_cast<float>(current.tick) - 1.0f + alpha;
+    float lifeTicks = data::BeamSeconds / static_cast<float>(data::TickDelta);
+    if (lifeTicks < 1.0f) lifeTicks = 1.0f;
+
+    BeginBlendMode(BLEND_ALPHA);
+    for (int j = 0; j < data::MaxBeams; j++)
+    {
+        const logic::Beam& b = current.beams[j];
+        if (!b.active) continue;
+        float progress = (now - static_cast<float>(b.startTick)) / lifeTicks;
+        if (progress < 0.0f) progress = 0.0f;
+        if (progress > 1.0f) continue;
+
+        const logic::Entity& target = current.entities[b.targetSlot];
+        Vector3 dest;
+        if (target.active && target.type == data::UnitType::Plane)
+        {
+            float yaw;
+            float roll;
+            dest = PlaneVisualPos(previous, current, b.targetSlot, alpha, time, orbit, yaw, roll);
+        }
+        else if (target.active)
+        {
+            data::Vec2 logic = InterpolatedPosition(previous.entities[b.targetSlot], target, alpha);
+            dest = LogicToWorld(logic, targetHeight_);
+        }
+        else
+        {
+            dest = LogicToWorld(target.position, targetHeight_);
+        }
+
+        const logic::Entity& attacker = current.entities[b.attackerSlot];
+        Vector3 spawn;
+        if (attacker.kind == logic::EntityKind::Base)
+        {
+            int count = BaseSectionCount(map, attacker.team);
+            int section = count > 0 ? b.muzzleIndex % count : 0;
+            Vector3 turretPos = BaseSectionWorld(map, attacker.team, section);
+            float yaw = YawTowards(Vector2{turretPos.x, turretPos.z}, Vector2{dest.x, dest.z},
+                                   TeamYaw(attacker.team));
+            const Muzzle* mz = muzzles.Get("muzzle_base");
+            if (mz != nullptr)
+            {
+                Matrix m = MatrixMultiply(models.BaseTurret().transform,
+                                          MatrixMultiply(MatrixRotateY(yaw * DEG2RAD),
+                                                         MatrixTranslate(turretPos.x, turretPos.y, turretPos.z)));
+                spawn = Vector3Transform(mz->pos, m);
+            }
+            else
+            {
+                spawn = Vector3{turretPos.x, turretPos.y + 0.5f, turretPos.z};
+            }
+        }
+        else
+        {
+            const Muzzle* mz = attacker.active ? muzzles.ForUnit(attacker.type, b.muzzleIndex) : nullptr;
+            if (mz != nullptr)
+            {
+                Vector2 targetXZ = {dest.x, dest.z};
+                Matrix part = AttackerPartMatrix(models, previous, current, b.attackerSlot, alpha, time, orbit,
+                                                 targetXZ);
+                spawn = Vector3Transform(mz->pos, part);
+            }
+            else
+            {
+                spawn = LogicToWorld(attacker.position, launchHeight_);
+            }
+        }
+
+        auto a = static_cast<unsigned char>(235.0f * (1.0f - progress));
+        bool ally = attacker.team == data::PlayerTeam;
+        Color beam = ally ? Color{60, 130, 255, a} : Color{255, 45, 45, a};
+        DrawCylinderEx(spawn, dest, 0.022f, 0.022f, 6, beam);
+    }
+    EndBlendMode();
 }
 
 void ProjectileView::DrawMuzzleGizmos(const ModelRegistry& models, const MuzzleRegistry& muzzles,

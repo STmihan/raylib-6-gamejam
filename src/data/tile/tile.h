@@ -10,9 +10,8 @@ enum class TileType
     Wall,
     Field,
     Forest,
-    SwampEdge,
-    SwampCorner,
-    SwampCenter,
+    Corner,
+    Empty,
     RedBorder,
 };
 
@@ -32,9 +31,8 @@ inline TileType TileFromChar(char symbol)
     case 'W': return TileType::Wall;
     case '.': return TileType::Field;
     case 'T': return TileType::Forest;
-    case 'E': return TileType::SwampEdge;
-    case 'D': return TileType::SwampCorner;
-    case 'C': return TileType::SwampCenter;
+    case 'D': return TileType::Corner;
+    case 'O': return TileType::Empty;
     default: return TileType::RedBorder;
     }
 }
@@ -48,9 +46,8 @@ inline TileConfig TileConfigOf(TileType type)
     case TileType::Wall: return {1.0f, false, true};
     case TileType::Field: return {1.0f, true, false};
     case TileType::Forest: return {0.7f, true, false};
-    case TileType::SwampEdge: return {1.0f, true, false};
-    case TileType::SwampCorner: return {1.0f, true, false};
-    case TileType::SwampCenter: return {0.7f, true, false};
+    case TileType::Corner: return {1.0f, true, false};
+    case TileType::Empty: return {1.0f, false, false};
     case TileType::RedBorder: return {1.0f, false, false};
     }
     return {1.0f, true, false};

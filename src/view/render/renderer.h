@@ -10,7 +10,6 @@
 #include "data/render/shadow_params.h"
 #include "logic/state/game_state.h"
 #include "logic/world/map.h"
-#include "debug/air_test_scene.h"
 #include "debug/preview_scene.h"
 #include "debug/projectile_test_scene.h"
 #include "view/anim/anim_controller.h"
@@ -41,7 +40,7 @@ namespace view
 class Renderer
 {
 public:
-    void Init();
+    void Init(const logic::Map& map);
     void Shutdown();
     void Draw(const logic::GameState& previous, const logic::GameState& current, float alpha, float animTime,
               Camera3D camera, const logic::Map& map, const std::function<void()>& overlay);
@@ -50,7 +49,6 @@ public:
     HexGrid& Grid() { return hexGrid_; }
     OutlineEffect& Outline() { return outline_; }
     debug::PreviewScene& Preview() { return preview_; }
-    debug::AirTestScene& AirTest() { return airTest_; }
     debug::ProjectileTestScene& ProjTest() { return projTest_; }
     UnitView& Units() { return units_; }
     ProjectileView& Projectiles() { return projectiles_; }
@@ -76,10 +74,10 @@ private:
     };
 
     void DrawPreview(const std::function<void()>& overlay);
-    void DrawAirTest(const std::function<void()>& overlay);
-    void DrawProjectileTest(const std::function<void()>& overlay);
+    void DrawProjectileTest(const logic::Map& map, const std::function<void()>& overlay);
     void RenderPasses(Camera3D camera, const ScenePasses& passes, const std::function<void()>& overlay);
     void DrawDeployOverlay(Camera3D camera, const logic::Map& map, float time, bool affordable);
+    void ConfigureBlobShadow();
     void UseEnvShadow();
     void UseUnitShadow();
 
@@ -101,7 +99,6 @@ private:
     ProjectileView projectiles_;
     PlaneOrbitParams orbitParams_;
     debug::PreviewScene preview_;
-    debug::AirTestScene airTest_;
     debug::ProjectileTestScene projTest_;
     ui::UiContext ui_;
     ui::HandView hand_;

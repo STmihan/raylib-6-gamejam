@@ -7,6 +7,8 @@
 #include "data/space/hex.h"
 #include "data/space/vec.h"
 #include "data/space/world_config.h"
+#include "data/tile/tile.h"
+#include "logic/world/map.h"
 
 namespace view
 {
@@ -76,7 +78,7 @@ namespace
     }
 }
 
-Texture2D BuildCoastSdf(Vector2& originOut, float& worldSizeOut)
+Texture2D BuildCoastSdf(Vector2& originOut, float& worldSizeOut, const logic::Map& map)
 {
     float minX = 1e9f, maxX = -1e9f, minZ = 1e9f, maxZ = -1e9f;
     for (int row = 0; row < data::FieldRows; row++)
@@ -113,7 +115,9 @@ Texture2D BuildCoastSdf(Vector2& originOut, float& worldSizeOut)
             float r = 0.6666667f * wz;
             int col = 0, row = 0;
             RoundToCell(q, r, col, row);
-            bool land = col >= 0 && col < data::FieldCols && row >= 0 && row < data::FieldRows;
+            bool inBounds = col >= 0 && col < data::FieldCols && row >= 0 && row < data::FieldRows;
+            bool land = inBounds && map.At(col, row) != data::TileType::Empty
+                && map.At(col, row) != data::TileType::RedBorder;
             grid[static_cast<std::size_t>(j) * res + i] = land ? 0.0f : inf;
         }
     }

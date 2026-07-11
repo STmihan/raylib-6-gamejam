@@ -44,7 +44,8 @@ void UnitControl::Acquire(App& app, data::Vec2 logicPos, bool onField)
 
     int slot = logic::PickFriendlyUnit(app.currentState, logicPos, data::PlayerTeam);
     if (slot < 0) return;
-    if (data::UnitStatsOf(app.currentState.entities[slot].type).baseDamage <= 0) return;
+    data::UnitType type = app.currentState.entities[slot].type;
+    if (data::UnitStatsOf(type).baseDamage <= 0 && type != data::UnitType::Engineer) return;
     dragSlot_ = slot;
 }
 
@@ -53,7 +54,14 @@ void UnitControl::Command(App& app, int slot, data::Vec2 logicPos, bool onField)
     if (!app.currentState.entities[slot].active) return;
     if (!onField) return;
 
-    int enemy = logic::PickEnemyTarget(app.currentState, logicPos, data::PlayerTeam);
+    if (app.currentState.entities[slot].type == data::UnitType::Engineer)
+    {
+        int ally = logic::PickFriendlyUnit(app.currentState, logicPos, data::PlayerTeam);
+        if (ally >= 0 && ally != slot) logic::Simulation::CommandTarget(app.currentState, slot, ally);
+        return;
+    }
+
+    int enemy = logic::PickEnemyTarget(app.currentState, logicPos, data::PlayerTeam, app.map);
     if (enemy >= 0)
     {
         logic::Simulation::CommandTarget(app.currentState, slot, enemy);
@@ -75,11 +83,12 @@ void UnitControl::FeedRenderer(App& app, Camera3D camera)
         data::Vec2 to;
         if (!CursorLogic(camera, GetMousePosition(), to)) to = dragged.position;
         bool movable = data::UnitStatsOf(dragged.type).stationary;
-        app.renderer.ControlOverlay().SetDrag(true, dragged.position, to, movable);
+        bool healer = dragged.type == data::UnitType::Engineer;
+        app.renderer.ControlOverlay().SetDrag(true, dragged.position, to, movable, healer);
     }
     else
     {
-        app.renderer.ControlOverlay().SetDrag(false, {}, {}, false);
+        app.renderer.ControlOverlay().SetDrag(false, {}, {}, false, false);
     }
 }
 }

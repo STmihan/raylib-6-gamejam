@@ -35,6 +35,9 @@ struct Entity {
     data::Vec2 moveTarget;
     int armorHits;
     int armorMax;
+    int pathCol;
+    int pathRow;
+    float repathTimer;
 };
 
 struct Projectile {
@@ -58,6 +61,14 @@ struct HealPulse {
     std::uint64_t startTick;
 };
 
+struct Beam {
+    bool active;
+    int attackerSlot;
+    int targetSlot;
+    int muzzleIndex;
+    std::uint64_t startTick;
+};
+
 struct GameState {
     std::uint64_t tick;
     int entityCount;
@@ -66,6 +77,7 @@ struct GameState {
     std::array<Entity, data::MaxEntities> entities;
     std::array<Projectile, data::MaxProjectiles> projectiles;
     std::array<HealPulse, data::MaxHealPulses> healPulses;
+    std::array<Beam, data::MaxBeams> beams;
 };
 
 }

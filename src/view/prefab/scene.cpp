@@ -10,26 +10,15 @@
 #include "data/space/hex.h"
 #include "data/tile/tile.h"
 #include "logic/world/map.h"
+#include "view/prefab/base_layout.h"
 #include "view/prefab/registries/model_registry.h"
+#include "view/space/orientation.h"
 #include "view/space/world_space.h"
 
 namespace view
 {
 namespace
 {
-    float SwampEdgeYaw(const logic::Map& map, int col, int row)
-    {
-        Vector3 here = CellWorld(col, row, 0.0f);
-        for (int dir = 0; dir < 6; dir++)
-        {
-            data::Offset n = data::Neighbor({col, row}, dir);
-            if (!map.InBounds(n.col, n.row)) continue;
-            if (map.At(n.col, n.row) != data::TileType::SwampCenter) continue;
-            Vector3 there = CellWorld(n.col, n.row, 0.0f);
-            return std::atan2(-(there.z - here.z), there.x - here.x) * RAD2DEG;
-        }
-        return 0.0f;
-    }
 
     void DrawTrees(const ModelRegistry& models, int col, int row, Color tint)
     {
@@ -65,9 +54,8 @@ void Scene::DrawFloors(const logic::Map& map) const
         for (int col = 0; col < logic::MapCols; col++)
         {
             data::TileType type = map.At(col, row);
-            bool facesSwamp = type == data::TileType::SwampEdge || type == data::TileType::SwampCorner;
-            float yaw = facesSwamp ? SwampEdgeYaw(map, col, row) : 0.0f;
-            DrawModelYaw(models.FloorFor(type), CellWorld(col, row, 0.0f), yaw, WHITE);
+            if (type == data::TileType::Empty) continue;
+            DrawModelYaw(models.FloorFor(type), CellWorld(col, row, 0.0f), 0.0f, WHITE);
         }
     }
 }
@@ -101,17 +89,28 @@ void Scene::DrawStructures(const logic::Map& map, const bool* occluded, const bo
     {
         for (int col = 0; col < logic::MapCols; col++)
         {
-            bool isTopOfPair = map.At(col, row) == data::TileType::Base
-                && map.At(col, row + 1) == data::TileType::Base
-                && (row == 0 || map.At(col, row - 1) != data::TileType::Base);
-            if (!isTopOfPair) continue;
+            if (!BaseSectionAt(map, col, row)) continue;
 
             Vector3 mid = Midpoint(CellWorld(col, row, 0.0f), CellWorld(col, row + 1, 0.0f));
             float yaw = (row >= logic::MapRows / 2 ? data::BaseFlipDegrees : 0.0f)
                 + (col % 2 == 0 ? data::BaseFlipDegrees : 0.0f);
             DrawModelYaw(models.BaseSection(), mid, yaw, WHITE);
+
+            int idx = data::TeamIndex(row >= logic::MapRows / 2 ? data::Team::Bottom : data::Team::Top);
+            data::Team owner = row >= logic::MapRows / 2 ? data::Team::Bottom : data::Team::Top;
+            float turretYaw = baseHasTarget_[idx]
+                ? YawTowards(Vector2{mid.x, mid.z}, Vector2{baseAim_[idx].x, baseAim_[idx].z}, TeamYaw(owner))
+                : TeamYaw(owner);
+            DrawModelYaw(models.BaseTurret(), mid, turretYaw, WHITE);
         }
     }
+}
+
+void Scene::SetBaseAim(data::Team team, Vector3 aim, bool hasTarget)
+{
+    int idx = data::TeamIndex(team);
+    baseAim_[idx] = aim;
+    baseHasTarget_[idx] = hasTarget;
 }
 
 void Scene::DrawBaseHighlight(const logic::Map& map, data::Team team, Color tint) const
@@ -121,10 +120,7 @@ void Scene::DrawBaseHighlight(const logic::Map& map, data::Team team, Color tint
     {
         for (int col = 0; col < logic::MapCols; col++)
         {
-            bool isTopOfPair = map.At(col, row) == data::TileType::Base
-                && map.At(col, row + 1) == data::TileType::Base
-                && (row == 0 || map.At(col, row - 1) != data::TileType::Base);
-            if (!isTopOfPair) continue;
+            if (!BaseSectionAt(map, col, row)) continue;
 
             data::Team owner = row >= logic::MapRows / 2 ? data::Team::Bottom : data::Team::Top;
             if (owner != team) continue;

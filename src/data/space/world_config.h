@@ -18,29 +18,47 @@ inline constexpr float OddColumnOffsetLogic = 50.0f;
 // W=wall
 // .=field
 // T=forest
-// E=swamp edge
-// D=swamp corner
-// C=swamp center
+// D=corner (decorative, behaves as field)
+// O=empty (impassable hole, shows water; planes fly over)
 inline constexpr const char* FieldLayout = R"(
-RRRRRRRRRRRR
-RRRRRBBRRRRR
-RRRRRBBRRRRR
-RRRRRRRRRRRR
-WWWWWWWWWWWW
-............
-............
-TTTTTTTTTTTT
-.EDDDE.EDDDE
-ECCCCEECCCCE
-.EDDDE.EDDDE
-TTTTTTTTTTTT
-............
-............
-WWWWWWWWWWWW
-RRRRRRRRRRRR
-RRRRRBBRRRRR
-RRRRRBBRRRRR
-RRRRRRRRRRRR
+RRRRRRRRRRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRRRRRRRRRR
+RRRRRRRRRRBBBBRRRRRRRRRR
+RRRRRRRRRRBBBBRRRRRRRRRR
+RRRRRRRRRRBBBBRRRRRRRRRR
+RRRRRRRRRRBBBBRRRRRRRRRR
+RRRRRRRRRRRRRRRRRRRRRRRR
+WWWWWWWWWWWWWWWWWWWWWWWW
+........................
+TTTTTTTTTTTTTTTTTTTTTTTT
+TTTTTTTTTTTTTTTTTTTTTTTT
+TTTTTTTTTTTTTTTTTTTTTTTT
+........................
+........................
+........................
+........................
+........................
+..OOOOOOOOO..OOOOOOOOO..
+..OOOOOOOOO..OOOOOOOOO..
+..OOOOOOOOO..OOOOOOOOO..
+..OOOOOOOOO..OOOOOOOOO..
+........................
+........................
+........................
+........................
+........................
+TTTTTTTTTTTTTTTTTTTTTTTT
+TTTTTTTTTTTTTTTTTTTTTTTT
+TTTTTTTTTTTTTTTTTTTTTTTT
+........................
+WWWWWWWWWWWWWWWWWWWWWWWW
+RRRRRRRRRRRRRRRRRRRRRRRR
+RRRRRRRRRRBBBBRRRRRRRRRR
+RRRRRRRRRRBBBBRRRRRRRRRR
+RRRRRRRRRRBBBBRRRRRRRRRR
+RRRRRRRRRRBBBBRRRRRRRRRR
+RRRRRRRRRRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRRRRRRRRRR
 )";
 
 constexpr int CountLayoutRows(const char* layout)

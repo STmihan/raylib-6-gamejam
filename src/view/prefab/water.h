@@ -5,6 +5,8 @@
 
 #include "data/render/water_params.h"
 
+namespace logic { struct Map; }
+
 namespace view
 {
 class ModelRegistry;
@@ -12,7 +14,7 @@ class ModelRegistry;
 class WaterEffect
 {
 public:
-    void Load(Shader classic, Shader lines, ModelRegistry& models);
+    void Load(Shader classic, Shader lines, ModelRegistry& models, const logic::Map& map);
     void Unload();
 
     void Update(float time);
@@ -22,6 +24,10 @@ public:
 
     int Mode() const { return mode_; }
     void SetMode(int mode);
+
+    Texture2D SdfTexture() const { return sdfTexture_; }
+    Vector2 SdfOrigin() const { return sdfOrigin_; }
+    float SdfWorldSize() const { return sdfWorldSize_; }
 
 private:
     void PushStatic(Shader shader) const;

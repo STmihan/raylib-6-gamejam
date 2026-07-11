@@ -4,6 +4,7 @@
 
 #include "raymath.h"
 
+#include "data/economy/economy.h"
 #include "data/sim/sim_config.h"
 #include "data/space/hex.h"
 #include "data/time/time_config.h"
@@ -14,8 +15,14 @@ namespace debug
 {
 namespace
 {
-    const data::UnitType Attackers[] = {data::UnitType::AA, data::UnitType::Rocketeer, data::UnitType::Tank};
-    const char* AttackerNames[] = {"AA", "Rocketeer", "Tank"};
+    const data::UnitType Attackers[] = {data::UnitType::AA, data::UnitType::Rocketeer, data::UnitType::Tank,
+                                        data::UnitType::Infantry, data::UnitType::Plane, data::UnitType::Engineer};
+    const char* AttackerNames[] = {"AA", "Rocketeer", "Tank", "Infantry", "Plane", "Engineer"};
+
+    bool UsesProjectile(data::UnitType type)
+    {
+        return type == data::UnitType::AA || type == data::UnitType::Rocketeer || type == data::UnitType::Tank;
+    }
 
     const data::UnitType Targets[] = {
         data::UnitType::Infantry, data::UnitType::Rocketeer, data::UnitType::Engineer,
@@ -27,7 +34,7 @@ namespace
     constexpr float TargetY = 150.0f;
 }
 
-int ProjectileTestScene::AttackerCount() const { return 3; }
+int ProjectileTestScene::AttackerCount() const { return 6; }
 int ProjectileTestScene::TargetCount() const { return 6; }
 const char* ProjectileTestScene::AttackerName(int index) const { return AttackerNames[index]; }
 const char* ProjectileTestScene::TargetName(int index) const { return TargetNames[index]; }
@@ -107,7 +114,7 @@ void ProjectileTestScene::Step()
     t.hp = data::UnitStatsOf(t.type).hp;
 
     a.attackCooldown -= static_cast<float>(data::TickDelta);
-    if (a.attackCooldown <= 0.0f)
+    if (a.attackCooldown <= 0.0f && UsesProjectile(a.type))
     {
         int slot = -1;
         for (int j = 0; j < data::MaxProjectiles; j++)
@@ -149,6 +156,43 @@ void ProjectileTestScene::Step()
             a.attackCooldown = data::BurstDelay;
         }
     }
+    else if (a.attackCooldown <= 0.0f && data::UnitStatsOf(a.type).baseDamage > 0)
+    {
+        int slot = -1;
+        for (int j = 0; j < data::MaxBeams; j++)
+        {
+            if (!current_.beams[j].active) { slot = j; break; }
+        }
+        if (slot >= 0)
+        {
+            logic::Beam& beam = current_.beams[slot];
+            beam.active = true;
+            beam.attackerSlot = 0;
+            beam.targetSlot = 1;
+            beam.muzzleIndex = a.burstIndex;
+            beam.startTick = current_.tick;
+        }
+        t.hp -= static_cast<int>(data::UnitStatsOf(a.type).baseDamage * data::DamageMultiplier(a.type, t.type));
+        a.burstIndex = (a.burstIndex + 1) % data::MuzzleCount(a.type);
+        a.attackCooldown = data::UnitStatsOf(a.type).attackInterval;
+    }
+    else if (a.attackCooldown <= 0.0f && a.type == data::UnitType::Engineer)
+    {
+        int slot = -1;
+        for (int j = 0; j < data::MaxHealPulses; j++)
+        {
+            if (!current_.healPulses[j].active) { slot = j; break; }
+        }
+        if (slot >= 0)
+        {
+            logic::HealPulse& pulse = current_.healPulses[slot];
+            pulse.active = true;
+            pulse.center = a.position;
+            pulse.radius = data::EngineerHealPulseRadius;
+            pulse.startTick = current_.tick;
+        }
+        a.attackCooldown = data::EngineerHealPulseInterval;
+    }
 
     for (int j = 0; j < data::MaxProjectiles; j++)
     {
@@ -156,6 +200,22 @@ void ProjectileTestScene::Step()
         if (!p.active || current_.tick < p.impactTick) continue;
         t.hp -= p.damage;
         p.active = false;
+    }
+
+    std::uint64_t beamTicks = static_cast<std::uint64_t>(data::BeamSeconds / static_cast<float>(data::TickDelta))
+        + 1;
+    for (int j = 0; j < data::MaxBeams; j++)
+    {
+        logic::Beam& beam = current_.beams[j];
+        if (beam.active && current_.tick - beam.startTick > beamTicks) beam.active = false;
+    }
+
+    std::uint64_t waveTicks =
+        static_cast<std::uint64_t>(data::HealWaveSeconds / static_cast<float>(data::TickDelta)) + 1;
+    for (int j = 0; j < data::MaxHealPulses; j++)
+    {
+        logic::HealPulse& pulse = current_.healPulses[j];
+        if (pulse.active && current_.tick - pulse.startTick > waveTicks) pulse.active = false;
     }
 }
 

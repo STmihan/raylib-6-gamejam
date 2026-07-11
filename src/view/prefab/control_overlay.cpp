@@ -19,12 +19,13 @@
 
 namespace view
 {
-void ControlOverlayView::SetDrag(bool active, data::Vec2 from, data::Vec2 to, bool movable)
+void ControlOverlayView::SetDrag(bool active, data::Vec2 from, data::Vec2 to, bool movable, bool healer)
 {
     active_ = active;
     from_ = from;
     to_ = to;
     movable_ = movable;
+    healer_ = healer;
 }
 
 void ControlOverlayView::Draw(const logic::GameState& previous, const logic::GameState& current, float alpha,
@@ -39,10 +40,25 @@ void ControlOverlayView::Draw(const logic::GameState& previous, const logic::Gam
     DrawCylinderEx(from, to, 0.045f, 0.045f, 8, pointer);
     DrawSphere(to, 0.13f, pointer);
 
-    int target = logic::PickEnemyTarget(current, to_, data::PlayerTeam);
+    float pulse = 0.5f + 0.5f * std::sin(time * 9.0f);
+    auto a = static_cast<unsigned char>(70.0f + 150.0f * pulse);
+
+    if (healer_)
+    {
+        int ally = logic::PickFriendlyUnit(current, to_, data::PlayerTeam);
+        if (ally >= 0)
+        {
+            Color green = {70, 235, 120, a};
+            DrawUnitHighlight(previous, current, alpha, time, map, models, units, orbit, ally, green);
+        }
+        return;
+    }
+
+    int target = logic::PickEnemyTarget(current, to_, data::PlayerTeam, map);
     if (target >= 0)
     {
-        DrawEnemyHighlight(previous, current, alpha, time, map, models, units, orbit, target);
+        Color red = {235, 44, 44, a};
+        DrawUnitHighlight(previous, current, alpha, time, map, models, units, orbit, target, red);
     }
     else if (movable_)
     {
@@ -50,30 +66,26 @@ void ControlOverlayView::Draw(const logic::GameState& previous, const logic::Gam
     }
 }
 
-void ControlOverlayView::DrawEnemyHighlight(const logic::GameState& previous, const logic::GameState& current,
-                                            float alpha, float time, const logic::Map& map,
-                                            const ModelRegistry& models, const UnitView& units,
-                                            const PlaneOrbitParams& orbit, int target) const
+void ControlOverlayView::DrawUnitHighlight(const logic::GameState& previous, const logic::GameState& current,
+                                           float alpha, float time, const logic::Map& map,
+                                           const ModelRegistry& models, const UnitView& units,
+                                           const PlaneOrbitParams& orbit, int target, Color tint) const
 {
-    float pulse = 0.5f + 0.5f * std::sin(time * 9.0f);
-    auto a = static_cast<unsigned char>(70.0f + 150.0f * pulse);
-    Color red = {235, 44, 44, a};
-
     rlDisableDepthTest();
     BeginBlendMode(BLEND_ALPHA);
     const logic::Entity& e = current.entities[target];
     if (e.kind == logic::EntityKind::Unit)
     {
-        units.DrawHighlight(models, previous, current, alpha, orbit, time, target, red);
+        units.DrawHighlight(models, previous, current, alpha, orbit, time, target, tint);
     }
     else if (e.kind == logic::EntityKind::Wall)
     {
-        DrawModelYaw(models.Wall(), LogicToWorld(e.position, 0.0f), 0.0f, red);
+        DrawModelYaw(models.Wall(), LogicToWorld(e.position, 0.0f), 0.0f, tint);
     }
     else
     {
         Scene scene(models);
-        scene.DrawBaseHighlight(map, e.team, red);
+        scene.DrawBaseHighlight(map, e.team, tint);
     }
     EndBlendMode();
     rlEnableDepthTest();

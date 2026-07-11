@@ -1,6 +1,8 @@
 #ifndef LOGIC_SIMULATION_H
 #define LOGIC_SIMULATION_H
 
+#include <array>
+
 #include "data/unit/unit.h"
 #include "logic/state/game_state.h"
 #include "logic/world/map.h"
@@ -17,8 +19,10 @@ public:
 
 private:
     const Map *map_ = nullptr;
+    int enemyBaseCol_[2] = {0, 0};
     int enemyBaseRow_[2] = {0, 0};
     data::Vec2 enemyBasePos_[2] = {};
+    std::array<int, MapTileCount> occupant_{};
 };
 
 }

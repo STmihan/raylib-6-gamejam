@@ -18,6 +18,7 @@ namespace
 {
     constexpr float RingHeight = 0.02f;
     constexpr float BlobHeight = 0.012f;
+    constexpr float MaxBlobDiameter = 1.5f;
 
     bool BodyTurnsToTarget(data::UnitType type)
     {
@@ -118,6 +119,7 @@ void UnitView::Draw(const ModelRegistry& models, const logic::GameState& previou
             if (entity.type != data::UnitType::Plane)
             {
                 float diameter = data::UnitStatsOf(entity.type).footprint * data::RenderScale * blobRadius_ * 2.0f;
+                if (diameter > MaxBlobDiameter) diameter = MaxBlobDiameter;
                 Vector3 blobPos = LogicToWorld(logic, BlobHeight);
                 auto blobAlpha = static_cast<unsigned char>(Clamp(blobOpacity_, 0.0f, 1.0f) * 255.0f);
                 DrawModelEx(models.BlobShadow(), blobPos, Vector3{0.0f, 1.0f, 0.0f}, 0.0f,

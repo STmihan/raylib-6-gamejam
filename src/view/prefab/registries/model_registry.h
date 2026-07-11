@@ -19,11 +19,13 @@ public:
     void ApplyShader(Shader shader);
     void SetShadowMap(Texture2D shadowMap);
     void SetWaterShader(Shader shader);
+    void SetBlobShader(Shader shader);
 
     const Model& FloorFor(data::TileType type) const;
     const Model& TileWhite() const { return tileWhite_; }
     const Model& Wall() const;
     const Model& BaseSection() const;
+    const Model& BaseTurret() const;
     const Model& Tree(int index) const;
     const Model& Water() const;
     const Model& UnitBody(data::UnitType type) const;
@@ -53,13 +55,13 @@ private:
     Model field_{};
     Model forest_{};
     Model concrete_{};
-    Model swamp_{};
     Model swampEdge_{};
     Model swampCorner_{};
     Model red_{};
     Model tileWhite_{};
     Model wall_{};
     Model base_{};
+    Model baseTurret_{};
     Model treeBush_{};
     Model treePine_{};
     Model treeRound_{};

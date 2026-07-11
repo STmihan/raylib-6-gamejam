@@ -14,12 +14,12 @@ namespace
     constexpr int SdfSlot = 11;
 }
 
-void WaterEffect::Load(Shader classic, Shader lines, ModelRegistry& models)
+void WaterEffect::Load(Shader classic, Shader lines, ModelRegistry& models, const logic::Map& map)
 {
     classic_ = classic;
     lines_ = lines;
     models_ = &models;
-    sdfTexture_ = BuildCoastSdf(sdfOrigin_, sdfWorldSize_);
+    sdfTexture_ = BuildCoastSdf(sdfOrigin_, sdfWorldSize_, map);
 
     PushStatic(classic_);
     PushStatic(lines_);
