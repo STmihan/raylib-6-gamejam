@@ -13,7 +13,7 @@ class Simulation {
 public:
     void Init(GameState &state, const Map &map);
     void Step(GameState &state, float dt);
-    static int Deploy(GameState &state, data::UnitType type, data::Team team, int col, int row);
+    static int Deploy(GameState &state, data::UnitType type, int donor, data::Team team, int col, int row);
     static void CommandTarget(GameState &state, int slot, int targetSlot);
     static void CommandMove(GameState &state, int slot, int col, int row);
 

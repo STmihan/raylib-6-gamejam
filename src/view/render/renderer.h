@@ -56,6 +56,7 @@ public:
     data::ShadowParams& ShadowParamsRef() { return shadowParams_; }
     data::ShadowParams& UnitShadowParamsRef() { return unitShadowParams_; }
     bool& HudHiddenRef() { return hudHidden_; }
+    bool& DragZoneRef() { return dragZone_; }
     int& HudResourceHighlightRef() { return resourceHighlight_; }
     data::CrystalStyle& CrystalStyleRef() { return crystalStyle_; }
     ui::HandView& Hand() { return hand_; }
@@ -103,6 +104,7 @@ private:
     ui::UiContext ui_;
     ui::HandView hand_;
     bool hudHidden_ = false;
+    bool dragZone_ = false;
     int resourceHighlight_ = 0;
     data::CrystalStyle crystalStyle_;
     bool hexGridLoaded_ = false;

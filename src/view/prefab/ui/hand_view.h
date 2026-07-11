@@ -21,6 +21,7 @@ class HandView
 public:
     void Update(UiInput& input, float dt);
     void Draw(UiContext& ui, const TextureRegistry& textures, RenderTexture2D& target);
+    void DrawDragZone(const TextureRegistry& textures) const;
 
     bool Dragging() const { return dragging_ >= 0; }
     data::UnitType DraggedType() const;
@@ -29,14 +30,18 @@ public:
 
     bool HasHighlight() const { return dragging_ >= 0 || hovered_ >= 0; }
     data::UnitType HighlightType() const;
+    int HighlightCost() const;
+    bool DraggedAirdrop() const;
+    bool DragDeploys() const;
 
-    bool TakeDrop(int& slot, data::UnitType& type, Vector2& screenPos);
+    bool TakeDrop(int& slot, data::UnitType& type, int& donor, Vector2& screenPos);
     void MarkPlayed(int slot);
 
 private:
     struct Slot
     {
         data::UnitType type;
+        int donor = -1;
         int chargesLeft = 1;
         float hover = 0.0f;
         float drag = 0.0f;
@@ -47,17 +52,25 @@ private:
     Vector2 FanCenter(int i) const;
     void Transform(int i, Vector2& center, float& angle, float& scale) const;
     void DrawSlot(UiContext& ui, const TextureRegistry& textures, RenderTexture2D& target, int i);
+    void DrawMergeBadge(UiContext& ui, const TextureRegistry& textures, Vector2 pos, data::UnitType donorType) const;
+    int HostUnderCursor(Vector2 m, int exclude) const;
+    bool CanMerge(int host, int donorIdx) const;
+    int ValidMergeHost(Vector2 m) const;
+    bool DragOutside() const;
+    int SlotCost(const Slot& s) const;
 
     std::vector<Slot> slots_;
     data::HandParams params_;
     int hovered_ = -1;
     int dragging_ = -1;
+    int mergeHost_ = -1;
     Vector2 dragPos_{};
     bool init_ = false;
 
     bool hasDrop_ = false;
     int dropSlot_ = -1;
     data::UnitType dropType_ = data::UnitType::Infantry;
+    int dropDonor_ = -1;
     Vector2 dropPos_{};
 };
 }

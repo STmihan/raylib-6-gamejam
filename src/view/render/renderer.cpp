@@ -18,20 +18,20 @@ namespace view
 {
 namespace
 {
-    bool Deployable(const logic::Map& map, int col, int row, data::UnitType type)
+    bool Deployable(const logic::Map& map, int col, int row, bool anywhere)
     {
-        return logic::IsDeployable(map, col, row, data::PlayerTeam, type);
+        return logic::IsDeployable(map, col, row, data::PlayerTeam, anywhere);
     }
 
     void DrawCellOutline(Vector3 center, const logic::Map& map, int col, int row, bool boundaryOnly,
-                         float width, Color color, data::UnitType type)
+                         float width, Color color, bool anywhere)
     {
         for (int dir = 0; dir < 6; dir++)
         {
             if (boundaryOnly)
             {
                 data::Offset nb = data::Neighbor({col, row}, dir);
-                if (map.InBounds(nb.col, nb.row) && Deployable(map, nb.col, nb.row, type)) continue;
+                if (map.InBounds(nb.col, nb.row) && Deployable(map, nb.col, nb.row, anywhere)) continue;
             }
             DrawHexEdge(HexCorner(center, HexEdgeCorners[dir][0]), HexCorner(center, HexEdgeCorners[dir][1]), width,
                         color);
@@ -106,8 +106,9 @@ void Renderer::ConfigureBlobShadow()
 
 void Renderer::DrawDeployOverlay(Camera3D camera, const logic::Map& map, float time, bool affordable)
 {
-    if (!hand_.Dragging()) return;
+    if (!hand_.DragDeploys()) return;
     data::UnitType type = hand_.DraggedType();
+    bool anywhere = hand_.DraggedAirdrop();
 
     const Color zoneFill = {90, 170, 255, 90};
     const Color zoneLine = {110, 200, 255, 255};
@@ -122,7 +123,7 @@ void Renderer::DrawDeployOverlay(Camera3D camera, const logic::Map& map, float t
     {
         for (int col = 0; col < logic::MapCols; col++)
         {
-            if (!Deployable(map, col, row, type)) continue;
+            if (!Deployable(map, col, row, anywhere)) continue;
             DrawModelYaw(models_.TileWhite(), LogicToWorld(data::CellToLogic(col, row), 0.06f), 0.0f, zoneFill);
         }
     }
@@ -132,9 +133,9 @@ void Renderer::DrawDeployOverlay(Camera3D camera, const logic::Map& map, float t
     {
         for (int col = 0; col < logic::MapCols; col++)
         {
-            if (!Deployable(map, col, row, type)) continue;
+            if (!Deployable(map, col, row, anywhere)) continue;
             Vector3 c = LogicToWorld(data::CellToLogic(col, row), 0.10f);
-            DrawCellOutline(c, map, col, row, true, lineW, zoneLine, type);
+            DrawCellOutline(c, map, col, row, true, lineW, zoneLine, anywhere);
         }
     }
 
@@ -147,13 +148,13 @@ void Renderer::DrawDeployOverlay(Camera3D camera, const logic::Map& map, float t
     if (!map.InBounds(cell.col, cell.row)) return;
 
     bool occupied = occluded_[static_cast<std::size_t>(cell.row) * logic::MapCols + cell.col];
-    bool canPlace = affordable && Deployable(map, cell.col, cell.row, type) && !occupied;
+    bool canPlace = affordable && Deployable(map, cell.col, cell.row, anywhere) && !occupied;
     data::Vec2 center = data::CellToLogic(cell.col, cell.row);
     BeginBlendMode(BLEND_ALPHA);
     DrawModelYaw(models_.TileWhite(), LogicToWorld(center, 0.12f), 0.0f, canPlace ? whiteFill : redFill);
     EndBlendMode();
     DrawCellOutline(LogicToWorld(center, 0.16f), map, cell.col, cell.row, false, lineW,
-                    canPlace ? whiteLine : redLine, type);
+                    canPlace ? whiteLine : redLine, anywhere);
     if (canPlace)
     {
         BeginBlendMode(BLEND_ALPHA);
@@ -254,7 +255,7 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
         bool affordable = true;
         if (hand_.Dragging())
         {
-            int cost = data::CardDefOf(hand_.DraggedType()).cost;
+            int cost = hand_.HighlightCost();
             affordable = current.resource[data::TeamIndex(data::PlayerTeam)] >= static_cast<float>(cost);
         }
         DrawDeployOverlay(camera, map, animTime, affordable);
@@ -277,8 +278,7 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
 
             int player = data::TeamIndex(data::PlayerTeam);
             float res = previous.resource[player] * (1.0f - alpha) + current.resource[player] * alpha;
-            int highlight = hand_.HasHighlight() ? data::CardDefOf(hand_.HighlightType()).cost
-                                                 : resourceHighlight_;
+            int highlight = hand_.HasHighlight() ? hand_.HighlightCost() : resourceHighlight_;
             ui::Panel(ui_, Rectangle{486.0f, 604.0f, 220.0f, 40.0f}, panelTint);
             ui::DrawResourceBar(ui_, Rectangle{498.0f, 613.0f, 196.0f, 22.0f}, res, 6, highlight,
                                 animTime, crystalStyle_);
@@ -291,6 +291,7 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
                       Color{240, 236, 221, 255}, true);
 
             hand_.Draw(ui_, textures_, cardTarget_);
+            if (dragZone_) hand_.DrawDragZone(textures_);
         }
         if (current.winner >= 0)
         {

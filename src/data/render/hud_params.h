@@ -25,7 +25,7 @@ struct HandParams
     float hoverScale = 0.14f;
     float hoverTime = 0.10f;
     Vector2 anchor = {160.0f, 636.0f};
-    float dragRadius = 135.0f;
+    float dragRadius = 68.0f;
 };
 }
 

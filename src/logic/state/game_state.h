@@ -35,6 +35,8 @@ struct Entity {
     data::Vec2 moveTarget;
     int armorHits;
     int armorMax;
+    int attackRange;
+    bool stationary;
     int pathCol;
     int pathRow;
     float repathTimer;

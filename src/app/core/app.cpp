@@ -18,20 +18,23 @@ void ProcessDeploy(App& app, Camera3D camera)
 {
     int slot;
     data::UnitType type;
+    int donor;
     Vector2 screenPos;
-    if (!app.renderer.Hand().TakeDrop(slot, type, screenPos)) return;
+    if (!app.renderer.Hand().TakeDrop(slot, type, donor, screenPos)) return;
 
     data::Vec2 logicPos;
     if (!CursorLogic(camera, screenPos, logicPos)) return;
     data::Offset cell = data::CellFromLogic(logicPos);
-    if (!logic::IsDeployable(app.map, cell.col, cell.row, data::PlayerTeam, type)) return;
+    bool anywhere = type == data::UnitType::Plane || donor == static_cast<int>(data::UnitType::Plane);
+    if (!logic::IsDeployable(app.map, cell.col, cell.row, data::PlayerTeam, anywhere)) return;
     if (logic::CellHasUnit(app.currentState, cell.col, cell.row)) return;
 
     int cost = data::CardDefOf(type).cost;
+    if (donor >= 0) cost += data::CardDefOf(static_cast<data::UnitType>(donor)).cost;
     int pidx = data::TeamIndex(data::PlayerTeam);
     if (app.currentState.resource[pidx] < static_cast<float>(cost)) return;
 
-    int spawned = logic::Simulation::Deploy(app.currentState, type, data::PlayerTeam, cell.col, cell.row);
+    int spawned = logic::Simulation::Deploy(app.currentState, type, donor, data::PlayerTeam, cell.col, cell.row);
     if (spawned < 0) return;
     app.previousState.entities[spawned] = app.currentState.entities[spawned];
     app.currentState.resource[pidx] -= static_cast<float>(cost);

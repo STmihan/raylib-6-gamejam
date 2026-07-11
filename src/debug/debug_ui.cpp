@@ -251,6 +251,7 @@ void DrawDebugOverlay(float& cameraBoundsRadius, view::Renderer& renderer,
         preview.ActiveRef() = !preview.Active();
         if (preview.Active()) projTest.ActiveRef() = false;
     }
+    if (IsKeyPressed(KEY_F3)) renderer.DragZoneRef() = !renderer.DragZoneRef();
     if (IsKeyPressed(KEY_F4))
     {
         projTest.ActiveRef() = !projTest.Active();

@@ -9,13 +9,13 @@
 
 namespace logic
 {
-inline bool IsDeployable(const Map& map, int col, int row, data::Team team, data::UnitType type)
+inline bool IsDeployable(const Map& map, int col, int row, data::Team team, bool anywhere)
 {
     if (!map.InBounds(col, row)) return false;
     bool ownHalf = team == data::Team::Bottom ? row >= MapRows / 2 : row < MapRows / 2;
     if (!ownHalf) return false;
     data::TileType tile = map.At(col, row);
-    if (type == data::UnitType::Plane)
+    if (anywhere)
     {
         return tile == data::TileType::ConcreteRoad || tile == data::TileType::Field
             || tile == data::TileType::Forest;

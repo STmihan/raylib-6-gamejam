@@ -31,7 +31,7 @@ namespace
 }
 
 void DrawCard(UiContext& ui, Rectangle rect, const data::CardDef& def, const Texture2D& portrait,
-              int chargesLeft)
+              int chargesLeft, int cost, int donor, const Texture2D& donorIcon)
 {
     ui.Theme().Panel(rect, Frame);
 
@@ -65,14 +65,24 @@ void DrawCard(UiContext& ui, Rectangle rect, const data::CardDef& def, const Tex
 
     Rectangle badge = {rect.x - 6.0f, rect.y - 6.0f, 30.0f, 30.0f};
     ui.Theme().Chip(badge, Gold);
-    char cost[8];
-    std::snprintf(cost, sizeof(cost), "%d", def.cost);
-    LabelCentered(ui, cost, badge, 18.0f, DarkInk, true);
+    char costText[8];
+    std::snprintf(costText, sizeof(costText), "%d", cost);
+    LabelCentered(ui, costText, badge, 18.0f, DarkInk, true);
+
+    if (donor >= 0)
+    {
+        const Color DonorChip = {126, 92, 208, 255};
+        Rectangle dbadge = {rect.x + rect.width - 24.0f, rect.y - 6.0f, 30.0f, 30.0f};
+        ui.Theme().Chip(dbadge, DonorChip);
+        Rectangle inner = {dbadge.x + 4.0f, dbadge.y + 4.0f, dbadge.width - 8.0f, dbadge.height - 8.0f};
+        Icon(ui, donorIcon, inner, LightInk);
+    }
 }
 
 void DrawCardTransformed(UiContext& ui, RenderTexture2D& target, const data::CardDef& def,
                          const Texture2D& portrait, Vector2 center, float rotationDeg, float scale,
-                         float cardW, float cardH, int chargesLeft)
+                         float cardW, float cardH, int chargesLeft, int cost, int donor,
+                         const Texture2D& donorIcon)
 {
     float tw = static_cast<float>(target.texture.width);
     float th = static_cast<float>(target.texture.height);
@@ -81,7 +91,7 @@ void DrawCardTransformed(UiContext& ui, RenderTexture2D& target, const data::Car
 
     BeginTextureMode(target);
     ClearBackground(BLANK);
-    DrawCard(ui, Rectangle{mx, my, cardW, cardH}, def, portrait, chargesLeft);
+    DrawCard(ui, Rectangle{mx, my, cardW, cardH}, def, portrait, chargesLeft, cost, donor, donorIcon);
     EndTextureMode();
 
     Rectangle src = {0.0f, 0.0f, tw, -th};

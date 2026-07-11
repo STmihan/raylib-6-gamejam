@@ -68,7 +68,7 @@ void UnitControl::Command(App& app, int slot, data::Vec2 logicPos, bool onField)
         return;
     }
 
-    if (!data::UnitStatsOf(app.currentState.entities[slot].type).stationary) return;
+    if (!app.currentState.entities[slot].stationary) return;
     data::Offset cell = data::CellFromLogic(logicPos);
     if (!app.map.InBounds(cell.col, cell.row)) return;
     if (logic::CellHasUnit(app.currentState, cell.col, cell.row)) return;
@@ -82,7 +82,7 @@ void UnitControl::FeedRenderer(App& app, Camera3D camera)
         const logic::Entity& dragged = app.currentState.entities[dragSlot_];
         data::Vec2 to;
         if (!CursorLogic(camera, GetMousePosition(), to)) to = dragged.position;
-        bool movable = data::UnitStatsOf(dragged.type).stationary;
+        bool movable = dragged.stationary;
         bool healer = dragged.type == data::UnitType::Engineer;
         app.renderer.ControlOverlay().SetDrag(true, dragged.position, to, movable, healer);
     }

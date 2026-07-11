@@ -98,7 +98,7 @@ int AcquireAlly(const GameState &state, int index) {
         if (!other.active || other.kind != EntityKind::Unit || other.team != self.team) continue;
         if (!data::UnitStatsOf(other.type).isVehicle) continue;
         int distance = data::HexDistance(here, {other.col, other.row});
-        if (distance <= data::UnitStatsOf(self.type).attackRange && distance < bestDistance) {
+        if (distance <= self.attackRange && distance < bestDistance) {
             bestDistance = distance;
             best = j;
         }
@@ -163,7 +163,7 @@ int AcquireTarget(const GameState &state, int index) {
         if (!CanDamage(self, other)) continue;
         if (other.kind == EntityKind::Wall && !WallBlocksPath(self, other)) continue;
         int distance = data::HexDistance(here, {other.col, other.row});
-        if (distance <= stats.attackRange && distance < bestDistance) {
+        if (distance <= self.attackRange && distance < bestDistance) {
             bestDistance = distance;
             best = j;
         }
@@ -200,7 +200,7 @@ int AcquireAirTarget(const GameState &state, int index) {
         if (other.type != data::UnitType::Plane) continue;
         if (!CanDamage(self, other)) continue;
         int distance = data::HexDistance(here, {other.col, other.row});
-        if (distance <= data::UnitStatsOf(self.type).attackRange && distance < bestDistance) {
+        if (distance <= self.attackRange && distance < bestDistance) {
             bestDistance = distance;
             best = j;
         }
@@ -220,7 +220,7 @@ bool InAttackRange(const GameState &state, int index, int target) {
     const Entity &self = state.entities[index];
     const Entity &t = state.entities[target];
     int dist = data::HexDistance({self.col, self.row}, {t.col, t.row});
-    return dist <= data::UnitStatsOf(self.type).attackRange;
+    return dist <= self.attackRange;
 }
 
 bool StillValid(const GameState &state, int index, int target) {
@@ -231,7 +231,7 @@ bool StillValid(const GameState &state, int index, int target) {
     if (!CanDamage(self, t)) return false;
     if (t.kind == EntityKind::Wall && !WallBlocksPath(self, t)) return false;
     int dist = data::HexDistance({self.col, self.row}, {t.col, t.row});
-    return dist <= data::UnitStatsOf(self.type).attackRange;
+    return dist <= self.attackRange;
 }
 
 void RefreshCell(Entity &entity) {
@@ -385,6 +385,8 @@ void Simulation::Init(GameState &state, const Map &map) {
         entity.moveTarget = {};
         entity.armorHits = data::UnitStatsOf(type).armorHits;
         entity.armorMax = entity.armorHits;
+        entity.attackRange = data::UnitStatsOf(type).attackRange;
+        entity.stationary = data::UnitStatsOf(type).stationary;
         entity.pathCol = -1;
         entity.pathRow = -1;
         entity.repathTimer = 0.0f;
@@ -467,7 +469,7 @@ void Simulation::Step(GameState &state, float dt) {
             continue;
         }
 
-        bool stationary = data::UnitStatsOf(entity.type).stationary;
+        bool stationary = entity.stationary;
 
         if (stationary && entity.hasMoveOrder) {
             entity.targetSlot = -1;
@@ -532,7 +534,7 @@ void Simulation::Step(GameState &state, float dt) {
 
         int goalCol;
         int goalRow;
-        int stopRange = data::UnitStatsOf(entity.type).attackRange;
+        int stopRange = entity.attackRange;
         if (entity.forcedTarget >= 0) {
             goalCol = state.entities[entity.forcedTarget].col;
             goalRow = state.entities[entity.forcedTarget].row;
@@ -593,7 +595,7 @@ void Simulation::Step(GameState &state, float dt) {
     }
 }
 
-int Simulation::Deploy(GameState &state, data::UnitType type, data::Team team, int col, int row) {
+int Simulation::Deploy(GameState &state, data::UnitType type, int donor, data::Team team, int col, int row) {
     int slot = -1;
     for (int i = 0; i < data::MaxEntities; i++) {
         if (!state.entities[i].active) { slot = i; break; }
@@ -618,14 +620,28 @@ int Simulation::Deploy(GameState &state, data::UnitType type, data::Team team, i
     e.hasMoveOrder = false;
     e.moveTarget = {};
     e.armorHits = data::UnitStatsOf(type).armorHits;
-    e.armorMax = e.armorHits;
+    e.attackRange = data::UnitStatsOf(type).attackRange;
+    e.stationary = data::UnitStatsOf(type).stationary;
     e.pathCol = -1;
     e.pathRow = -1;
     e.repathTimer = 0.0f;
+
+    if (donor == static_cast<int>(data::UnitType::Tank)) {
+        if (e.armorHits < 2) e.armorHits = 2;
+    } else if (donor == static_cast<int>(data::UnitType::Rocketeer)) {
+        if (type != data::UnitType::Plane) e.attackRange += 2;
+    } else if (donor == static_cast<int>(data::UnitType::AA)) {
+        e.stationary = true;
+        e.attackRange += 1;
+    }
+    e.armorMax = e.armorHits;
+
     if (slot >= state.entityCount) state.entityCount = slot + 1;
 
     if (type == data::UnitType::Engineer) {
         e.attackCooldown = data::EngineerHealPulseInterval;
+        ApplyHealArea(state, team, col, row, data::EngineerHealDeployRadius, true, data::EngineerHealDeployFraction);
+    } else if (donor == static_cast<int>(data::UnitType::Engineer)) {
         ApplyHealArea(state, team, col, row, data::EngineerHealDeployRadius, true, data::EngineerHealDeployFraction);
     }
     return slot;
