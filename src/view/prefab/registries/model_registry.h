@@ -21,6 +21,7 @@ public:
     void SetWaterShader(Shader shader);
 
     const Model& FloorFor(data::TileType type) const;
+    const Model& TileWhite() const { return tileWhite_; }
     const Model& Wall() const;
     const Model& BaseSection() const;
     const Model& Tree(int index) const;
@@ -45,7 +46,7 @@ public:
     const std::vector<Vector3>& WheelCenters(data::UnitType type) const;
 
 private:
-    static constexpr int ShadedCount = 26;
+    static constexpr int ShadedCount = 27;
     std::array<Model*, ShadedCount> ShadedModels();
     void CacheBounds();
 
@@ -56,6 +57,7 @@ private:
     Model swampEdge_{};
     Model swampCorner_{};
     Model red_{};
+    Model tileWhite_{};
     Model wall_{};
     Model base_{};
     Model treeBush_{};

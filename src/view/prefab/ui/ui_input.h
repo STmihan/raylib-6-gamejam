@@ -17,6 +17,7 @@ public:
 
     bool Hover(Rectangle r) const { return CheckCollisionPointRec(mouse_, r); }
     bool Pressed(Rectangle r) const { return pressed_ && Hover(r); }
+    bool Pressed() const { return pressed_; }
     Vector2 Mouse() const { return mouse_; }
     bool Down() const { return down_; }
 

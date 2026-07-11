@@ -41,20 +41,22 @@ struct UnitStats
     int attackRange;
     float attackInterval;
     int baseDamage;
+    bool stationary;
+    int armorHits;
 };
 
 inline UnitStats UnitStatsOf(UnitType type)
 {
     switch (type)
     {
-    case UnitType::Infantry: return {60, 55.0f, true, false, false, false, 15.0f, 2, 1.0f, 15};
-    case UnitType::Rocketeer: return {50, 50.0f, true, false, false, true, 15.0f, 4, 1.5f, 15};
-    case UnitType::Engineer: return {70, 50.0f, true, false, false, false, 15.0f, 1, 1.0f, 0};
-    case UnitType::AA: return {140, 40.0f, false, false, true, true, 55.0f, 3, 0.8f, 20};
-    case UnitType::Tank: return {260, 45.0f, false, false, true, true, 60.0f, 2, 1.3f, 40};
-    case UnitType::Plane: return {120, 90.0f, false, true, true, true, 0.0f, 1, 1.0f, 30};
+    case UnitType::Infantry: return {60, 55.0f, true, false, false, false, 15.0f, 2, 1.0f, 15, false, 0};
+    case UnitType::Rocketeer: return {50, 50.0f, true, false, false, true, 15.0f, 4, 1.5f, 15, false, 0};
+    case UnitType::Engineer: return {70, 50.0f, true, false, false, false, 15.0f, 1, 1.0f, 0, false, 0};
+    case UnitType::AA: return {140, 40.0f, false, false, true, true, 55.0f, 3, 0.8f, 20, true, 0};
+    case UnitType::Tank: return {260, 45.0f, false, false, true, true, 60.0f, 2, 1.3f, 40, false, 3};
+    case UnitType::Plane: return {120, 90.0f, false, true, true, true, 0.0f, 1, 1.0f, 30, false, 0};
     }
-    return {60, 50.0f, false, false, false, false, 15.0f, 2, 1.0f, 10};
+    return {60, 50.0f, false, false, false, false, 15.0f, 2, 1.0f, 10, false, 0};
 }
 
 inline int MuzzleCount(UnitType type)

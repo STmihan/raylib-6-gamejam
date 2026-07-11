@@ -5,6 +5,16 @@ namespace data
 {
 inline constexpr float ResourceCap = 6.0f;
 inline constexpr float BaseRegenPerSec = 0.5f;
+inline constexpr float DeployFreezeSeconds = 1.0f;
+
+inline constexpr int EngineerHealDeployRadius = 2;
+inline constexpr float EngineerHealDeployFraction = 0.4f;
+inline constexpr int EngineerHealPulseRadius = 1;
+inline constexpr int EngineerHealPulseAmount = 10;
+inline constexpr float EngineerHealPulseInterval = 2.0f;
+inline constexpr float HealWaveSeconds = 0.55f;
+
+inline constexpr int TankArmorHits = 3;
 inline constexpr float RegenDoubleEverySeconds = 120.0f;
 inline constexpr int MaxRegenDoublings = 6;
 

@@ -24,6 +24,12 @@ namespace
         return type == data::UnitType::Infantry || type == data::UnitType::Rocketeer;
     }
 
+    float BlendYaw(float from, float to, float t)
+    {
+        float diff = std::fmod(to - from + 540.0f, 360.0f) - 180.0f;
+        return from + diff * t;
+    }
+
     Vector2 EntityXZ(const logic::GameState& previous, const logic::GameState& current, int index, float alpha)
     {
         data::Vec2 logic = InterpolatedPosition(previous.entities[index], current.entities[index], alpha);
@@ -101,6 +107,12 @@ void UnitView::Draw(const ModelRegistry& models, const logic::GameState& previou
         bool attacking = entity.targetSlot >= 0;
         Color tint = HitFlashTint(flashTimer_[i] / HitFlashDuration);
 
+        const logic::Entity& prevEntity = previous.entities[i];
+        Vector3 prevGround = LogicToWorld(prevEntity.position, 0.0f);
+        float moveYaw = prevEntity.active
+            ? YawTowards(Vector2{prevGround.x, prevGround.z}, Vector2{ground.x, ground.z}, TeamYaw(entity.team))
+            : TeamYaw(entity.team);
+
         if (includeDecals)
         {
             if (entity.type != data::UnitType::Plane)
@@ -123,14 +135,14 @@ void UnitView::Draw(const ModelRegistry& models, const logic::GameState& previou
             float blend = combatBlend_[i];
             Vector3 hover = {ground.x, orbit.altitude, ground.z};
             Vector3 pos = Vector3Lerp(hover, orbitPos, blend);
-            float drawYaw = attacking ? yaw : TeamYaw(entity.team);
+            float drawYaw = BlendYaw(moveYaw, yaw, blend);
             DrawPlane(models.UnitBody(data::UnitType::Plane), pos, drawYaw, roll * blend, tint);
             continue;
         }
 
         if (data::UnitStatsOf(entity.type).isVehicle)
         {
-            float bodyYaw = TeamYaw(entity.team);
+            float bodyYaw = moveYaw;
             float turretYaw;
             if (attacking)
             {
@@ -147,7 +159,7 @@ void UnitView::Draw(const ModelRegistry& models, const logic::GameState& previou
             continue;
         }
 
-        float yaw = TeamYaw(entity.team);
+        float yaw = moveYaw;
         if (attacking && BodyTurnsToTarget(entity.type))
         {
             yaw = YawTowards(Vector2{ground.x, ground.z},
@@ -156,5 +168,67 @@ void UnitView::Draw(const ModelRegistry& models, const logic::GameState& previou
         Vector3 bodyPos = LogicToWorld(logic, models.UnitGroundOffset(entity.type));
         DrawBody(models.UnitBody(entity.type), bodyPos, yaw, tint);
     }
+}
+
+void UnitView::DrawPreview(const ModelRegistry& models, data::UnitType type, data::Vec2 logic, data::Team team,
+                           const PlaneOrbitParams& orbit, float time, Color tint) const
+{
+    Vector3 ground = LogicToWorld(logic, 0.0f);
+    float yaw = TeamYaw(team);
+
+    if (type == data::UnitType::Plane)
+    {
+        Vector3 pos = {ground.x, orbit.altitude, ground.z};
+        DrawPlane(models.UnitBody(data::UnitType::Plane), pos, yaw, 0.0f, tint);
+        return;
+    }
+    if (data::UnitStatsOf(type).isVehicle)
+    {
+        float turretYaw = 0.35f * std::sin(0.6f * time);
+        DrawVehicle(models, type, ground, yaw, time, 0, true, turretYaw, tint);
+        return;
+    }
+    Vector3 bodyPos = LogicToWorld(logic, models.UnitGroundOffset(type));
+    DrawBody(models.UnitBody(type), bodyPos, yaw, tint);
+}
+
+void UnitView::DrawHighlight(const ModelRegistry& models, const logic::GameState& previous,
+                             const logic::GameState& current, float alpha, const PlaneOrbitParams& orbit,
+                             float time, int index, Color tint) const
+{
+    const logic::Entity& entity = current.entities[index];
+    if (!entity.active) return;
+
+    data::Vec2 logic = InterpolatedPosition(previous.entities[index], entity, alpha);
+    Vector3 ground = LogicToWorld(logic, 0.0f);
+    bool attacking = entity.targetSlot >= 0;
+
+    const logic::Entity& prevEntity = previous.entities[index];
+    Vector3 prevGround = LogicToWorld(prevEntity.position, 0.0f);
+    float moveYaw = prevEntity.active
+        ? YawTowards(Vector2{prevGround.x, prevGround.z}, Vector2{ground.x, ground.z}, TeamYaw(entity.team))
+        : TeamYaw(entity.team);
+
+    if (entity.type == data::UnitType::Plane)
+    {
+        float yaw;
+        float roll;
+        Vector3 orbitPos = PlaneVisualPos(previous, current, index, alpha, time, orbit, yaw, roll);
+        float blend = combatBlend_[index];
+        Vector3 hover = {ground.x, orbit.altitude, ground.z};
+        Vector3 pos = Vector3Lerp(hover, orbitPos, blend);
+        float drawYaw = attacking ? yaw : moveYaw;
+        DrawPlane(models.UnitBody(data::UnitType::Plane), pos, drawYaw, roll * blend, tint);
+        return;
+    }
+
+    if (data::UnitStatsOf(entity.type).isVehicle)
+    {
+        DrawVehicle(models, entity.type, ground, moveYaw, time, static_cast<int>(entity.id), false, 0.0f, tint);
+        return;
+    }
+
+    Vector3 bodyPos = LogicToWorld(logic, models.UnitGroundOffset(entity.type));
+    DrawBody(models.UnitBody(entity.type), bodyPos, moveYaw, tint);
 }
 }

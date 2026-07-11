@@ -18,6 +18,7 @@ public:
 
 private:
     void Bar(Vector2 topCenter, float fraction, Color fill) const;
+    void ArmorBar(Vector2 topCenter, int filled, int total) const;
 
     Texture2D white_{};
     bool loaded_ = false;

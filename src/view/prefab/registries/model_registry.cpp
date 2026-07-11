@@ -16,6 +16,7 @@ void ModelRegistry::Load()
     swampEdge_ = LoadModel("assets/models/tile_swamp_edge.glb");
     swampCorner_ = LoadModel("assets/models/tile_swamp_corner.glb");
     red_ = LoadModel("assets/models/tile_red.glb");
+    tileWhite_ = LoadModel("assets/models/tile_white.glb");
     wall_ = LoadModel("assets/models/wall.glb");
     base_ = LoadModel("assets/models/base_1x2.glb");
     treeBush_ = LoadModel("assets/models/tree_bush.glb");
@@ -100,6 +101,7 @@ void ModelRegistry::Unload()
     UnloadModel(swampEdge_);
     UnloadModel(swampCorner_);
     UnloadModel(red_);
+    UnloadModel(tileWhite_);
     UnloadModel(wall_);
     UnloadModel(base_);
     UnloadModel(treeBush_);
@@ -131,7 +133,7 @@ void ModelRegistry::Unload()
 std::array<Model*, ModelRegistry::ShadedCount> ModelRegistry::ShadedModels()
 {
     return {
-        &field_, &forest_, &concrete_, &swamp_, &swampEdge_, &swampCorner_, &red_,
+        &field_, &forest_, &concrete_, &swamp_, &swampEdge_, &swampCorner_, &red_, &tileWhite_,
         &wall_, &base_, &treeBush_, &treePine_, &treeRound_,
         &soldierInfantry_, &soldierRocket_, &soldierEngineer_, &plane_,
         &tankHull_, &tankTurret_, &tankWheels_, &tankBand_,

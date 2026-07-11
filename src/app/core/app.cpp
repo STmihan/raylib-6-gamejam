@@ -1,11 +1,43 @@
 #include "app/core/app.h"
 
+#include "app/input/cursor.h"
+#include "data/card/card.h"
+#include "data/economy/economy.h"
+#include "data/space/hex.h"
+#include "data/space/world_config.h"
 #include "data/time/time_config.h"
 #include "debug/debug_input.h"
 #include "debug/debug_ui.h"
+#include "logic/deploy.h"
 
 namespace app
 {
+namespace
+{
+void ProcessDeploy(App& app, Camera3D camera)
+{
+    int slot;
+    data::UnitType type;
+    Vector2 screenPos;
+    if (!app.renderer.Hand().TakeDrop(slot, type, screenPos)) return;
+
+    data::Vec2 logicPos;
+    if (!CursorLogic(camera, screenPos, logicPos)) return;
+    data::Offset cell = data::CellFromLogic(logicPos);
+    if (!logic::IsDeployable(app.map, cell.col, cell.row, data::PlayerTeam, type)) return;
+    if (logic::CellHasUnit(app.currentState, cell.col, cell.row)) return;
+
+    int cost = data::CardDefOf(type).cost;
+    int pidx = data::TeamIndex(data::PlayerTeam);
+    if (app.currentState.resource[pidx] < static_cast<float>(cost)) return;
+
+    int spawned = logic::Simulation::Deploy(app.currentState, type, data::PlayerTeam, cell.col, cell.row);
+    if (spawned < 0) return;
+    app.previousState.entities[spawned] = app.currentState.entities[spawned];
+    app.currentState.resource[pidx] -= static_cast<float>(cost);
+    app.renderer.Hand().MarkPlayed(slot);
+}
+}
 void InitApp(App& app)
 {
     app.renderer.Init();
@@ -26,6 +58,16 @@ void StepApp(App& app)
     paused = cheats.Paused();
     speed = cheats.Speed();
 #endif
+
+    if (app.currentState.winner >= 0 && IsKeyPressed(KEY_R))
+    {
+        app.simulation.Init(app.currentState, app.map);
+        app.previousState = app.currentState;
+        app.accumulator = 0.0;
+    }
+
+    app.renderer.Ui().BeginFrame();
+    app.renderer.Hand().Update(app.renderer.Ui().Input(), GetFrameTime());
 
     float delta = GetFrameTime() * speed;
 
@@ -56,6 +98,9 @@ void StepApp(App& app)
 #if defined(DEBUG_BUILD)
     cheats.ApplyFreeCamera(camera, GetFrameTime());
 #endif
+
+    ProcessDeploy(app, camera);
+    app.unitControl.Update(app, camera);
 
     auto alpha = static_cast<float>(app.accumulator / data::TickDelta);
     auto overlay = [&app]() {

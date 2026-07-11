@@ -15,6 +15,18 @@ struct CrystalStyle
     Vector3 outline = {0.0f, 0.0f, 0.0f};
     float outlineWidth = 1.39f;
 };
+
+struct HandParams
+{
+    Vector2 pivot = {160.0f, 1100.0f};
+    float radius = 460.0f;
+    float step = 11.0f;
+    float raise = 44.0f;
+    float hoverScale = 0.14f;
+    float hoverTime = 0.10f;
+    Vector2 anchor = {160.0f, 636.0f};
+    float dragRadius = 135.0f;
+};
 }
 
 #endif

@@ -20,6 +20,7 @@ public:
     const Shader& WaterLine() const { return waterLine_; }
     const Shader& Sdf() const { return sdf_; }
     const Shader& Crystal() const { return crystal_; }
+    const Shader& Ring() const { return ring_; }
 
 private:
     Shader toon_{};
@@ -31,6 +32,7 @@ private:
     Shader waterLine_{};
     Shader sdf_{};
     Shader crystal_{};
+    Shader ring_{};
     bool loaded_ = false;
 };
 }

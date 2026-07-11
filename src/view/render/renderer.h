@@ -1,6 +1,7 @@
 #ifndef VIEW_RENDERER_H
 #define VIEW_RENDERER_H
 
+#include <array>
 #include <functional>
 
 #include "raylib.h"
@@ -13,10 +14,13 @@
 #include "debug/preview_scene.h"
 #include "debug/projectile_test_scene.h"
 #include "view/anim/anim_controller.h"
+#include "view/prefab/deploy_ring.h"
 #include "view/effect/outline_effect.h"
 #include "view/effect/shadow_effect.h"
 #include "view/effect/toon_effect.h"
 #include "view/prefab/hex_grid.h"
+#include "view/prefab/control_overlay.h"
+#include "view/prefab/heal_wave.h"
 #include "view/prefab/hp_bar.h"
 #include "view/prefab/registries/muzzle_registry.h"
 #include "view/prefab/plane_orbit.h"
@@ -26,6 +30,8 @@
 #include "view/prefab/registries/texture_registry.h"
 #include "view/prefab/unit_view.h"
 #include "view/prefab/water.h"
+#include "view/prefab/ui/card_view.h"
+#include "view/prefab/ui/hand_view.h"
 #include "view/prefab/ui/resource_bar.h"
 #include "view/prefab/ui/ui_context.h"
 #include "view/prefab/ui/ui_widgets.h"
@@ -54,6 +60,9 @@ public:
     bool& HudHiddenRef() { return hudHidden_; }
     int& HudResourceHighlightRef() { return resourceHighlight_; }
     data::CrystalStyle& CrystalStyleRef() { return crystalStyle_; }
+    ui::HandView& Hand() { return hand_; }
+    ui::UiContext& Ui() { return ui_; }
+    ControlOverlayView& ControlOverlay() { return controlOverlay_; }
     data::CavityParams& CavityParamsRef() { return cavityParams_; }
 
 private:
@@ -70,6 +79,7 @@ private:
     void DrawAirTest(const std::function<void()>& overlay);
     void DrawProjectileTest(const std::function<void()>& overlay);
     void RenderPasses(Camera3D camera, const ScenePasses& passes, const std::function<void()>& overlay);
+    void DrawDeployOverlay(Camera3D camera, const logic::Map& map, float time, bool affordable);
     void UseEnvShadow();
     void UseUnitShadow();
 
@@ -83,6 +93,9 @@ private:
     UnitView units_;
     HexGrid hexGrid_;
     HpBarView hpBars_;
+    HealWaveView healWaves_;
+    ControlOverlayView controlOverlay_;
+    DeployRingView deployRings_;
     AnimController anim_;
     MuzzleRegistry muzzles_;
     ProjectileView projectiles_;
@@ -91,11 +104,15 @@ private:
     debug::AirTestScene airTest_;
     debug::ProjectileTestScene projTest_;
     ui::UiContext ui_;
+    ui::HandView hand_;
     bool hudHidden_ = false;
     int resourceHighlight_ = 0;
     data::CrystalStyle crystalStyle_;
     bool hexGridLoaded_ = false;
+    std::array<bool, logic::MapTileCount> occluded_{};
+    std::array<bool, logic::MapTileCount> wallAlive_{};
     RenderTexture2D colorTarget_{};
+    RenderTexture2D cardTarget_{};
     data::ShadowParams shadowParams_;
     data::ShadowParams unitShadowParams_;
     data::CavityParams cavityParams_;

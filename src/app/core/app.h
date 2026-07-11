@@ -3,6 +3,7 @@
 
 #include "raylib.h"
 
+#include "app/input/unit_control.h"
 #include "logic/state/game_state.h"
 #include "logic/world/map.h"
 #include "logic/sim/simulation.h"
@@ -20,6 +21,7 @@ struct App
     view::Renderer renderer;
     view::CameraRig cameraRig;
     double accumulator;
+    UnitControl unitControl;
 };
 
 void InitApp(App& app);

@@ -40,6 +40,40 @@ int ComputeDamage(const Entity &attacker, const Entity &target) {
     return damage > 0 ? damage : 0;
 }
 
+void ApplyHit(Entity &victim, int damage) {
+    if (damage <= 0) return;
+    if (victim.kind == EntityKind::Unit && victim.armorHits > 0) {
+        victim.armorHits--;
+        return;
+    }
+    victim.hp -= damage;
+}
+
+void SpawnHealPulse(GameState &state, data::Vec2 center, int radius) {
+    for (int j = 0; j < data::MaxHealPulses; j++) {
+        if (state.healPulses[j].active) continue;
+        state.healPulses[j].active = true;
+        state.healPulses[j].center = center;
+        state.healPulses[j].radius = radius;
+        state.healPulses[j].startTick = state.tick;
+        return;
+    }
+}
+
+void ApplyHealArea(GameState &state, data::Team team, int col, int row, int radius, bool fractional, float value) {
+    data::Offset here = {col, row};
+    for (int j = 0; j < data::MaxEntities; j++) {
+        Entity &ally = state.entities[j];
+        if (!ally.active || ally.kind != EntityKind::Unit || ally.team != team) continue;
+        if (data::HexDistance(here, {ally.col, ally.row}) > radius) continue;
+        int maxHp = data::UnitStatsOf(ally.type).hp;
+        int heal = fractional ? static_cast<int>(value * static_cast<float>(maxHp)) : static_cast<int>(value);
+        ally.hp += heal;
+        if (ally.hp > maxHp) ally.hp = maxHp;
+    }
+    SpawnHealPulse(state, data::CellToLogic(col, row), radius);
+}
+
 int AcquireAlly(const GameState &state, int index) {
     const Entity &self = state.entities[index];
     data::Offset here = {self.col, self.row};
@@ -124,6 +158,52 @@ int AcquireTarget(const GameState &state, int index) {
     return best;
 }
 
+int AcquireAirTarget(const GameState &state, int index) {
+    const Entity &self = state.entities[index];
+    data::Offset here = {self.col, self.row};
+    int best = -1;
+    int bestDistance = INT_MAX;
+    for (int j = 0; j < data::MaxEntities; j++) {
+        if (j == index) continue;
+        const Entity &other = state.entities[j];
+        if (!other.active || other.team == self.team) continue;
+        if (other.type != data::UnitType::Plane) continue;
+        if (!CanDamage(self, other)) continue;
+        int distance = data::HexDistance(here, {other.col, other.row});
+        if (distance <= data::UnitStatsOf(self.type).attackRange && distance < bestDistance) {
+            bestDistance = distance;
+            best = j;
+        }
+    }
+    return best;
+}
+
+bool ForcedTargetValid(const GameState &state, int index, int target) {
+    if (target < 0 || target >= data::MaxEntities) return false;
+    const Entity &self = state.entities[index];
+    const Entity &t = state.entities[target];
+    if (!t.active || t.team == self.team) return false;
+    return CanDamage(self, t);
+}
+
+bool InAttackRange(const GameState &state, int index, int target) {
+    const Entity &self = state.entities[index];
+    const Entity &t = state.entities[target];
+    int dist = data::HexDistance({self.col, self.row}, {t.col, t.row});
+    return dist <= data::UnitStatsOf(self.type).attackRange;
+}
+
+bool StillValid(const GameState &state, int index, int target) {
+    if (target < 0 || target >= data::MaxEntities) return false;
+    const Entity &self = state.entities[index];
+    const Entity &t = state.entities[target];
+    if (!t.active || t.team == self.team) return false;
+    if (!CanDamage(self, t)) return false;
+    if (t.kind == EntityKind::Wall && !WallBlocksPath(self, t)) return false;
+    int dist = data::HexDistance({self.col, self.row}, {t.col, t.row});
+    return dist <= data::UnitStatsOf(self.type).attackRange;
+}
+
 bool CellIsWater(const Map &map, int col, int row) {
     if (!map.InBounds(col, row)) return true;
     return map.At(col, row) == data::TileType::RedBorder;
@@ -150,7 +230,7 @@ void RefreshCell(Entity &entity) {
     entity.row = cell.row;
 }
 
-void AdvanceUnit(Entity &entity, const Map &map, float dt) {
+void AdvanceUnit(Entity &entity, const Map &map, float dt, data::Vec2 basePos) {
     int dir = entity.team == data::Team::Top ? 1 : -1;
 
     data::TileType tile = map.InBounds(entity.col, entity.row)
@@ -159,6 +239,19 @@ void AdvanceUnit(Entity &entity, const Map &map, float dt) {
     float modifier = data::TileConfigOf(tile).moveModifier;
     float effective = data::EffectiveMoveModifier(entity.type, modifier);
     float step = data::UnitStatsOf(entity.type).moveSpeed * effective * dt;
+
+    bool enemyHalf = entity.team == data::Team::Bottom ? entity.row < MapRows / 2 : entity.row >= MapRows / 2;
+    if (tile == data::TileType::ConcreteRoad && enemyHalf) {
+        float dx = basePos.x - entity.position.x;
+        float dy = basePos.y - entity.position.y;
+        float len = std::sqrt(dx * dx + dy * dy);
+        if (len > 1.0f) {
+            entity.position.x += dx / len * step;
+            entity.position.y += dy / len * step;
+            RefreshCell(entity);
+        }
+        return;
+    }
 
     if (entity.type == data::UnitType::Plane) {
         entity.position.y += static_cast<float>(dir) * step;
@@ -195,6 +288,54 @@ void AdvanceUnit(Entity &entity, const Map &map, float dt) {
     }
 }
 
+void MoveToward(Entity &entity, const Map &map, float dt, data::Vec2 dest) {
+    float step = data::UnitStatsOf(entity.type).moveSpeed * dt;
+    float dx = dest.x - entity.position.x;
+    float dy = dest.y - entity.position.y;
+    float len = std::sqrt(dx * dx + dy * dy);
+    if (len <= step || len < 1.0f) {
+        entity.position = dest;
+        entity.hasMoveOrder = false;
+        RefreshCell(entity);
+        return;
+    }
+    data::Vec2 next = {entity.position.x + dx / len * step, entity.position.y + dy / len * step};
+    if (entity.type == data::UnitType::Plane
+        || FootprintOnLand(map, next, data::UnitStatsOf(entity.type).footprint)) {
+        entity.position = next;
+        RefreshCell(entity);
+    } else {
+        entity.hasMoveOrder = false;
+    }
+}
+
+int SelectTarget(GameState &state, int index) {
+    Entity &entity = state.entities[index];
+
+    if (entity.forcedTarget >= 0 && !ForcedTargetValid(state, index, entity.forcedTarget)) {
+        entity.forcedTarget = -1;
+    }
+    if (entity.forcedTarget >= 0) {
+        return InAttackRange(state, index, entity.forcedTarget) ? entity.forcedTarget : -1;
+    }
+    if (entity.type == data::UnitType::Engineer) {
+        return AcquireTarget(state, index);
+    }
+
+    int cur = entity.targetSlot;
+    if (entity.type == data::UnitType::Plane) {
+        int air = AcquireAirTarget(state, index);
+        bool curIsPlane = cur >= 0 && state.entities[cur].active
+            && state.entities[cur].type == data::UnitType::Plane;
+        if (air >= 0) return (curIsPlane && StillValid(state, index, cur)) ? cur : air;
+        if (StillValid(state, index, cur)) return cur;
+        return AcquireTarget(state, index);
+    }
+
+    if (StillValid(state, index, cur)) return cur;
+    return AcquireTarget(state, index);
+}
+
 }
 
 void Simulation::Init(GameState &state, const Map &map) {
@@ -215,9 +356,6 @@ void Simulation::Init(GameState &state, const Map &map) {
 
     enemyBaseRow_[data::TeamIndex(data::Team::Top)] = bottomMin;
     enemyBaseRow_[data::TeamIndex(data::Team::Bottom)] = topMax;
-    int spawnRow[2];
-    spawnRow[data::TeamIndex(data::Team::Top)] = topMax + 1;
-    spawnRow[data::TeamIndex(data::Team::Bottom)] = bottomMin - 1;
 
     state.tick = 0;
     state.winner = -1;
@@ -228,6 +366,9 @@ void Simulation::Init(GameState &state, const Map &map) {
     }
     for (int j = 0; j < data::MaxProjectiles; j++) {
         state.projectiles[j].active = false;
+    }
+    for (int j = 0; j < data::MaxHealPulses; j++) {
+        state.healPulses[j].active = false;
     }
 
     int count = 0;
@@ -243,19 +384,18 @@ void Simulation::Init(GameState &state, const Map &map) {
         entity.position = data::CellToLogic(col, row);
         entity.hp = hp;
         entity.targetSlot = -1;
+        entity.forcedTarget = -1;
         entity.attackCooldown = 0.0f;
         entity.burstIndex = 0;
+        entity.deployTimer = 0.0f;
+        entity.hasMoveOrder = false;
+        entity.moveTarget = {};
+        entity.armorHits = data::UnitStatsOf(type).armorHits;
+        entity.armorMax = entity.armorHits;
         count++;
     };
 
     data::Team teams[2] = {data::Team::Top, data::Team::Bottom};
-    for (data::Team team : teams) {
-        for (int i = 0; i < data::UnitTypeCount; i++) {
-            int col = i * (MapCols - 1) / (data::UnitTypeCount - 1);
-            auto type = static_cast<data::UnitType>(i);
-            addEntity(EntityKind::Unit, type, team, col, spawnRow[data::TeamIndex(team)], data::UnitStatsOf(type).hp);
-        }
-    }
 
     for (int row = 0; row < MapRows; row++) {
         for (int col = 0; col < MapCols; col++) {
@@ -268,6 +408,7 @@ void Simulation::Init(GameState &state, const Map &map) {
     }
 
     int baseRow[2] = {topMax, bottomMin};
+    int baseCol[2] = {0, 0};
     for (data::Team team : teams) {
         int row = baseRow[data::TeamIndex(team)];
         int minCol = MapCols, maxCol = -1;
@@ -278,8 +419,14 @@ void Simulation::Init(GameState &state, const Map &map) {
             }
         }
         int centerCol = (minCol + maxCol) / 2;
+        baseCol[data::TeamIndex(team)] = centerCol;
         addEntity(EntityKind::Base, data::UnitType::Infantry, team, centerCol, row, data::BaseHp);
     }
+
+    int topIdx = data::TeamIndex(data::Team::Top);
+    int botIdx = data::TeamIndex(data::Team::Bottom);
+    enemyBasePos_[topIdx] = data::CellToLogic(baseCol[botIdx], baseRow[botIdx]);
+    enemyBasePos_[botIdx] = data::CellToLogic(baseCol[topIdx], baseRow[topIdx]);
 
     state.entityCount = count;
 }
@@ -300,10 +447,33 @@ void Simulation::Step(GameState &state, float dt) {
         Entity &entity = state.entities[i];
         if (!entity.active || entity.kind != EntityKind::Unit) continue;
 
-        int target = AcquireTarget(state, i);
-        entity.targetSlot = target;
+        if (entity.deployTimer > 0.0f) {
+            entity.deployTimer -= dt;
+            entity.targetSlot = -1;
+            continue;
+        }
+
+        bool stationary = data::UnitStatsOf(entity.type).stationary;
+
+        if (stationary && entity.hasMoveOrder) {
+            entity.targetSlot = -1;
+            MoveToward(entity, *map_, dt, entity.moveTarget);
+            continue;
+        }
 
         bool isEngineer = entity.type == data::UnitType::Engineer;
+        int target = SelectTarget(state, i);
+        entity.targetSlot = target;
+
+        if (isEngineer) {
+            entity.attackCooldown -= dt;
+            if (entity.attackCooldown <= 0.0f) {
+                ApplyHealArea(state, entity.team, entity.col, entity.row, data::EngineerHealPulseRadius, false,
+                              static_cast<float>(data::EngineerHealPulseAmount));
+                entity.attackCooldown = data::EngineerHealPulseInterval;
+            }
+        }
+
         if (target >= 0 && !isEngineer) {
             entity.attackCooldown -= dt;
             if (entity.attackCooldown <= 0.0f) {
@@ -318,24 +488,38 @@ void Simulation::Step(GameState &state, float dt) {
                     }
                 } else {
                     Entity &victim = state.entities[target];
-                    victim.hp -= ComputeDamage(entity, victim);
+                    ApplyHit(victim, ComputeDamage(entity, victim));
                     entity.attackCooldown = data::UnitStatsOf(entity.type).attackInterval;
                 }
             }
             continue;
         }
 
+        if (stationary) continue;
+
+        if (entity.forcedTarget >= 0) {
+            MoveToward(entity, *map_, dt, state.entities[entity.forcedTarget].position);
+            continue;
+        }
+
         int baseRow = enemyBaseRow_[data::TeamIndex(entity.team)];
         bool arrived = entity.team == data::Team::Top ? entity.row >= baseRow : entity.row <= baseRow;
-        if (!arrived) AdvanceUnit(entity, *map_, dt);
+        if (!arrived) AdvanceUnit(entity, *map_, dt, enemyBasePos_[data::TeamIndex(entity.team)]);
     }
 
     for (int j = 0; j < data::MaxProjectiles; j++) {
         Projectile &p = state.projectiles[j];
         if (!p.active || state.tick < p.impactTick) continue;
         Entity &victim = state.entities[p.targetSlot];
-        if (victim.active) victim.hp -= p.damage;
+        if (victim.active) ApplyHit(victim, p.damage);
         p.active = false;
+    }
+
+    std::uint64_t waveTicks = static_cast<std::uint64_t>(data::HealWaveSeconds / static_cast<float>(data::TickDelta))
+        + 1;
+    for (int j = 0; j < data::MaxHealPulses; j++) {
+        HealPulse &pulse = state.healPulses[j];
+        if (pulse.active && state.tick - pulse.startTick > waveTicks) pulse.active = false;
     }
 
     for (int i = 0; i < data::MaxEntities; i++) {
@@ -346,6 +530,58 @@ void Simulation::Step(GameState &state, float dt) {
             state.winner = entity.team == data::Team::Top ? 1 : 0;
         }
     }
+}
+
+int Simulation::Deploy(GameState &state, data::UnitType type, data::Team team, int col, int row) {
+    int slot = -1;
+    for (int i = 0; i < data::MaxEntities; i++) {
+        if (!state.entities[i].active) { slot = i; break; }
+    }
+    if (slot < 0) return -1;
+
+    Entity &e = state.entities[slot];
+    e.active = true;
+    e.id = static_cast<std::uint32_t>(slot);
+    e.kind = EntityKind::Unit;
+    e.type = type;
+    e.team = team;
+    e.col = col;
+    e.row = row;
+    e.position = data::CellToLogic(col, row);
+    e.hp = data::UnitStatsOf(type).hp;
+    e.targetSlot = -1;
+    e.forcedTarget = -1;
+    e.attackCooldown = 0.0f;
+    e.burstIndex = 0;
+    e.deployTimer = data::DeployFreezeSeconds;
+    e.hasMoveOrder = false;
+    e.moveTarget = {};
+    e.armorHits = data::UnitStatsOf(type).armorHits;
+    e.armorMax = e.armorHits;
+    if (slot >= state.entityCount) state.entityCount = slot + 1;
+
+    if (type == data::UnitType::Engineer) {
+        e.attackCooldown = data::EngineerHealPulseInterval;
+        ApplyHealArea(state, team, col, row, data::EngineerHealDeployRadius, true, data::EngineerHealDeployFraction);
+    }
+    return slot;
+}
+
+void Simulation::CommandTarget(GameState &state, int slot, int targetSlot) {
+    if (slot < 0 || slot >= data::MaxEntities) return;
+    Entity &e = state.entities[slot];
+    if (!e.active || e.kind != EntityKind::Unit) return;
+    e.forcedTarget = targetSlot;
+    e.hasMoveOrder = false;
+}
+
+void Simulation::CommandMove(GameState &state, int slot, int col, int row) {
+    if (slot < 0 || slot >= data::MaxEntities) return;
+    Entity &e = state.entities[slot];
+    if (!e.active || e.kind != EntityKind::Unit) return;
+    e.moveTarget = data::CellToLogic(col, row);
+    e.hasMoveOrder = true;
+    e.forcedTarget = -1;
 }
 
 }

@@ -296,6 +296,18 @@ void DrawDebugOverlay(float& cameraBoundsRadius, view::Renderer& renderer,
             ImGui::ColorEdit3("Crystal Outline", &cs.outline.x);
             ImGui::SliderFloat("Crystal Outline W", &cs.outlineWidth, 0.0f, 4.0f);
         }
+        if (ImGui::CollapsingHeader("Hand"))
+        {
+            data::HandParams& hp = renderer.Hand().ParamsRef();
+            ImGui::SliderFloat2("Fan Pivot", &hp.pivot.x, 0.0f, 1200.0f);
+            ImGui::SliderFloat("Fan Radius", &hp.radius, 100.0f, 800.0f);
+            ImGui::SliderFloat("Fan Step", &hp.step, 0.0f, 30.0f);
+            ImGui::SliderFloat("Hover Raise", &hp.raise, 0.0f, 120.0f);
+            ImGui::SliderFloat("Hover Scale", &hp.hoverScale, 0.0f, 0.5f);
+            ImGui::SliderFloat("Hover Time", &hp.hoverTime, 0.02f, 0.4f);
+            ImGui::SliderFloat2("Drag Anchor", &hp.anchor.x, 0.0f, 1200.0f);
+            ImGui::SliderFloat("Drag Radius", &hp.dragRadius, 50.0f, 600.0f);
+        }
         if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
         {
             ImGui::SliderFloat("Bounds Radius", &cameraBoundsRadius, 0.0f, 40.0f);

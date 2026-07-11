@@ -11,10 +11,14 @@ class Simulation {
 public:
     void Init(GameState &state, const Map &map);
     void Step(GameState &state, float dt);
+    static int Deploy(GameState &state, data::UnitType type, data::Team team, int col, int row);
+    static void CommandTarget(GameState &state, int slot, int targetSlot);
+    static void CommandMove(GameState &state, int slot, int col, int row);
 
 private:
     const Map *map_ = nullptr;
     int enemyBaseRow_[2] = {0, 0};
+    data::Vec2 enemyBasePos_[2] = {};
 };
 
 }

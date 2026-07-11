@@ -1,6 +1,10 @@
 #ifndef VIEW_PREFAB_SCENE_H
 #define VIEW_PREFAB_SCENE_H
 
+#include "raylib.h"
+
+#include "data/unit/unit.h"
+
 namespace logic { struct Map; }
 
 namespace view
@@ -12,11 +16,15 @@ class Scene
 public:
     explicit Scene(const ModelRegistry& models) : models_(&models) {}
 
-    void Draw(const logic::Map& map, bool includeFloors = true) const;
+    void Draw(const logic::Map& map, bool includeFloors = true, const bool* occluded = nullptr,
+              const bool* wallAlive = nullptr) const;
+    void DrawGhostStructures(const logic::Map& map, const bool* occluded, const bool* wallAlive,
+                             unsigned char alpha) const;
+    void DrawBaseHighlight(const logic::Map& map, data::Team team, Color tint) const;
 
 private:
     void DrawFloors(const logic::Map& map) const;
-    void DrawStructures(const logic::Map& map) const;
+    void DrawStructures(const logic::Map& map, const bool* occluded, const bool* wallAlive) const;
 
     const ModelRegistry* models_;
 };

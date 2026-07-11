@@ -27,8 +27,14 @@ struct Entity {
     int row;
     int hp;
     int targetSlot;
+    int forcedTarget;
     float attackCooldown;
     int burstIndex;
+    float deployTimer;
+    bool hasMoveOrder;
+    data::Vec2 moveTarget;
+    int armorHits;
+    int armorMax;
 };
 
 struct Projectile {
@@ -45,6 +51,13 @@ struct Projectile {
     int damage;
 };
 
+struct HealPulse {
+    bool active;
+    data::Vec2 center;
+    int radius;
+    std::uint64_t startTick;
+};
+
 struct GameState {
     std::uint64_t tick;
     int entityCount;
@@ -52,6 +65,7 @@ struct GameState {
     std::array<float, 2> resource;
     std::array<Entity, data::MaxEntities> entities;
     std::array<Projectile, data::MaxProjectiles> projectiles;
+    std::array<HealPulse, data::MaxHealPulses> healPulses;
 };
 
 }

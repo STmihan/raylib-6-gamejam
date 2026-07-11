@@ -26,12 +26,14 @@ void ShaderRegistry::Load()
     waterLine_ = LoadShader(TextFormat("%swater.vert", dir), TextFormat("%swater_line.frag", dir));
     sdf_ = LoadShader(nullptr, TextFormat("%ssdf.frag", dir));
     crystal_ = LoadShader(nullptr, TextFormat("%scrystal.frag", dir));
+    ring_ = LoadShader(nullptr, TextFormat("%sring.frag", dir));
     loaded_ = true;
 }
 
 void ShaderRegistry::Unload()
 {
     if (!loaded_) return;
+    UnloadShader(ring_);
     UnloadShader(crystal_);
     UnloadShader(sdf_);
     UnloadShader(waterLine_);
