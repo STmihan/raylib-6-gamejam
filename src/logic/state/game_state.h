@@ -25,6 +25,10 @@ struct Entity {
     data::Vec2 position;
     int col;
     int row;
+    int footMinCol;
+    int footMinRow;
+    int footMaxCol;
+    int footMaxRow;
     int hp;
     int targetSlot;
     int forcedTarget;
@@ -71,8 +75,15 @@ struct Beam {
     std::uint64_t startTick;
 };
 
+struct MissMark {
+    bool active;
+    data::Vec2 position;
+    std::uint64_t startTick;
+};
+
 struct GameState {
     std::uint64_t tick;
+    std::uint32_t seed;
     int entityCount;
     int winner;
     std::array<float, 2> resource;
@@ -80,6 +91,7 @@ struct GameState {
     std::array<Projectile, data::MaxProjectiles> projectiles;
     std::array<HealPulse, data::MaxHealPulses> healPulses;
     std::array<Beam, data::MaxBeams> beams;
+    std::array<MissMark, data::MaxMisses> misses;
 };
 
 }

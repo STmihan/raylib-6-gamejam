@@ -84,11 +84,11 @@ void UnitControl::FeedRenderer(App& app, Camera3D camera)
         if (!CursorLogic(camera, GetMousePosition(), to)) to = dragged.position;
         bool movable = dragged.stationary;
         bool healer = dragged.type == data::UnitType::Engineer;
-        app.renderer.ControlOverlay().SetDrag(true, dragged.position, to, movable, healer);
+        app.renderer.ControlOverlay().SetDrag(true, dragged.position, to, movable, healer, dragged.attackRange);
     }
     else
     {
-        app.renderer.ControlOverlay().SetDrag(false, {}, {}, false, false);
+        app.renderer.ControlOverlay().SetDrag(false, {}, {}, false, false, 0);
     }
 }
 }

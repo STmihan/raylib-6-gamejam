@@ -16,7 +16,7 @@ class UnitView;
 class ControlOverlayView
 {
 public:
-    void SetDrag(bool active, data::Vec2 from, data::Vec2 to, bool movable, bool healer);
+    void SetDrag(bool active, data::Vec2 from, data::Vec2 to, bool movable, bool healer, int range);
     void Draw(const logic::GameState& previous, const logic::GameState& current, float alpha, float time,
               const logic::Map& map, const ModelRegistry& models, const UnitView& units,
               const PlaneOrbitParams& orbit, const bool* occluded) const;
@@ -26,10 +26,12 @@ private:
                            float time, const logic::Map& map, const ModelRegistry& models, const UnitView& units,
                            const PlaneOrbitParams& orbit, int target, Color tint) const;
     void DrawMoveCell(const logic::Map& map, const ModelRegistry& models, const bool* occluded) const;
+    void DrawRangeRing(const ModelRegistry& models) const;
 
     bool active_ = false;
     bool movable_ = false;
     bool healer_ = false;
+    int range_ = 0;
     data::Vec2 from_{};
     data::Vec2 to_{};
 };

@@ -65,6 +65,22 @@ void TextRenderer::Draw(const char* text, Vector2 pos, float size, Color color, 
     EndShaderMode();
 }
 
+void TextRenderer::DrawRotated(const char* text, Vector2 pos, Vector2 origin, float rotationDeg, float size,
+                               Color color, float spacing, bool bold) const
+{
+    BeginShaderMode(sdf_);
+    if (bold)
+    {
+        float o = size * 0.035f;
+        DrawTextPro(font_, text, pos, Vector2{origin.x + o, origin.y}, rotationDeg, size, spacing, color);
+        DrawTextPro(font_, text, pos, Vector2{origin.x - o, origin.y}, rotationDeg, size, spacing, color);
+        DrawTextPro(font_, text, pos, Vector2{origin.x, origin.y + o}, rotationDeg, size, spacing, color);
+        DrawTextPro(font_, text, pos, Vector2{origin.x, origin.y - o}, rotationDeg, size, spacing, color);
+    }
+    DrawTextPro(font_, text, pos, origin, rotationDeg, size, spacing, color);
+    EndShaderMode();
+}
+
 std::vector<std::string> TextRenderer::WrapLines(const std::string& text, float size, float maxWidth,
                                                  float spacing) const
 {

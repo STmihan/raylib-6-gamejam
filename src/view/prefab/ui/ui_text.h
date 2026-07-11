@@ -20,6 +20,8 @@ public:
 
     void Draw(const char* text, Vector2 pos, float size, Color color, float spacing = 0.0f,
               bool bold = false) const;
+    void DrawRotated(const char* text, Vector2 pos, Vector2 origin, float rotationDeg, float size,
+                     Color color, float spacing = 0.0f, bool bold = false) const;
 
     std::vector<std::string> WrapLines(const std::string& text, float size, float maxWidth,
                                        float spacing = 0.0f) const;

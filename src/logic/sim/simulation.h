@@ -2,6 +2,7 @@
 #define LOGIC_SIMULATION_H
 
 #include <array>
+#include <cstdint>
 
 #include "data/unit/unit.h"
 #include "logic/state/game_state.h"
@@ -11,7 +12,7 @@ namespace logic {
 
 class Simulation {
 public:
-    void Init(GameState &state, const Map &map);
+    void Init(GameState &state, const Map &map, std::uint32_t seed = 0);
     void Step(GameState &state, float dt);
     static int Deploy(GameState &state, data::UnitType type, int donor, data::Team team, int col, int row);
     static void CommandTarget(GameState &state, int slot, int targetSlot);
@@ -21,6 +22,10 @@ private:
     const Map *map_ = nullptr;
     int enemyBaseCol_[2] = {0, 0};
     int enemyBaseRow_[2] = {0, 0};
+    int enemyBaseMinCol_[2] = {0, 0};
+    int enemyBaseMaxCol_[2] = {0, 0};
+    int enemyBaseMinRow_[2] = {0, 0};
+    int enemyBaseMaxRow_[2] = {0, 0};
     data::Vec2 enemyBasePos_[2] = {};
     std::array<int, MapTileCount> occupant_{};
 };

@@ -220,6 +220,7 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
 
     anim_.Update(previous, current);
     units_.UpdateFlash(current, GetFrameTime());
+    damageNumbers_.Update(current, GetFrameTime());
     water_.Update(animTime);
     Scene scene(models_);
     scene.SetBaseAim(data::Team::Top, Vector3{}, false);
@@ -268,13 +269,13 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
     passes.composite2D = [&] {
         hpBars_.DrawEntities(camera, previous, current, alpha);
         deployRings_.Draw(camera, previous, current, alpha);
+        damageNumbers_.Draw(ui_, camera);
         if (!hudHidden_)
         {
             const Color panelTint = {28, 32, 24, 235};
 
             Rectangle timer = {14.0f, 12.0f, 120.0f, 48.0f};
-            ui::Panel(ui_, timer, panelTint);
-            ui::LabelCentered(ui_, "01:45", timer, 30.0f, RAYWHITE, true);
+            ui::DrawMatchTimer(ui_, timer, current.tick);
 
             int player = data::TeamIndex(data::PlayerTeam);
             float res = previous.resource[player] * (1.0f - alpha) + current.resource[player] * alpha;
@@ -282,13 +283,6 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
             ui::Panel(ui_, Rectangle{486.0f, 604.0f, 220.0f, 40.0f}, panelTint);
             ui::DrawResourceBar(ui_, Rectangle{498.0f, 613.0f, 196.0f, 22.0f}, res, 6, highlight,
                                 animTime, crystalStyle_);
-
-            Rectangle mull = {586.0f, 652.0f, 120.0f, 46.0f};
-            ui::ButtonBg(ui_, mull, panelTint);
-            ui::Icon(ui_, ui_.Theme().Cards(), Rectangle{mull.x + 12.0f, mull.y + 7.0f, 32.0f, 32.0f},
-                     Color{234, 230, 214, 255});
-            ui::Label(ui_, "2", Vector2{mull.x + 66.0f, mull.y + 10.0f}, 26.0f,
-                      Color{240, 236, 221, 255}, true);
 
             hand_.Draw(ui_, textures_, cardTarget_);
             if (dragZone_) hand_.DrawDragZone(textures_);

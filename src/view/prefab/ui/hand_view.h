@@ -48,6 +48,9 @@ private:
     };
 
     void EnsureInit();
+    void BuildDeck();
+    data::UnitType DrawCard();
+    void ReturnCard(data::UnitType type);
     float FanAngle(int i) const;
     Vector2 FanCenter(int i) const;
     void Transform(int i, Vector2& center, float& angle, float& scale) const;
@@ -60,6 +63,7 @@ private:
     int SlotCost(const Slot& s) const;
 
     std::vector<Slot> slots_;
+    std::vector<data::UnitType> deck_;
     data::HandParams params_;
     int hovered_ = -1;
     int dragging_ = -1;

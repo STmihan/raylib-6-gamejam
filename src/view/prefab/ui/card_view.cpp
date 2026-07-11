@@ -44,8 +44,8 @@ void DrawCard(UiContext& ui, Rectangle rect, const data::CardDef& def, const Tex
     ui.Theme().Chip(name, Strip);
     LabelCentered(ui, def.name, name, 15.0f, LightInk, true);
 
-    int n = def.charges;
     int remaining = chargesLeft;
+    int n = remaining > def.charges ? remaining : def.charges;
     if (n > 1)
     {
         const float chargeH = 7.0f;

@@ -1,8 +1,10 @@
 #include "view/prefab/ui/hand_view.h"
 
 #include <cmath>
+#include <utility>
 
 #include "data/card/card.h"
+#include "data/card/deck_config.h"
 #include "view/prefab/registries/texture_registry.h"
 #include "view/prefab/ui/card_view.h"
 #include "view/prefab/ui/ui_widgets.h"
@@ -26,15 +28,42 @@ namespace
     }
 }
 
+void HandView::BuildDeck()
+{
+    deck_.clear();
+    for (int e = 0; e < data::DeckEntryCount; e++)
+    {
+        for (int n = 0; n < data::DeckList[e].count; n++) deck_.push_back(data::DeckList[e].type);
+    }
+    for (int i = static_cast<int>(deck_.size()) - 1; i > 0; i--)
+    {
+        int j = GetRandomValue(0, i);
+        std::swap(deck_[static_cast<std::size_t>(i)], deck_[static_cast<std::size_t>(j)]);
+    }
+}
+
+data::UnitType HandView::DrawCard()
+{
+    if (deck_.empty()) BuildDeck();
+    data::UnitType type = deck_.front();
+    deck_.erase(deck_.begin());
+    return type;
+}
+
+void HandView::ReturnCard(data::UnitType type)
+{
+    deck_.push_back(type);
+}
+
 void HandView::EnsureInit()
 {
     if (init_) return;
-    data::UnitType types[3] = {data::UnitType::Infantry, data::UnitType::Tank, data::UnitType::Plane};
-    for (data::UnitType t : types)
+    BuildDeck();
+    for (int i = 0; i < data::HandSize; i++)
     {
         Slot s;
-        s.type = t;
-        s.chargesLeft = data::CardDefOf(t).charges;
+        s.type = DrawCard();
+        s.chargesLeft = data::CardDefOf(s.type).charges;
         slots_.push_back(s);
     }
     init_ = true;
@@ -113,7 +142,7 @@ void HandView::Update(UiInput& input, float dt)
                 Slot& hostSlot = slots_[static_cast<std::size_t>(mergeHost_)];
                 hostSlot.donor = static_cast<int>(donorSlot.type);
                 if (donorSlot.type == data::UnitType::Infantry) hostSlot.chargesLeft += 1;
-                donorSlot.type = static_cast<data::UnitType>(GetRandomValue(0, data::UnitTypeCount - 1));
+                donorSlot.type = DrawCard();
                 donorSlot.donor = -1;
                 donorSlot.chargesLeft = data::CardDefOf(donorSlot.type).charges;
                 donorSlot.hover = 0.0f;
@@ -314,7 +343,9 @@ void HandView::MarkPlayed(int slot)
     s.chargesLeft--;
     if (s.chargesLeft <= 0)
     {
-        s.type = static_cast<data::UnitType>(GetRandomValue(0, data::UnitTypeCount - 1));
+        ReturnCard(s.type);
+        if (s.donor >= 0) ReturnCard(static_cast<data::UnitType>(s.donor));
+        s.type = DrawCard();
         s.donor = -1;
         s.chargesLeft = data::CardDefOf(s.type).charges;
         s.hover = 0.0f;

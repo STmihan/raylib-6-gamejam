@@ -19,13 +19,14 @@
 
 namespace view
 {
-void ControlOverlayView::SetDrag(bool active, data::Vec2 from, data::Vec2 to, bool movable, bool healer)
+void ControlOverlayView::SetDrag(bool active, data::Vec2 from, data::Vec2 to, bool movable, bool healer, int range)
 {
     active_ = active;
     from_ = from;
     to_ = to;
     movable_ = movable;
     healer_ = healer;
+    range_ = range;
 }
 
 void ControlOverlayView::Draw(const logic::GameState& previous, const logic::GameState& current, float alpha,
@@ -33,6 +34,8 @@ void ControlOverlayView::Draw(const logic::GameState& previous, const logic::Gam
                               const UnitView& units, const PlaneOrbitParams& orbit, const bool* occluded) const
 {
     if (!active_) return;
+
+    DrawRangeRing(models);
 
     Vector3 from = LogicToWorld(from_, 0.35f);
     Vector3 to = LogicToWorld(to_, 0.35f);
@@ -89,6 +92,39 @@ void ControlOverlayView::DrawUnitHighlight(const logic::GameState& previous, con
     }
     EndBlendMode();
     rlEnableDepthTest();
+}
+
+void ControlOverlayView::DrawRangeRing(const ModelRegistry& models) const
+{
+    if (range_ <= 0) return;
+    data::Offset here = data::CellFromLogic(from_);
+
+    const Color fill = {255, 205, 90, 55};
+    const Color line = {255, 220, 120, 220};
+    BeginBlendMode(BLEND_ALPHA);
+    for (int row = 0; row < logic::MapRows; row++)
+    {
+        for (int col = 0; col < logic::MapCols; col++)
+        {
+            if (data::HexDistance(here, {col, row}) > range_) continue;
+            DrawModelYaw(models.TileWhite(), LogicToWorld(data::CellToLogic(col, row), 0.07f), 0.0f, fill);
+        }
+    }
+    EndBlendMode();
+
+    for (int row = 0; row < logic::MapRows; row++)
+    {
+        for (int col = 0; col < logic::MapCols; col++)
+        {
+            if (data::HexDistance(here, {col, row}) > range_) continue;
+            Vector3 c = LogicToWorld(data::CellToLogic(col, row), 0.11f);
+            for (int dir = 0; dir < 6; dir++)
+            {
+                if (data::HexDistance(here, data::Neighbor({col, row}, dir)) <= range_) continue;
+                DrawHexEdge(HexCorner(c, HexEdgeCorners[dir][0]), HexCorner(c, HexEdgeCorners[dir][1]), 0.08f, line);
+            }
+        }
+    }
 }
 
 void ControlOverlayView::DrawMoveCell(const logic::Map& map, const ModelRegistry& models, const bool* occluded) const

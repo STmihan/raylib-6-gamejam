@@ -19,6 +19,7 @@
 #include "view/effect/toon_effect.h"
 #include "view/prefab/hex_grid.h"
 #include "view/prefab/control_overlay.h"
+#include "view/prefab/damage_numbers.h"
 #include "view/prefab/heal_wave.h"
 #include "view/prefab/hp_bar.h"
 #include "view/prefab/registries/muzzle_registry.h"
@@ -31,6 +32,7 @@
 #include "view/prefab/water.h"
 #include "view/prefab/ui/card_view.h"
 #include "view/prefab/ui/hand_view.h"
+#include "view/prefab/ui/match_timer.h"
 #include "view/prefab/ui/resource_bar.h"
 #include "view/prefab/ui/ui_context.h"
 #include "view/prefab/ui/ui_widgets.h"
@@ -93,6 +95,7 @@ private:
     HexGrid hexGrid_;
     HpBarView hpBars_;
     HealWaveView healWaves_;
+    DamageNumbers damageNumbers_;
     ControlOverlayView controlOverlay_;
     DeployRingView deployRings_;
     AnimController anim_;

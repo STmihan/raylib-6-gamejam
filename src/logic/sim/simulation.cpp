@@ -3,6 +3,7 @@
 #include <climits>
 #include <cmath>
 #include <limits>
+#include <random>
 
 #include "data/economy/economy.h"
 #include "data/sim/sim_config.h"
@@ -31,6 +32,47 @@ bool WallBlocksPath(const Entity &unit, const Entity &wall) {
     if (!ahead) return false;
     float dx = wall.position.x - unit.position.x;
     return (dx < 0.0f ? -dx : dx) < data::RowSpacingLogic * 0.51f;
+}
+
+bool AliveWallAt(const GameState &state, int col, int row) {
+    for (int j = 0; j < data::MaxEntities; j++) {
+        const Entity &e = state.entities[j];
+        if (e.active && e.kind == EntityKind::Wall && e.col == col && e.row == row) return true;
+    }
+    return false;
+}
+
+bool WallBetween(const GameState &state, int aCol, int aRow, int bCol, int bRow) {
+    data::Offset a = {aCol, aRow};
+    data::Offset b = {bCol, bRow};
+    int n = data::HexDistance(a, b);
+    if (n <= 1) return false;
+
+    data::Cube ca = data::OffsetToCube(a);
+    data::Cube cb = data::OffsetToCube(b);
+    for (int i = 1; i < n; i++) {
+        float t = static_cast<float>(i) / static_cast<float>(n);
+        float fx = static_cast<float>(ca.x) + (static_cast<float>(cb.x - ca.x)) * t;
+        float fy = static_cast<float>(ca.y) + (static_cast<float>(cb.y - ca.y)) * t;
+        float fz = static_cast<float>(ca.z) + (static_cast<float>(cb.z - ca.z)) * t;
+        float rx = std::round(fx);
+        float ry = std::round(fy);
+        float rz = std::round(fz);
+        float dx = std::fabs(rx - fx);
+        float dy = std::fabs(ry - fy);
+        float dz = std::fabs(rz - fz);
+        if (dx > dy && dx > dz) rx = -ry - rz;
+        else if (dy > dz) ry = -rx - rz;
+        else rz = -rx - ry;
+        data::Offset o = data::CubeToOffset({static_cast<int>(rx), static_cast<int>(ry), static_cast<int>(rz)});
+        if (AliveWallAt(state, o.col, o.row)) return true;
+    }
+    return false;
+}
+
+bool DamageBlockedByWall(const GameState &state, const Entity &attacker, const Entity &target) {
+    if (attacker.type != data::UnitType::Infantry && attacker.type != data::UnitType::Tank) return false;
+    return WallBetween(state, attacker.col, attacker.row, target.col, target.row);
 }
 
 int ComputeDamage(const Entity &attacker, const Entity &target) {
@@ -85,6 +127,60 @@ void ApplyHealArea(GameState &state, data::Team team, int col, int row, int radi
         if (ally.hp > maxHp) ally.hp = maxHp;
     }
     SpawnHealPulse(state, data::CellToLogic(col, row), radius);
+}
+
+data::Offset NearestBoxCell(int minCol, int maxCol, int minRow, int maxRow, data::Offset from) {
+    data::Offset best = {minCol, minRow};
+    int bestDistance = INT_MAX;
+    for (int row = minRow; row <= maxRow; row++) {
+        for (int col = minCol; col <= maxCol; col++) {
+            int distance = data::HexDistance(from, {col, row});
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                best = {col, row};
+            }
+        }
+    }
+    return best;
+}
+
+data::Offset NearestFootCell(const Entity &e, data::Offset from) {
+    return NearestBoxCell(e.footMinCol, e.footMaxCol, e.footMinRow, e.footMaxRow, from);
+}
+
+int FootDistance(const Entity &e, data::Offset from) {
+    return data::HexDistance(from, NearestFootCell(e, from));
+}
+
+std::uint32_t Hash32(std::uint32_t x) {
+    x ^= x >> 16;
+    x *= 0x7feb352dU;
+    x ^= x >> 15;
+    x *= 0x846ca68bU;
+    x ^= x >> 16;
+    return x;
+}
+
+void SpawnMiss(GameState &state, data::Vec2 position) {
+    for (int j = 0; j < data::MaxMisses; j++) {
+        MissMark &mark = state.misses[j];
+        if (mark.active) continue;
+        mark.active = true;
+        mark.position = position;
+        mark.startTick = state.tick;
+        return;
+    }
+}
+
+bool ShotMisses(const GameState &state, const Map &map, const Projectile &p) {
+    const Entity &victim = state.entities[p.targetSlot];
+    if (!map.InBounds(victim.col, victim.row)) return false;
+    if (map.At(victim.col, victim.row) != data::TileType::Forest) return false;
+    std::uint32_t roll = Hash32(state.seed
+                                ^ Hash32(static_cast<std::uint32_t>(p.launchTick) * 2654435761U)
+                                ^ Hash32(static_cast<std::uint32_t>(p.attackerSlot * 2246822519U
+                                                                    + p.targetSlot * 3266489917U)));
+    return roll % 100U < static_cast<std::uint32_t>(data::ForestMissPercent);
 }
 
 int AcquireAlly(const GameState &state, int index) {
@@ -162,7 +258,7 @@ int AcquireTarget(const GameState &state, int index) {
         if (!other.active || other.team == self.team) continue;
         if (!CanDamage(self, other)) continue;
         if (other.kind == EntityKind::Wall && !WallBlocksPath(self, other)) continue;
-        int distance = data::HexDistance(here, {other.col, other.row});
+        int distance = FootDistance(other, here);
         if (distance <= self.attackRange && distance < bestDistance) {
             bestDistance = distance;
             best = j;
@@ -219,7 +315,7 @@ bool ForcedTargetValid(const GameState &state, int index, int target) {
 bool InAttackRange(const GameState &state, int index, int target) {
     const Entity &self = state.entities[index];
     const Entity &t = state.entities[target];
-    int dist = data::HexDistance({self.col, self.row}, {t.col, t.row});
+    int dist = FootDistance(t, {self.col, self.row});
     return dist <= self.attackRange;
 }
 
@@ -230,7 +326,7 @@ bool StillValid(const GameState &state, int index, int target) {
     if (!t.active || t.team == self.team) return false;
     if (!CanDamage(self, t)) return false;
     if (t.kind == EntityKind::Wall && !WallBlocksPath(self, t)) return false;
-    int dist = data::HexDistance({self.col, self.row}, {t.col, t.row});
+    int dist = FootDistance(t, {self.col, self.row});
     return dist <= self.attackRange;
 }
 
@@ -344,11 +440,17 @@ int SelectTarget(GameState &state, int index) {
 
 }
 
-void Simulation::Init(GameState &state, const Map &map) {
+void Simulation::Init(GameState &state, const Map &map, std::uint32_t seed) {
     map_ = &map;
 
     state.tick = 0;
     state.winner = -1;
+    if (seed == 0) {
+        std::random_device rng;
+        seed = rng();
+    }
+    if (seed == 0) seed = 0x9e3779b9U;
+    state.seed = seed;
     state.resource[0] = 0.0f;
     state.resource[1] = 0.0f;
     for (int i = 0; i < data::MaxEntities; i++) {
@@ -363,6 +465,9 @@ void Simulation::Init(GameState &state, const Map &map) {
     for (int j = 0; j < data::MaxBeams; j++) {
         state.beams[j].active = false;
     }
+    for (int j = 0; j < data::MaxMisses; j++) {
+        state.misses[j].active = false;
+    }
 
     int count = 0;
     auto addEntity = [&](EntityKind kind, data::UnitType type, data::Team team, int col, int row, int hp) {
@@ -374,6 +479,10 @@ void Simulation::Init(GameState &state, const Map &map) {
         entity.team = team;
         entity.col = col;
         entity.row = row;
+        entity.footMinCol = col;
+        entity.footMinRow = row;
+        entity.footMaxCol = col;
+        entity.footMaxRow = row;
         entity.position = data::CellToLogic(col, row);
         entity.hp = hp;
         entity.targetSlot = -1;
@@ -407,6 +516,10 @@ void Simulation::Init(GameState &state, const Map &map) {
 
     int baseCol[2] = {0, 0};
     int baseRow[2] = {0, 0};
+    int baseMinCol[2] = {0, 0};
+    int baseMaxCol[2] = {0, 0};
+    int baseMinRow[2] = {0, 0};
+    int baseMaxRow[2] = {0, 0};
     for (data::Team team : teams) {
         int idx = data::TeamIndex(team);
         int minCol = MapCols, maxCol = -1, minRow = MapRows, maxRow = -1;
@@ -425,7 +538,17 @@ void Simulation::Init(GameState &state, const Map &map) {
         int centerRow = (minRow + maxRow) / 2;
         baseCol[idx] = centerCol;
         baseRow[idx] = centerRow;
+        baseMinCol[idx] = minCol;
+        baseMaxCol[idx] = maxCol;
+        baseMinRow[idx] = minRow;
+        baseMaxRow[idx] = maxRow;
+        int baseIndex = count;
         addEntity(EntityKind::Base, data::UnitType::Infantry, team, centerCol, centerRow, data::BaseHp);
+        Entity &base = state.entities[baseIndex];
+        base.footMinCol = minCol;
+        base.footMaxCol = maxCol;
+        base.footMinRow = minRow;
+        base.footMaxRow = maxRow;
     }
 
     int topIdx = data::TeamIndex(data::Team::Top);
@@ -434,6 +557,14 @@ void Simulation::Init(GameState &state, const Map &map) {
     enemyBaseRow_[topIdx] = baseRow[botIdx];
     enemyBaseCol_[botIdx] = baseCol[topIdx];
     enemyBaseRow_[botIdx] = baseRow[topIdx];
+    enemyBaseMinCol_[topIdx] = baseMinCol[botIdx];
+    enemyBaseMaxCol_[topIdx] = baseMaxCol[botIdx];
+    enemyBaseMinRow_[topIdx] = baseMinRow[botIdx];
+    enemyBaseMaxRow_[topIdx] = baseMaxRow[botIdx];
+    enemyBaseMinCol_[botIdx] = baseMinCol[topIdx];
+    enemyBaseMaxCol_[botIdx] = baseMaxCol[topIdx];
+    enemyBaseMinRow_[botIdx] = baseMinRow[topIdx];
+    enemyBaseMaxRow_[botIdx] = baseMaxRow[topIdx];
     enemyBasePos_[topIdx] = data::CellToLogic(baseCol[botIdx], baseRow[botIdx]);
     enemyBasePos_[botIdx] = data::CellToLogic(baseCol[topIdx], baseRow[topIdx]);
 
@@ -450,6 +581,15 @@ void Simulation::Step(GameState &state, float dt) {
     for (int t = 0; t < 2; t++) {
         state.resource[t] += regen;
         if (state.resource[t] > data::ResourceCap) state.resource[t] = data::ResourceCap;
+    }
+
+    int elapsedSeconds = static_cast<int>(state.tick / data::TickRate);
+    if (elapsedSeconds >= data::MatchDurationSeconds && state.tick % data::TickRate == 0) {
+        int damage = data::OvertimeDamageAt(elapsedSeconds - data::MatchDurationSeconds);
+        for (int i = 0; i < data::MaxEntities; i++) {
+            Entity &base = state.entities[i];
+            if (base.active && base.kind == EntityKind::Base) base.hp -= damage;
+        }
     }
 
     occupant_.fill(-1);
@@ -510,7 +650,7 @@ void Simulation::Step(GameState &state, float dt) {
                 } else {
                     Entity &victim = state.entities[target];
                     int muzzle = entity.burstIndex;
-                    ApplyHit(victim, ComputeDamage(entity, victim));
+                    if (!DamageBlockedByWall(state, entity, victim)) ApplyHit(victim, ComputeDamage(entity, victim));
                     SpawnBeam(state, i, target, muzzle);
                     entity.burstIndex = (entity.burstIndex + 1) % data::MuzzleCount(entity.type);
                     entity.attackCooldown = data::UnitStatsOf(entity.type).attackInterval;
@@ -532,18 +672,15 @@ void Simulation::Step(GameState &state, float dt) {
 
         if (stationary) continue;
 
-        int goalCol;
-        int goalRow;
-        int stopRange = entity.attackRange;
+        data::Offset here = {entity.col, entity.row};
+        data::Offset goal;
         if (entity.forcedTarget >= 0) {
-            goalCol = state.entities[entity.forcedTarget].col;
-            goalRow = state.entities[entity.forcedTarget].row;
+            goal = NearestFootCell(state.entities[entity.forcedTarget], here);
         } else {
-            goalCol = enemyBaseCol_[teamIdx];
-            goalRow = enemyBaseRow_[teamIdx];
-            if (stopRange < 2) stopRange = 2;
+            goal = NearestBoxCell(enemyBaseMinCol_[teamIdx], enemyBaseMaxCol_[teamIdx],
+                                  enemyBaseMinRow_[teamIdx], enemyBaseMaxRow_[teamIdx], here);
         }
-        StepGroundMove(entity, *map_, occupant_.data(), i, dt, goalCol, goalRow, stopRange);
+        StepGroundMove(entity, *map_, occupant_.data(), i, dt, goal.col, goal.row, entity.attackRange);
     }
 
     for (int i = 0; i < data::MaxEntities; i++) {
@@ -567,7 +704,10 @@ void Simulation::Step(GameState &state, float dt) {
         Projectile &p = state.projectiles[j];
         if (!p.active || state.tick < p.impactTick) continue;
         Entity &victim = state.entities[p.targetSlot];
-        if (victim.active) ApplyHit(victim, p.damage);
+        if (victim.active && !DamageBlockedByWall(state, state.entities[p.attackerSlot], victim)) {
+            if (ShotMisses(state, *map_, p)) SpawnMiss(state, victim.position);
+            else ApplyHit(victim, p.damage);
+        }
         p.active = false;
     }
 
@@ -583,6 +723,13 @@ void Simulation::Step(GameState &state, float dt) {
     for (int j = 0; j < data::MaxBeams; j++) {
         Beam &beam = state.beams[j];
         if (beam.active && state.tick - beam.startTick > beamTicks) beam.active = false;
+    }
+
+    std::uint64_t missTicks = static_cast<std::uint64_t>(data::MissSeconds / static_cast<float>(data::TickDelta))
+        + 1;
+    for (int j = 0; j < data::MaxMisses; j++) {
+        MissMark &mark = state.misses[j];
+        if (mark.active && state.tick - mark.startTick > missTicks) mark.active = false;
     }
 
     for (int i = 0; i < data::MaxEntities; i++) {
@@ -610,6 +757,10 @@ int Simulation::Deploy(GameState &state, data::UnitType type, int donor, data::T
     e.team = team;
     e.col = col;
     e.row = row;
+    e.footMinCol = col;
+    e.footMinRow = row;
+    e.footMaxCol = col;
+    e.footMaxRow = row;
     e.position = data::CellToLogic(col, row);
     e.hp = data::UnitStatsOf(type).hp;
     e.targetSlot = -1;
