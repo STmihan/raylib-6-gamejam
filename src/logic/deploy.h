@@ -2,6 +2,7 @@
 #define LOGIC_DEPLOY_H
 
 #include "data/sim/sim_config.h"
+#include "data/space/hex.h"
 #include "data/tile/tile.h"
 #include "data/unit/unit.h"
 #include "logic/state/game_state.h"

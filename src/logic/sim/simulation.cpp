@@ -3,7 +3,6 @@
 #include <climits>
 #include <cmath>
 #include <limits>
-#include <random>
 
 #include "data/economy/economy.h"
 #include "data/sim/sim_config.h"
@@ -11,6 +10,7 @@
 #include "data/tile/tile.h"
 #include "data/time/time_config.h"
 #include "data/unit/damage.h"
+#include "logic/cards/cards.h"
 #include "logic/path.h"
 
 namespace logic {
@@ -334,6 +334,10 @@ void RefreshCell(Entity &entity) {
     data::Offset cell = data::CellFromLogic(entity.position);
     entity.col = cell.col;
     entity.row = cell.row;
+    entity.footMinCol = cell.col;
+    entity.footMaxCol = cell.col;
+    entity.footMinRow = cell.row;
+    entity.footMaxRow = cell.row;
 }
 
 void MoveTowardFree(Entity &entity, float dt, data::Vec2 dest) {
@@ -445,10 +449,6 @@ void Simulation::Init(GameState &state, const Map &map, std::uint32_t seed) {
 
     state.tick = 0;
     state.winner = -1;
-    if (seed == 0) {
-        std::random_device rng;
-        seed = rng();
-    }
     if (seed == 0) seed = 0x9e3779b9U;
     state.seed = seed;
     state.resource[0] = 0.0f;
@@ -569,6 +569,8 @@ void Simulation::Init(GameState &state, const Map &map, std::uint32_t seed) {
     enemyBasePos_[botIdx] = data::CellToLogic(baseCol[topIdx], baseRow[topIdx]);
 
     state.entityCount = count;
+
+    InitPlayerCards(state, seed);
 }
 
 void Simulation::Step(GameState &state, float dt) {
@@ -670,7 +672,7 @@ void Simulation::Step(GameState &state, float dt) {
             continue;
         }
 
-        if (stationary) continue;
+        if (stationary && entity.forcedTarget < 0) continue;
 
         data::Offset here = {entity.col, entity.row};
         data::Offset goal;

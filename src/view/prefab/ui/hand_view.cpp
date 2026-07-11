@@ -1,10 +1,9 @@
 #include "view/prefab/ui/hand_view.h"
 
 #include <cmath>
-#include <utility>
+#include <cstddef>
 
 #include "data/card/card.h"
-#include "data/card/deck_config.h"
 #include "view/prefab/registries/texture_registry.h"
 #include "view/prefab/ui/card_view.h"
 #include "view/prefab/ui/ui_widgets.h"
@@ -28,45 +27,22 @@ namespace
     }
 }
 
-void HandView::BuildDeck()
+void HandView::Sync(const logic::GameState& state)
 {
-    deck_.clear();
-    for (int e = 0; e < data::DeckEntryCount; e++)
+    const logic::PlayerCards& player =
+        state.players[static_cast<std::size_t>(data::TeamIndex(data::PlayerTeam))];
+    if (static_cast<int>(slots_.size()) != data::HandSize)
     {
-        for (int n = 0; n < data::DeckList[e].count; n++) deck_.push_back(data::DeckList[e].type);
+        slots_.assign(static_cast<std::size_t>(data::HandSize), Slot{});
     }
-    for (int i = static_cast<int>(deck_.size()) - 1; i > 0; i--)
-    {
-        int j = GetRandomValue(0, i);
-        std::swap(deck_[static_cast<std::size_t>(i)], deck_[static_cast<std::size_t>(j)]);
-    }
-}
-
-data::UnitType HandView::DrawCard()
-{
-    if (deck_.empty()) BuildDeck();
-    data::UnitType type = deck_.front();
-    deck_.erase(deck_.begin());
-    return type;
-}
-
-void HandView::ReturnCard(data::UnitType type)
-{
-    deck_.push_back(type);
-}
-
-void HandView::EnsureInit()
-{
-    if (init_) return;
-    BuildDeck();
     for (int i = 0; i < data::HandSize; i++)
     {
-        Slot s;
-        s.type = DrawCard();
-        s.chargesLeft = data::CardDefOf(s.type).charges;
-        slots_.push_back(s);
+        Slot& s = slots_[static_cast<std::size_t>(i)];
+        const logic::HandSlot& src = player.hand[static_cast<std::size_t>(i)];
+        s.type = src.type;
+        s.donor = src.donor;
+        s.chargesLeft = src.chargesLeft;
     }
-    init_ = true;
 }
 
 float HandView::FanAngle(int i) const
@@ -102,9 +78,9 @@ void HandView::Transform(int i, Vector2& center, float& angle, float& scale) con
     }
 }
 
-void HandView::Update(UiInput& input, float dt)
+void HandView::Update(UiInput& input, float dt, const logic::GameState& state)
 {
-    EnsureInit();
+    Sync(state);
     Vector2 m = input.Mouse();
     int count = static_cast<int>(slots_.size());
 
@@ -136,24 +112,16 @@ void HandView::Update(UiInput& input, float dt)
         mergeHost_ = ValidMergeHost(m);
         if (!input.Down())
         {
-            Slot& donorSlot = slots_[static_cast<std::size_t>(dragging_)];
             if (mergeHost_ >= 0)
             {
-                Slot& hostSlot = slots_[static_cast<std::size_t>(mergeHost_)];
-                hostSlot.donor = static_cast<int>(donorSlot.type);
-                if (donorSlot.type == data::UnitType::Infantry) hostSlot.chargesLeft += 1;
-                donorSlot.type = DrawCard();
-                donorSlot.donor = -1;
-                donorSlot.chargesLeft = data::CardDefOf(donorSlot.type).charges;
-                donorSlot.hover = 0.0f;
-                donorSlot.drag = 0.0f;
+                hasMerge_ = true;
+                mergeHostOut_ = mergeHost_;
+                mergeDonorOut_ = dragging_;
             }
             else if (DragOutside())
             {
                 hasDrop_ = true;
                 dropSlot_ = dragging_;
-                dropType_ = donorSlot.type;
-                dropDonor_ = donorSlot.donor;
                 dropPos_ = m;
             }
             dragging_ = -1;
@@ -325,31 +293,21 @@ bool HandView::DraggedAirdrop() const
     return s.type == data::UnitType::Plane || s.donor == static_cast<int>(data::UnitType::Plane);
 }
 
-bool HandView::TakeDrop(int& slot, data::UnitType& type, int& donor, Vector2& screenPos)
+bool HandView::TakeDrop(int& slot, Vector2& screenPos)
 {
     if (!hasDrop_) return false;
     hasDrop_ = false;
     slot = dropSlot_;
-    type = dropType_;
-    donor = dropDonor_;
     screenPos = dropPos_;
     return true;
 }
 
-void HandView::MarkPlayed(int slot)
+bool HandView::TakeMerge(int& host, int& donor)
 {
-    if (slot < 0 || slot >= static_cast<int>(slots_.size())) return;
-    Slot& s = slots_[static_cast<std::size_t>(slot)];
-    s.chargesLeft--;
-    if (s.chargesLeft <= 0)
-    {
-        ReturnCard(s.type);
-        if (s.donor >= 0) ReturnCard(static_cast<data::UnitType>(s.donor));
-        s.type = DrawCard();
-        s.donor = -1;
-        s.chargesLeft = data::CardDefOf(s.type).charges;
-        s.hover = 0.0f;
-        s.drag = 0.0f;
-    }
+    if (!hasMerge_) return false;
+    hasMerge_ = false;
+    host = mergeHostOut_;
+    donor = mergeDonorOut_;
+    return true;
 }
 }

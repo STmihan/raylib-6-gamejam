@@ -1,6 +1,8 @@
 #ifndef DATA_CARD_DECK_CONFIG_H
 #define DATA_CARD_DECK_CONFIG_H
 
+#include <iterator>
+
 #include "data/unit/unit.h"
 
 namespace data
@@ -22,7 +24,16 @@ inline constexpr DeckEntry DeckList[] = {
     {UnitType::Plane, 2},
 };
 
-inline constexpr int DeckEntryCount = sizeof(DeckList) / sizeof(DeckList[0]);
+inline constexpr int DeckEntryCount = std::size(DeckList);
+
+constexpr int TotalDeckCards()
+{
+    int total = 0;
+    for (int i = 0; i < DeckEntryCount; i++) total += DeckList[i].count;
+    return total;
+}
+
+inline constexpr int MaxDeckCards = TotalDeckCards();
 }
 
 #endif

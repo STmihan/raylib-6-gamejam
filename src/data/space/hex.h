@@ -41,14 +41,15 @@ inline int HexDistance(Offset a, Offset b)
     return (std::abs(ca.x - cb.x) + std::abs(ca.y - cb.y) + std::abs(ca.z - cb.z)) / 2;
 }
 
+inline constexpr Cube HexDirections[6] = {
+    {+1, -1, 0}, {+1, 0, -1}, {0, +1, -1},
+    {-1, +1, 0}, {-1, 0, +1}, {0, -1, +1},
+};
+
 inline Offset Neighbor(Offset o, int direction)
 {
-    static const Cube directions[6] = {
-        {+1, -1, 0}, {+1, 0, -1}, {0, +1, -1},
-        {-1, +1, 0}, {-1, 0, +1}, {0, -1, +1},
-    };
     Cube c = OffsetToCube(o);
-    Cube d = directions[direction];
+    Cube d = HexDirections[direction];
     return CubeToOffset({c.x + d.x, c.y + d.y, c.z + d.z});
 }
 

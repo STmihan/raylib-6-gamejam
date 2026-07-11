@@ -8,7 +8,7 @@ void Cheats::Update(app::App& app)
 {
     if (IsKeyPressed(KEY_R))
     {
-        app.simulation.Init(app.currentState, app.map);
+        app.simulation.Init(app.currentState, app.map, app::NewSeed());
         app.previousState = app.currentState;
         app.accumulator = 0.0;
     }
@@ -18,6 +18,7 @@ void Cheats::Update(app::App& app)
     if (IsKeyPressed(KEY_KP_1)) speed_ = 1.0f;
     if (IsKeyPressed(KEY_KP_2)) speed_ = 2.0f;
     if (IsKeyPressed(KEY_KP_3)) speed_ = 3.0f;
+    if (IsKeyPressed(KEY_KP_0)) speed_ = 10.0f;
 }
 
 void Cheats::ApplyFreeCamera(Camera3D& camera, float dt)

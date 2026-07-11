@@ -4,6 +4,7 @@
 #include <array>
 #include <cstdint>
 
+#include "data/card/deck_config.h"
 #include "data/sim/sim_config.h"
 #include "data/space/vec.h"
 #include "data/unit/unit.h"
@@ -81,6 +82,23 @@ struct MissMark {
     std::uint64_t startTick;
 };
 
+struct HandSlot {
+    data::UnitType type;
+    int donor;
+    int chargesLeft;
+};
+
+struct Deck {
+    std::array<data::UnitType, data::MaxDeckCards> cards;
+    int head;
+    int count;
+};
+
+struct PlayerCards {
+    Deck deck;
+    std::array<HandSlot, data::HandSize> hand;
+};
+
 struct GameState {
     std::uint64_t tick;
     std::uint32_t seed;
@@ -92,6 +110,7 @@ struct GameState {
     std::array<HealPulse, data::MaxHealPulses> healPulses;
     std::array<Beam, data::MaxBeams> beams;
     std::array<MissMark, data::MaxMisses> misses;
+    std::array<PlayerCards, 2> players;
 };
 
 }

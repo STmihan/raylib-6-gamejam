@@ -38,6 +38,19 @@ namespace
     {
         return occluded != nullptr && occluded[static_cast<std::size_t>(row) * logic::MapCols + col];
     }
+
+    bool ForestHidden(const bool* occluded, int col, int row)
+    {
+        if (occluded == nullptr) return false;
+        if (Occluded(occluded, col, row)) return true;
+        for (int dir = 0; dir < 6; dir++)
+        {
+            data::Offset n = data::Neighbor({col, row}, dir);
+            if (n.col < 0 || n.col >= logic::MapCols || n.row < 0 || n.row >= logic::MapRows) continue;
+            if (Occluded(occluded, n.col, n.row)) return true;
+        }
+        return false;
+    }
 }
 
 void Scene::Draw(const logic::Map& map, bool includeFloors, const bool* occluded, const bool* wallAlive) const
@@ -80,7 +93,7 @@ void Scene::DrawStructures(const logic::Map& map, const bool* occluded, const bo
         for (int col = 0; col < logic::MapCols; col++)
         {
             if (map.At(col, row) != data::TileType::Forest) continue;
-            if (Occluded(occluded, col, row)) continue;
+            if (ForestHidden(occluded, col, row)) continue;
             DrawTrees(models, col, row, WHITE);
         }
     }
@@ -146,16 +159,17 @@ void Scene::DrawGhostStructures(const logic::Map& map, const bool* occluded, con
     {
         for (int col = 0; col < logic::MapCols; col++)
         {
-            if (!Occluded(occluded, col, row)) continue;
             data::TileType type = map.At(col, row);
             if (type == data::TileType::Wall)
             {
+                if (!Occluded(occluded, col, row)) continue;
                 if (wallAlive != nullptr && !wallAlive[static_cast<std::size_t>(row) * logic::MapCols + col])
                     continue;
                 DrawModelYaw(models.Wall(), CellWorld(col, row, 0.0f), 0.0f, tint);
             }
             else if (type == data::TileType::Forest)
             {
+                if (!ForestHidden(occluded, col, row)) continue;
                 DrawTrees(models, col, row, tint);
             }
         }

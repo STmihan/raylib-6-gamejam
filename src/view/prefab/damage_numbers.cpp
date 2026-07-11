@@ -14,6 +14,18 @@ constexpr float Lifetime = 0.85f;
 constexpr float MergeWindow = 0.25f;
 constexpr float RisePixels = 40.0f;
 constexpr std::uint32_t InvalidId = 0xFFFFFFFFu;
+
+void DrawBoldCentered(ui::UiContext& ui, const char* text, Vector2 center, float size, Color color)
+{
+    Vector2 extent = ui.Text().Measure(text, size);
+    Vector2 pos = {center.x - extent.x * 0.5f, center.y - extent.y * 0.5f};
+    float o = size * 0.08f;
+    ui.Text().Draw(text, Vector2{pos.x - o, pos.y}, size, color);
+    ui.Text().Draw(text, Vector2{pos.x + o, pos.y}, size, color);
+    ui.Text().Draw(text, Vector2{pos.x, pos.y - o}, size, color);
+    ui.Text().Draw(text, Vector2{pos.x, pos.y + o}, size, color);
+    ui.Text().Draw(text, pos, size, color);
+}
 }
 
 void DamageNumbers::Reset()
@@ -167,9 +179,8 @@ void DamageNumbers::Draw(ui::UiContext& ui, Camera3D camera) const
             color.a = static_cast<unsigned char>(255.0f * (fade < 0.0f ? 0.0f : fade));
         }
 
-        float size = p.miss ? 11.0f : 9.6f;
-        Rectangle box = {screen.x - 40.0f, screen.y - 14.0f, 80.0f, 28.0f};
-        ui::LabelCentered(ui, p.text, box, size, color, true);
+        float size = p.miss ? 13.0f : 12.0f;
+        DrawBoldCentered(ui, p.text, screen, size, color);
     }
 }
 }

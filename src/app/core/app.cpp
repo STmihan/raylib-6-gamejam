@@ -1,14 +1,14 @@
 #include "app/core/app.h"
 
+#include <random>
+
 #include "app/input/cursor.h"
-#include "data/card/card.h"
-#include "data/economy/economy.h"
 #include "data/space/hex.h"
 #include "data/space/world_config.h"
 #include "data/time/time_config.h"
 #include "debug/debug_input.h"
 #include "debug/debug_ui.h"
-#include "logic/deploy.h"
+#include "logic/cards/cards.h"
 
 namespace app
 {
@@ -17,37 +17,41 @@ namespace
 void ProcessDeploy(App& app, Camera3D camera)
 {
     int slot;
-    data::UnitType type;
-    int donor;
     Vector2 screenPos;
-    if (!app.renderer.Hand().TakeDrop(slot, type, donor, screenPos)) return;
+    if (!app.renderer.Hand().TakeDrop(slot, screenPos)) return;
 
     data::Vec2 logicPos;
     if (!CursorLogic(camera, screenPos, logicPos)) return;
     data::Offset cell = data::CellFromLogic(logicPos);
-    bool anywhere = type == data::UnitType::Plane || donor == static_cast<int>(data::UnitType::Plane);
-    if (!logic::IsDeployable(app.map, cell.col, cell.row, data::PlayerTeam, anywhere)) return;
-    if (logic::CellHasUnit(app.currentState, cell.col, cell.row)) return;
 
-    int cost = data::CardDefOf(type).cost;
-    if (donor >= 0) cost += data::CardDefOf(static_cast<data::UnitType>(donor)).cost;
-    int pidx = data::TeamIndex(data::PlayerTeam);
-    if (app.currentState.resource[pidx] < static_cast<float>(cost)) return;
-
-    int spawned = logic::Simulation::Deploy(app.currentState, type, donor, data::PlayerTeam, cell.col, cell.row);
+    int spawned = logic::PlayCard(app.currentState, app.map, data::PlayerTeam, slot, cell.col, cell.row);
     if (spawned < 0) return;
     app.previousState.entities[spawned] = app.currentState.entities[spawned];
-    app.currentState.resource[pidx] -= static_cast<float>(cost);
-    app.renderer.Hand().MarkPlayed(slot);
+}
+
+void ProcessMerge(App& app)
+{
+    int host;
+    int donor;
+    if (!app.renderer.Hand().TakeMerge(host, donor)) return;
+    logic::MergeSlots(app.currentState, data::PlayerTeam, host, donor);
 }
 }
+
+std::uint32_t NewSeed()
+{
+    std::random_device rng;
+    std::uint32_t seed = rng();
+    return seed == 0 ? 0x9e3779b9U : seed;
+}
+
 void InitApp(App& app)
 {
     app.map = logic::BuildMap();
     app.renderer.Init(app.map);
     app.cameraRig.Init();
     app.accumulator = 0.0;
-    app.simulation.Init(app.currentState, app.map);
+    app.simulation.Init(app.currentState, app.map, NewSeed());
     app.previousState = app.currentState;
 }
 
@@ -64,13 +68,13 @@ void StepApp(App& app)
 
     if (app.currentState.winner >= 0 && IsKeyPressed(KEY_R))
     {
-        app.simulation.Init(app.currentState, app.map);
+        app.simulation.Init(app.currentState, app.map, NewSeed());
         app.previousState = app.currentState;
         app.accumulator = 0.0;
     }
 
     app.renderer.Ui().BeginFrame();
-    app.renderer.Hand().Update(app.renderer.Ui().Input(), GetFrameTime());
+    app.renderer.Hand().Update(app.renderer.Ui().Input(), GetFrameTime(), app.currentState);
 
     float delta = GetFrameTime() * speed;
 
@@ -102,6 +106,7 @@ void StepApp(App& app)
     cheats.ApplyFreeCamera(camera, GetFrameTime());
 #endif
 
+    ProcessMerge(app);
     ProcessDeploy(app, camera);
     app.unitControl.Update(app, camera);
 

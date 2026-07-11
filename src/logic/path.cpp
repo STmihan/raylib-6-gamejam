@@ -26,8 +26,8 @@ bool FindStep(const Map& map, const int* occupant, int selfIndex, int fromCol, i
     data::Offset goal{goalCol, goalRow};
     if (data::HexDistance({fromCol, fromRow}, goal) <= stopRange) return false;
 
-    static std::array<int, MapTileCount> gScore;
-    static std::array<int, MapTileCount> parent;
+    std::array<int, MapTileCount> gScore;
+    std::array<int, MapTileCount> parent;
     gScore.fill(-1);
     parent.fill(-1);
 

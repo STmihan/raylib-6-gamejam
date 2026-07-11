@@ -1,6 +1,8 @@
 #ifndef APP_APP_H
 #define APP_APP_H
 
+#include <cstdint>
+
 #include "raylib.h"
 
 #include "app/input/unit_control.h"
@@ -24,6 +26,7 @@ struct App
     UnitControl unitControl;
 };
 
+std::uint32_t NewSeed();
 void InitApp(App& app);
 void StepApp(App& app);
 void ShutdownApp(App& app);

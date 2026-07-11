@@ -7,6 +7,7 @@
 
 #include "data/render/hud_params.h"
 #include "data/unit/unit.h"
+#include "logic/state/game_state.h"
 #include "view/prefab/ui/ui_context.h"
 
 namespace view
@@ -19,7 +20,7 @@ namespace view::ui
 class HandView
 {
 public:
-    void Update(UiInput& input, float dt);
+    void Update(UiInput& input, float dt, const logic::GameState& state);
     void Draw(UiContext& ui, const TextureRegistry& textures, RenderTexture2D& target);
     void DrawDragZone(const TextureRegistry& textures) const;
 
@@ -34,23 +35,20 @@ public:
     bool DraggedAirdrop() const;
     bool DragDeploys() const;
 
-    bool TakeDrop(int& slot, data::UnitType& type, int& donor, Vector2& screenPos);
-    void MarkPlayed(int slot);
+    bool TakeDrop(int& slot, Vector2& screenPos);
+    bool TakeMerge(int& host, int& donor);
 
 private:
     struct Slot
     {
-        data::UnitType type;
+        data::UnitType type = data::UnitType::Infantry;
         int donor = -1;
         int chargesLeft = 1;
         float hover = 0.0f;
         float drag = 0.0f;
     };
 
-    void EnsureInit();
-    void BuildDeck();
-    data::UnitType DrawCard();
-    void ReturnCard(data::UnitType type);
+    void Sync(const logic::GameState& state);
     float FanAngle(int i) const;
     Vector2 FanCenter(int i) const;
     void Transform(int i, Vector2& center, float& angle, float& scale) const;
@@ -63,19 +61,19 @@ private:
     int SlotCost(const Slot& s) const;
 
     std::vector<Slot> slots_;
-    std::vector<data::UnitType> deck_;
     data::HandParams params_;
     int hovered_ = -1;
     int dragging_ = -1;
     int mergeHost_ = -1;
     Vector2 dragPos_{};
-    bool init_ = false;
 
     bool hasDrop_ = false;
     int dropSlot_ = -1;
-    data::UnitType dropType_ = data::UnitType::Infantry;
-    int dropDonor_ = -1;
     Vector2 dropPos_{};
+
+    bool hasMerge_ = false;
+    int mergeHostOut_ = -1;
+    int mergeDonorOut_ = -1;
 };
 }
 
