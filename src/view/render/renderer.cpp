@@ -236,7 +236,7 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
     }
 
     auto drawUnits = [&] {
-        units_.Draw(models_, previous, current, alpha, false, orbitParams_, animTime);
+        units_.Draw(models_, previous, current, alpha, false, true, orbitParams_, animTime);
         projectiles_.Draw(models_, muzzles_, previous, current, alpha, orbitParams_, animTime);
     };
 
@@ -250,7 +250,7 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
         hexGrid_.Draw();
         UseUnitShadow();
         ConfigureBlobShadow();
-        units_.Draw(models_, previous, current, alpha, true, orbitParams_, animTime);
+        units_.Draw(models_, previous, current, alpha, true, !hudHidden_, orbitParams_, animTime);
         projectiles_.Draw(models_, muzzles_, previous, current, alpha, orbitParams_, animTime);
         projectiles_.DrawBeams(models_, muzzles_, map, previous, current, alpha, orbitParams_, animTime);
         healWaves_.Draw(current, alpha);
@@ -268,8 +268,11 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
                              occluded_.data());
     };
     passes.composite2D = [&] {
-        hpBars_.DrawEntities(camera, previous, current, alpha);
-        deployRings_.Draw(camera, previous, current, alpha);
+        if (!hudHidden_)
+        {
+            hpBars_.DrawEntities(camera, previous, current, alpha);
+            deployRings_.Draw(camera, previous, current, alpha);
+        }
         damageNumbers_.Draw(ui_, camera);
         if (!hudHidden_)
         {
@@ -346,7 +349,7 @@ void Renderer::DrawProjectileTest(const logic::Map& map, const std::function<voi
     float time = static_cast<float>(GetTime());
 
     auto drawUnits = [&] {
-        units_.Draw(models_, prev, cur, alpha, false, orbitParams_, time);
+        units_.Draw(models_, prev, cur, alpha, false, true, orbitParams_, time);
         projectiles_.Draw(models_, muzzles_, prev, cur, alpha, orbitParams_, time);
     };
 
@@ -357,7 +360,7 @@ void Renderer::DrawProjectileTest(const logic::Map& map, const std::function<voi
     passes.color = [&] {
         UseEnvShadow();
         DrawGrid(20, 1.0f);
-        units_.Draw(models_, prev, cur, alpha, true, orbitParams_, time);
+        units_.Draw(models_, prev, cur, alpha, true, true, orbitParams_, time);
         projectiles_.Draw(models_, muzzles_, prev, cur, alpha, orbitParams_, time);
         projectiles_.DrawBeams(models_, muzzles_, map, prev, cur, alpha, orbitParams_, time);
         healWaves_.Draw(cur, alpha);

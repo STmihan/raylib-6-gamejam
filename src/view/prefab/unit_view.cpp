@@ -95,7 +95,7 @@ void UnitView::TriggerFlashAll()
 }
 
 void UnitView::Draw(const ModelRegistry& models, const logic::GameState& previous,
-                    const logic::GameState& current, float alpha, bool includeDecals,
+                    const logic::GameState& current, float alpha, bool includeDecals, bool drawRings,
                     const PlaneOrbitParams& orbit, float time) const
 {
     for (int i = 0; i < data::MaxEntities; i++)
@@ -125,8 +125,11 @@ void UnitView::Draw(const ModelRegistry& models, const logic::GameState& previou
                 DrawModelEx(models.BlobShadow(), blobPos, Vector3{0.0f, 1.0f, 0.0f}, 0.0f,
                             Vector3{diameter, 1.0f, diameter}, Color{0, 0, 0, blobAlpha});
             }
-            Vector3 ringPos = LogicToWorld(logic, RingHeight);
-            DrawModelYaw(models.TeamRing(entity.team), ringPos, 0.0f, WHITE);
+            if (drawRings)
+            {
+                Vector3 ringPos = LogicToWorld(logic, RingHeight);
+                DrawModelYaw(models.TeamRing(entity.team), ringPos, 0.0f, WHITE);
+            }
         }
 
         if (entity.type == data::UnitType::Plane)

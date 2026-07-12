@@ -15,7 +15,7 @@ struct RenderParams
     float outlineDepthThreshold = 0.02f;
     Vector4 outlineColor = {0.05f, 0.05f, 0.06f, 1.0f};
 
-    Color backgroundColor = {26, 26, 28, 255};
+    Color backgroundColor = {33, 107, 168, 255};
 
     float lightScenePad = 3.0f;
     float lightDistMul = 2.2f;

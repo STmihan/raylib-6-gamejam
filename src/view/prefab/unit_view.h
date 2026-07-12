@@ -17,7 +17,7 @@ public:
     void UpdateFlash(const logic::GameState& current, float dt);
     void TriggerFlashAll();
     void Draw(const ModelRegistry& models, const logic::GameState& previous, const logic::GameState& current,
-              float alpha, bool includeDecals, const PlaneOrbitParams& orbit, float time) const;
+              float alpha, bool includeDecals, bool drawRings, const PlaneOrbitParams& orbit, float time) const;
     void DrawPreview(const ModelRegistry& models, data::UnitType type, data::Vec2 logic, data::Team team,
                      const PlaneOrbitParams& orbit, float time, Color tint) const;
     void DrawHighlight(const ModelRegistry& models, const logic::GameState& previous,
