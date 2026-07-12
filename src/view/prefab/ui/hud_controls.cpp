@@ -199,7 +199,7 @@ void HudControls::DrawHelp(UiContext& ui)
 
     if (!helpArtLoaded_)
     {
-        helpArt_ = LoadTexture("assets/icons/ui/art-win.png");
+        helpArt_ = LoadTexture("assets/icons/ui/art-how.png");
         SetTextureFilter(helpArt_, TEXTURE_FILTER_BILINEAR);
         helpArtLoaded_ = true;
     }
