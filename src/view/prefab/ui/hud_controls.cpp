@@ -22,7 +22,7 @@ namespace
     constexpr float TrackBorderWidth = 2.0f;
 
     constexpr float HelpPanelW = 500.0f;
-    constexpr float HelpPanelH = 340.0f;
+    constexpr float HelpPanelH = 508.0f;
     constexpr float HelpOkW = 120.0f;
     constexpr float HelpOkH = 48.0f;
 
@@ -86,7 +86,7 @@ void HudControls::Update(UiContext& ui, float dt)
         audio::Play("button-click");
     }
 
-    if (in.Pressed(l.pause))
+    if (in.Pressed(l.pause) || IsKeyPressed(KEY_SPACE))
     {
         paused_ = !paused_;
         audio::Play("button-click");

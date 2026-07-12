@@ -305,7 +305,7 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
             {
                 Rectangle details = {20.0f, 224.0f, 200.0f, 314.0f};
                 if (hand_.Hovering())
-                    ui::DrawDetailsPanel(ui_, textures_, details, hand_.HoveredType(), -1);
+                    ui::DrawDetailsPanel(ui_, textures_, details, hand_.HoveredType(), hand_.HoveredDonor());
                 else if (hand_.MergePreview())
                     ui::DrawDetailsPanel(ui_, textures_, details, hand_.MergeHostType(),
                                          static_cast<int>(hand_.MergeDonorType()));

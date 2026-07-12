@@ -363,6 +363,12 @@ data::UnitType HandView::HoveredType() const
     return slots_[static_cast<std::size_t>(hovered_)].type;
 }
 
+int HandView::HoveredDonor() const
+{
+    if (!Hovering()) return -1;
+    return slots_[static_cast<std::size_t>(hovered_)].donor;
+}
+
 data::UnitType HandView::MergeHostType() const
 {
     if (mergeHost_ < 0) return data::UnitType::Infantry;

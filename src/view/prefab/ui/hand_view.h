@@ -32,6 +32,7 @@ public:
     bool HasHighlight() const { return dragging_ >= 0 || hovered_ >= 0; }
     bool Hovering() const { return dragging_ < 0 && hovered_ >= 0; }
     data::UnitType HoveredType() const;
+    int HoveredDonor() const;
     bool MergePreview() const { return dragging_ >= 0 && mergeHost_ >= 0; }
     data::UnitType MergeHostType() const;
     data::UnitType MergeDonorType() const;
