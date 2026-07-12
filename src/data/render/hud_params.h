@@ -18,10 +18,10 @@ struct CrystalStyle
 
 struct HandParams
 {
-    Vector2 pivot = {160.0f, 1100.0f};
+    Vector2 pivot = {160.0f, 1110.0f};
     float radius = 460.0f;
     float step = 11.0f;
-    float raise = 44.0f;
+    float raise = 20.0f;
     float hoverScale = 0.14f;
     float hoverTime = 0.10f;
     Vector2 anchor = {160.0f, 636.0f};

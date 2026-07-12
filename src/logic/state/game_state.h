@@ -41,10 +41,12 @@ struct Entity {
     int armorHits;
     int armorMax;
     int attackRange;
+    int aggroRange;
     bool stationary;
     int pathCol;
     int pathRow;
     float repathTimer;
+    float lastHitMult;
 };
 
 struct Projectile {
@@ -60,6 +62,7 @@ struct Projectile {
     std::uint64_t impactTick;
     int damage;
     int aoeRadius;
+    float mult;
 };
 
 struct HealPulse {

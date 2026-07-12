@@ -1,0 +1,45 @@
+{ "frames": {
+   "ui-atlas.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 256, "h": 256 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 256 },
+    "sourceSize": { "w": 256, "h": 256 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.x-dev",
+  "image": "ui-atlas.png",
+  "format": "RGBA8888",
+  "size": { "w": 256, "h": 256 },
+  "scale": "1",
+  "frameTags": [
+  ],
+  "layers": [
+   { "name": "Layer 1", "opacity": 255, "blendMode": "normal" },
+   { "name": "Layer 2", "opacity": 20, "blendMode": "screen" },
+   { "name": "Layer 3", "opacity": 31, "blendMode": "screen" }
+  ],
+  "slices": [
+   { "name": "button-pressed", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 51, "y": 108, "w": 22, "h": 22 }, "center": {"x": 6, "y": 6, "w": 10, "h": 10 } }] },
+   { "name": "button-hover", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 28, "y": 108, "w": 22, "h": 22 }, "center": {"x": 6, "y": 6, "w": 10, "h": 10 } }] },
+   { "name": "button-normal", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 5, "y": 108, "w": 22, "h": 22 }, "center": {"x": 6, "y": 6, "w": 10, "h": 10 } }] },
+   { "name": "sound-icon", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 43, "y": 94, "w": 7, "h": 13 } }] },
+   { "name": "pause-icon", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 29, "y": 94, "w": 13, "h": 13 } }] },
+   { "name": "res-mask", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 29, "y": 70, "w": 31, "h": 23 } }] },
+   { "name": "panel-base", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 64, "y": 1, "w": 64, "h": 64 }, "center": {"x": 20, "y": 20, "w": 24, "h": 24 } }] },
+   { "name": "res-empty", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 29, "y": 46, "w": 31, "h": 23 } }] },
+   { "name": "res-fill", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 29, "y": 22, "w": 31, "h": 23 } }] },
+   { "name": "close-button", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 51, "y": 14, "w": 9, "h": 7 } }] },
+   { "name": "stat-range", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 1, "y": 41, "w": 15, "h": 15 } }] },
+   { "name": "stat-ms", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 1, "y": 28, "w": 12, "h": 12 } }] },
+   { "name": "stat-shield", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 14, "y": 15, "w": 14, "h": 12 } }] },
+   { "name": "stat-hp", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 1, "y": 16, "w": 11, "h": 9 } }] },
+   { "name": "stat-attack", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 1, "y": 1, "w": 13, "h": 14 } }] },
+   { "name": "charge-empty", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 42, "y": 1, "w": 18, "h": 12 } }] },
+   { "name": "charge-fill", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 23, "y": 1, "w": 18, "h": 12 } }] }
+  ]
+ }
+}

@@ -2,6 +2,8 @@
 
 #include <cstdio>
 
+#include "rlgl.h"
+
 #include "view/prefab/ui/ui_widgets.h"
 
 namespace view::ui
@@ -79,10 +81,55 @@ void DrawCard(UiContext& ui, Rectangle rect, const data::CardDef& def, const Tex
     }
 }
 
+void DrawCardSprite(UiContext& ui, Rectangle rect, const data::CardDef& def, const Texture2D& portrait,
+                    int chargesLeft, int cost, int donor, const Texture2D& donorIcon)
+{
+    UiAtlas& atlas = ui.Atlas();
+    atlas.DrawNPatch("panel-base", rect);
+
+    const float pad = 10.0f;
+    Rectangle preview = {rect.x + pad, rect.y + pad, rect.width - 2.0f * pad, rect.height * 0.5f};
+    Icon(ui, portrait, preview, WHITE);
+
+    Rectangle name = {rect.x + pad, preview.y + preview.height + 8.0f, rect.width - 2.0f * pad, 26.0f};
+    atlas.DrawNPatch("panel-base", name);
+    LabelCentered(ui, def.name, name, 15.0f, LightInk, true);
+
+    int remaining = chargesLeft;
+    int n = remaining > def.charges ? remaining : def.charges;
+    if (n < 1) n = 1;
+    const float pipH = 13.0f;
+    const float pipW = pipH * 18.0f / 12.0f;
+    const float pipGap = 4.0f;
+    float pipsWidth = static_cast<float>(n) * pipW + static_cast<float>(n - 1) * pipGap;
+    float pipX = rect.x + (rect.width - pipsWidth) * 0.5f;
+    float pipY = rect.y + rect.height - pad - pipH;
+    for (int i = 0; i < n; i++)
+    {
+        Rectangle pip = {pipX + static_cast<float>(i) * (pipW + pipGap), pipY, pipW, pipH};
+        atlas.DrawSprite(i < remaining ? "charge-fill" : "charge-empty", pip);
+    }
+
+    Rectangle badge = {rect.x - 2.0f, rect.y - 8.0f, 40.0f, 30.0f};
+    atlas.DrawSprite("res-fill", badge);
+    char costText[8];
+    std::snprintf(costText, sizeof(costText), "%d", cost);
+    LabelCentered(ui, costText, badge, 18.0f, DarkInk, true);
+
+    if (donor >= 0)
+    {
+        const Color DonorChip = {126, 92, 208, 255};
+        Rectangle dbadge = {rect.x + rect.width - 30.0f, rect.y - 8.0f, 32.0f, 32.0f};
+        ui.Theme().Chip(dbadge, DonorChip);
+        Rectangle inner = {dbadge.x + 4.0f, dbadge.y + 4.0f, dbadge.width - 8.0f, dbadge.height - 8.0f};
+        Icon(ui, donorIcon, inner, LightInk);
+    }
+}
+
 void DrawCardTransformed(UiContext& ui, RenderTexture2D& target, const data::CardDef& def,
                          const Texture2D& portrait, Vector2 center, float rotationDeg, float scale,
                          float cardW, float cardH, int chargesLeft, int cost, int donor,
-                         const Texture2D& donorIcon)
+                         const Texture2D& donorIcon, bool useAtlas)
 {
     float tw = static_cast<float>(target.texture.width);
     float th = static_cast<float>(target.texture.height);
@@ -91,7 +138,15 @@ void DrawCardTransformed(UiContext& ui, RenderTexture2D& target, const data::Car
 
     BeginTextureMode(target);
     ClearBackground(BLANK);
-    DrawCard(ui, Rectangle{mx, my, cardW, cardH}, def, portrait, chargesLeft, cost, donor, donorIcon);
+    rlSetBlendFactorsSeparate(RL_SRC_ALPHA, RL_ONE_MINUS_SRC_ALPHA, RL_ONE, RL_ONE_MINUS_SRC_ALPHA, RL_FUNC_ADD,
+                              RL_FUNC_ADD);
+    BeginBlendMode(BLEND_CUSTOM_SEPARATE);
+    Rectangle cardRect = {mx, my, cardW, cardH};
+    if (useAtlas && ui.Atlas().Ready())
+        DrawCardSprite(ui, cardRect, def, portrait, chargesLeft, cost, donor, donorIcon);
+    else
+        DrawCard(ui, cardRect, def, portrait, chargesLeft, cost, donor, donorIcon);
+    EndBlendMode();
     EndTextureMode();
 
     Rectangle src = {0.0f, 0.0f, tw, -th};

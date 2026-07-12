@@ -39,14 +39,18 @@ _TODO: Show your game to the world, animated GIFs recommended!._
 
  - YouTube Gameplay: $(YouTube Link)
  - itch.io Release: $(itch.io Game Page)
- - Steam Release: $(Steam Game Page)
 
 ### License
 
 This project's source code is licensed under the [PolyForm Strict License 1.0.0](https://polyformproject.org/licenses/strict/1.0.0/) — a source-available license that permits noncommercial use only and does not allow distributing modified versions. Check [LICENSE](LICENSE) for further details.
 
-Game assets (art, audio, and other media under `resources/`) are licensed under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) — Attribution, NonCommercial, NoDerivatives.
+Game assets (art, audio, and other media under `assets/`) are licensed under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) — Attribution, NonCommercial, NoDerivatives.
 
 This project depends on [raylib](https://github.com/raysan5/raylib), which is distributed under the [zlib/libpng license](https://github.com/raysan5/raylib/blob/master/LICENSE).
 
-*Copyright (c) 2026 Mikhail Dunaev (@STmihan)*
+### Third-party assets
+
+- Sound effects — *RPG Audio*, *UI Audio*, and *Impact Sounds* by Kenney Vleugels ([Kenney.nl](https://kenney.nl))
+- Music — *Chasing Stars* by Lesion X
+
+*Copyright (c) 2026 Mikhail Dunaev ([@STmihan](https://stmihan.com))*

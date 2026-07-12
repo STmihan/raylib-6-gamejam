@@ -21,7 +21,7 @@ class HandView
 {
 public:
     void Update(UiInput& input, float dt, const logic::GameState& state);
-    void Draw(UiContext& ui, const TextureRegistry& textures, RenderTexture2D& target);
+    void Draw(UiContext& ui, const TextureRegistry& textures, RenderTexture2D& target, bool newUi);
     void DrawDragZone(const TextureRegistry& textures) const;
 
     bool Dragging() const { return dragging_ >= 0; }
@@ -30,6 +30,11 @@ public:
     data::HandParams& ParamsRef() { return params_; }
 
     bool HasHighlight() const { return dragging_ >= 0 || hovered_ >= 0; }
+    bool Hovering() const { return dragging_ < 0 && hovered_ >= 0; }
+    data::UnitType HoveredType() const;
+    bool MergePreview() const { return dragging_ >= 0 && mergeHost_ >= 0; }
+    data::UnitType MergeHostType() const;
+    data::UnitType MergeDonorType() const;
     data::UnitType HighlightType() const;
     int HighlightCost() const;
     bool DraggedAirdrop() const;
@@ -64,6 +69,7 @@ private:
 
     std::vector<Slot> slots_;
     data::HandParams params_;
+    bool newUi_ = false;
     int hovered_ = -1;
     int dragging_ = -1;
     int mergeHost_ = -1;

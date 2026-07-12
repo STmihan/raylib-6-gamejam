@@ -30,6 +30,7 @@ private:
         int amount = 0;
         bool heal = false;
         bool miss = false;
+        float mult = 1.0f;
         float age = 0.0f;
         char text[12] = {0};
     };

@@ -267,6 +267,7 @@ void DrawDebugOverlay(float& cameraBoundsRadius, view::Renderer& renderer,
     if (visible && ImGui::Begin("Debug (F1)"))
     {
         ImGui::Checkbox("Hide HUD", &renderer.HudHiddenRef());
+        ImGui::Checkbox("New UI", &renderer.NewUiRef());
         ImGui::SliderInt("Resource highlight N", &renderer.HudResourceHighlightRef(), 0, 6);
         if (ImGui::Button("Reset player resource") && onResetResource) onResetResource();
         if (ImGui::CollapsingHeader("Resource crystal", ImGuiTreeNodeFlags_DefaultOpen))

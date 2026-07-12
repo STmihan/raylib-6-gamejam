@@ -64,4 +64,53 @@ void DrawResourceBar(UiContext& ui, Rectangle rect, float resource, int cap, int
         }
     }
 }
+
+void DrawResourceBarSprite(UiContext& ui, Rectangle panel, float resource, int cap, int highlight, float time)
+{
+    UiAtlas& atlas = ui.Atlas();
+    atlas.DrawNPatch("panel-base", panel);
+    if (cap <= 0) return;
+
+    const float pad = 8.0f;
+    Rectangle bar = {panel.x + pad, panel.y + pad, panel.width - 2.0f * pad, panel.height - 2.0f * pad};
+    const float gap = 1.0f;
+    float slotW = (bar.width - gap * static_cast<float>(cap - 1)) / static_cast<float>(cap);
+    float crystalW = slotW;
+    float crystalH = crystalW * 23.0f / 31.0f;
+    if (crystalH > bar.height)
+    {
+        crystalH = bar.height;
+        crystalW = crystalH * 31.0f / 23.0f;
+    }
+    float y = bar.y + (bar.height - crystalH) * 0.5f;
+
+    float pulse = 0.5f + 0.5f * std::sin(time * 6.0f);
+    const Color fillColor = {240, 192, 58, 255};
+    int available = static_cast<int>(resource);
+
+    for (int i = 0; i < cap; i++)
+    {
+        Rectangle slot = {bar.x + static_cast<float>(i) * (slotW + gap) + (slotW - crystalW) * 0.5f, y, crystalW,
+                          crystalH};
+        atlas.DrawSprite("res-empty", slot);
+
+        float fill = resource - static_cast<float>(i);
+        fill = fill < 0.0f ? 0.0f : (fill > 1.0f ? 1.0f : fill);
+        if (fill > 0.0f)
+        {
+            BeginScissorMode(static_cast<int>(slot.x), static_cast<int>(slot.y),
+                             static_cast<int>(std::ceil(slot.width * fill)),
+                             static_cast<int>(std::ceil(slot.height)));
+            atlas.DrawSprite("res-mask", slot, fillColor);
+            EndScissorMode();
+        }
+
+        if (i < highlight)
+        {
+            Color hl = i < available ? Color{255, 255, 255, static_cast<unsigned char>(pulse * 160.0f)}
+                                     : Color{232, 74, 74, static_cast<unsigned char>(110.0f + 130.0f * pulse)};
+            atlas.DrawSprite("res-mask", slot, hl);
+        }
+    }
+}
 }

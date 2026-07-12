@@ -22,10 +22,9 @@ namespace
     }
 }
 
-void UiTheme::Load(Shader crystal, Texture2D cards, Texture2D white)
+void UiTheme::Load(Shader crystal, Texture2D white)
 {
     crystalShader_ = crystal;
-    cards_ = cards;
     white_ = white;
 
     Image img = GenImageColor(Size, Size, BLANK);

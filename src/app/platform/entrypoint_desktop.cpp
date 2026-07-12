@@ -15,6 +15,14 @@ int RunDesktop()
 {
     InitWindow(data::ScreenWidth, data::ScreenHeight, data::WindowTitle);
     ChangeDirectory(GetApplicationDirectory());
+
+    Image icon = LoadImage("assets/icons/ui/icon.png");
+    if (icon.data != nullptr)
+    {
+        SetWindowIcon(icon);
+        UnloadImage(icon);
+    }
+
     SetTargetFPS(data::TargetFps);
     debug::DebugUiSetup();
 

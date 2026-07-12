@@ -10,6 +10,7 @@ namespace view::ui
 {
 void DrawResourceBar(UiContext& ui, Rectangle rect, float resource, int cap, int highlight, float time,
                      const data::CrystalStyle& style);
+void DrawResourceBarSprite(UiContext& ui, Rectangle panel, float resource, int cap, int highlight, float time);
 }
 
 #endif

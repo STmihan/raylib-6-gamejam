@@ -1,6 +1,8 @@
 #ifndef VIEW_PREFAB_UI_UI_WIDGETS_H
 #define VIEW_PREFAB_UI_UI_WIDGETS_H
 
+#include <string>
+
 #include "raylib.h"
 
 #include "view/prefab/ui/ui_context.h"
@@ -14,6 +16,8 @@ void Bar(UiContext& ui, Rectangle rect, float frac, Color bg, Color fill);
 void Icon(UiContext& ui, const Texture2D& tex, Rectangle rect, Color tint);
 void Label(UiContext& ui, const char* text, Vector2 pos, float size, Color color, bool bold = false);
 void LabelCentered(UiContext& ui, const char* text, Rectangle rect, float size, Color color, bool bold = false);
+float DrawRichText(UiContext& ui, const std::string& text, Rectangle rect, float size, Color color,
+                   Color iconTint = WHITE, bool bold = false, float iconScale = 1.15f);
 }
 
 #endif

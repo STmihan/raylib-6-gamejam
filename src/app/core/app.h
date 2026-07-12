@@ -5,6 +5,7 @@
 
 #include "raylib.h"
 
+#include "app/core/audio_events.h"
 #include "app/input/unit_control.h"
 #include "logic/state/game_state.h"
 #include "logic/world/map.h"
@@ -25,6 +26,7 @@ struct App
     double accumulator;
     std::uint64_t lastAiTick;
     UnitControl unitControl;
+    AudioEvents audioEvents;
 };
 
 std::uint32_t NewSeed();

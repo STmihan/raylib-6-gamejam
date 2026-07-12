@@ -1,7 +1,7 @@
 {
   "economy": {
     "resourceCap": 10.0,
-    "baseRegenPerSec": 0.5,
+    "baseRegenPerSec": 0.375,
     "deployFreezeSeconds": 1.0,
     "engineerHealDeployRadius": 2,
     "engineerHealDeployFraction": 0.4,
@@ -27,12 +27,12 @@
   "forestMissPercent": 30,
   "structureDamageMultiplier": 1.0,
   "units": {
-    "Infantry": { "hp": 60, "moveSpeed": 55, "attackRange": 2, "attackInterval": 1.0, "baseDamage": 15, "stationary": false, "armorHits": 0, "aoeRadius": 0, "cost": 1, "charges": 3 },
-    "Rocketeer": { "hp": 50, "moveSpeed": 50, "attackRange": 4, "attackInterval": 1.5, "baseDamage": 15, "stationary": false, "armorHits": 0, "aoeRadius": 1, "cost": 2, "charges": 2 },
-    "Engineer": { "hp": 70, "moveSpeed": 50, "attackRange": 1, "attackInterval": 1.0, "baseDamage": 0, "stationary": false, "armorHits": 0, "aoeRadius": 0, "cost": 2, "charges": 1 },
-    "AA": { "hp": 140, "moveSpeed": 40, "attackRange": 3, "attackInterval": 0.8, "baseDamage": 20, "stationary": true, "armorHits": 0, "aoeRadius": 0, "cost": 3, "charges": 1 },
-    "Tank": { "hp": 260, "moveSpeed": 45, "attackRange": 2, "attackInterval": 1.3, "baseDamage": 40, "stationary": false, "armorHits": 3, "aoeRadius": 0, "cost": 4, "charges": 1 },
-    "Plane": { "hp": 120, "moveSpeed": 90, "attackRange": 1, "attackInterval": 1.0, "baseDamage": 30, "stationary": false, "armorHits": 0, "aoeRadius": 0, "cost": 5, "charges": 1 }
+    "Infantry": { "hp": 60, "moveSpeed": 110, "attackRange": 2, "aggroRange": 4, "attackInterval": 1.0, "baseDamage": 15, "stationary": false, "armorHits": 0, "aoeRadius": 0, "cost": 1, "charges": 3, "description": ["Cheap foot soldier.", "Good vs infantry.", "Weak to vehicles."], "mergeGrant": "" },
+    "Rocketeer": { "hp": 50, "moveSpeed": 100, "attackRange": 4, "aggroRange": 5, "attackInterval": 1.5, "baseDamage": 15, "stationary": false, "armorHits": 0, "aoeRadius": 1, "cost": 2, "charges": 2, "description": ["Kills armor.", "Long [stat-range] range.", "Rockets hit an area."], "mergeGrant": "More [stat-range] range." },
+    "Engineer": { "hp": 70, "moveSpeed": 100, "attackRange": 1, "aggroRange": 1, "attackInterval": 1.0, "baseDamage": 0, "stationary": false, "armorHits": 0, "aoeRadius": 0, "cost": 2, "charges": 1, "description": ["No [stat-attack] damage.", "Heals vehicles."], "mergeGrant": "Heals when placed." },
+    "AA": { "hp": 140, "moveSpeed": 80, "attackRange": 3, "aggroRange": 5, "attackInterval": 0.8, "baseDamage": 20, "stationary": true, "armorHits": 0, "aoeRadius": 0, "cost": 3, "charges": 1, "description": ["Hits planes.", "Long [stat-range] range.", "Can move anywhere."], "mergeGrant": "Stays put, more [stat-range] range." },
+    "Tank": { "hp": 260, "moveSpeed": 90, "attackRange": 2, "aggroRange": 5, "attackInterval": 1.3, "baseDamage": 40, "stationary": false, "armorHits": 3, "aoeRadius": 0, "cost": 4, "charges": 1, "description": ["Strong [stat-shield] armor.", "Crushes ground units.", "Weak to rockets."], "mergeGrant": "Stronger [stat-shield] armor." },
+    "Plane": { "hp": 120, "moveSpeed": 180, "attackRange": 1, "aggroRange": 4, "attackInterval": 1.0, "baseDamage": 30, "stationary": false, "armorHits": 0, "aoeRadius": 0, "cost": 5, "charges": 1, "description": ["Flies over terrain."], "mergeGrant": "Place it anywhere." }
   },
   "damageMatrix": {
     "Infantry": { "Infantry": 1.0, "Rocketeer": 1.0, "Engineer": 1.0, "AA": 0.3, "Tank": 0.3, "Plane": 0.0 },

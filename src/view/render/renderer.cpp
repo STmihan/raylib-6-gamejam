@@ -279,17 +279,37 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
             const Color panelTint = {28, 32, 24, 235};
 
             Rectangle timer = {14.0f, 12.0f, 120.0f, 48.0f};
-            ui::DrawMatchTimer(ui_, timer, current.tick);
+            ui::DrawMatchTimer(ui_, timer, current.tick, newUi_);
 
             int player = data::TeamIndex(data::PlayerTeam);
             float res = previous.resource[player] * (1.0f - alpha) + current.resource[player] * alpha;
             int highlight = hand_.HasHighlight() ? hand_.HighlightCost() : resourceHighlight_;
-            ui::Panel(ui_, Rectangle{486.0f, 604.0f, 220.0f, 40.0f}, panelTint);
-            ui::DrawResourceBar(ui_, Rectangle{498.0f, 613.0f, 196.0f, 22.0f}, res,
-                                static_cast<int>(data::ResourceCap()), highlight, animTime, crystalStyle_);
+            if (newUi_ && ui_.Atlas().Ready())
+            {
+                ui::DrawResourceBarSprite(ui_, Rectangle{486.0f, 12.0f, 220.0f, 40.0f}, res,
+                                          static_cast<int>(data::ResourceCap()), highlight, animTime);
+            }
+            else
+            {
+                ui::Panel(ui_, Rectangle{486.0f, 604.0f, 220.0f, 40.0f}, panelTint);
+                ui::DrawResourceBar(ui_, Rectangle{498.0f, 613.0f, 196.0f, 22.0f}, res,
+                                    static_cast<int>(data::ResourceCap()), highlight, animTime, crystalStyle_);
+            }
 
-            hand_.Draw(ui_, textures_, cardTarget_);
+            hand_.Draw(ui_, textures_, cardTarget_, newUi_);
             if (dragZone_) hand_.DrawDragZone(textures_);
+
+            if (newUi_) controls_.Draw(ui_);
+
+            if (newUi_ && ui_.Atlas().Ready())
+            {
+                Rectangle details = {16.0f, 92.0f, 300.0f, 404.0f};
+                if (hand_.Hovering())
+                    ui::DrawDetailsPanel(ui_, textures_, details, hand_.HoveredType(), -1);
+                else if (hand_.MergePreview())
+                    ui::DrawDetailsPanel(ui_, textures_, details, hand_.MergeHostType(),
+                                         static_cast<int>(hand_.MergeDonorType()));
+            }
         }
         if (current.winner >= 0)
         {

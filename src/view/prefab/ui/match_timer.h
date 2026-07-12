@@ -9,7 +9,7 @@ namespace view::ui
 {
 class UiContext;
 
-void DrawMatchTimer(UiContext& ui, Rectangle rect, std::uint64_t tick);
+void DrawMatchTimer(UiContext& ui, Rectangle rect, std::uint64_t tick, bool useAtlas);
 }
 
 #endif

@@ -2,6 +2,8 @@
 #define DATA_BALANCE_BALANCE_H
 
 #include <array>
+#include <string>
+#include <vector>
 
 #include "data/card/deck_config.h"
 #include "data/unit/unit_types.h"
@@ -13,6 +15,8 @@ struct Balance
     std::array<UnitStats, UnitTypeCount> units;
     std::array<int, UnitTypeCount> cardCost;
     std::array<int, UnitTypeCount> cardCharges;
+    std::array<std::vector<std::string>, UnitTypeCount> cardDescription;
+    std::array<std::string, UnitTypeCount> cardMergeGrant;
     std::array<std::array<float, UnitTypeCount>, UnitTypeCount> damageMatrix;
     float structureDamageMultiplier;
 
@@ -45,20 +49,57 @@ inline Balance DefaultBalance()
 {
     Balance b{};
     b.units[static_cast<int>(UnitType::Infantry)] =
-        {60, 55.0f, true, false, false, false, 15.0f, 2, 1.0f, 15, false, 0, 0};
+        {60, 110.0f, true, false, false, false, 15.0f, 2, 1.0f, 15, false, 0, 0, 4};
     b.units[static_cast<int>(UnitType::Rocketeer)] =
-        {50, 50.0f, true, false, false, true, 15.0f, 4, 1.5f, 15, false, 0, 1};
+        {50, 100.0f, true, false, false, true, 15.0f, 4, 1.5f, 15, false, 0, 1, 5};
     b.units[static_cast<int>(UnitType::Engineer)] =
-        {70, 50.0f, true, false, false, false, 15.0f, 1, 1.0f, 0, false, 0, 0};
+        {70, 100.0f, true, false, false, false, 15.0f, 1, 1.0f, 0, false, 0, 0, 1};
     b.units[static_cast<int>(UnitType::AA)] =
-        {140, 40.0f, false, false, true, true, 55.0f, 3, 0.8f, 20, true, 0, 0};
+        {140, 80.0f, false, false, true, true, 55.0f, 3, 0.8f, 20, true, 0, 0, 5};
     b.units[static_cast<int>(UnitType::Tank)] =
-        {260, 45.0f, false, false, true, true, 60.0f, 2, 1.3f, 40, false, 3, 0};
+        {260, 90.0f, false, false, true, true, 60.0f, 2, 1.3f, 40, false, 3, 0, 4};
     b.units[static_cast<int>(UnitType::Plane)] =
-        {120, 90.0f, false, true, true, true, 0.0f, 1, 1.0f, 30, false, 0, 0};
+        {120, 180.0f, false, true, true, true, 0.0f, 1, 1.0f, 30, false, 0, 0, 3};
 
     b.cardCost = {1, 2, 2, 3, 4, 5};
     b.cardCharges = {3, 2, 1, 1, 1, 1};
+
+    b.cardDescription[static_cast<int>(UnitType::Infantry)] = {
+        "Cheap foot soldier.",
+        "Good vs infantry.",
+        "Weak to vehicles.",
+    };
+    b.cardDescription[static_cast<int>(UnitType::Rocketeer)] = {
+        "Kills armor.",
+        "Long [stat-range] range.",
+        "Rockets hit an area.",
+    };
+    b.cardDescription[static_cast<int>(UnitType::Engineer)] = {
+        "No [stat-attack] damage.",
+        "Heals vehicles.",
+    };
+    b.cardDescription[static_cast<int>(UnitType::AA)] = {
+        "Hits planes.",
+        "Long [stat-range] range.",
+        "Can move anywhere.",
+    };
+    b.cardDescription[static_cast<int>(UnitType::Tank)] = {
+        "Strong [stat-shield] armor.",
+        "Crushes ground units.",
+        "Weak to rockets.",
+    };
+    b.cardDescription[static_cast<int>(UnitType::Plane)] = {
+        "Fast [stat-ms] flyer.",
+        "Attacks the base.",
+        "Flies over terrain.",
+    };
+
+    b.cardMergeGrant[static_cast<int>(UnitType::Infantry)] = "";
+    b.cardMergeGrant[static_cast<int>(UnitType::Rocketeer)] = "More [stat-range] range.";
+    b.cardMergeGrant[static_cast<int>(UnitType::Engineer)] = "Heals when placed.";
+    b.cardMergeGrant[static_cast<int>(UnitType::AA)] = "Stays put, more [stat-range] range.";
+    b.cardMergeGrant[static_cast<int>(UnitType::Tank)] = "Stronger [stat-shield] armor.";
+    b.cardMergeGrant[static_cast<int>(UnitType::Plane)] = "Place it anywhere.";
 
     b.damageMatrix = {{
         {1.00f, 1.00f, 1.00f, 0.30f, 0.30f, 0.00f},
@@ -71,7 +112,7 @@ inline Balance DefaultBalance()
     b.structureDamageMultiplier = 1.0f;
 
     b.resourceCap = 10.0f;
-    b.baseRegenPerSec = 0.5f;
+    b.baseRegenPerSec = 0.375f;
     b.deployFreezeSeconds = 1.0f;
     b.engineerHealDeployRadius = 2;
     b.engineerHealDeployFraction = 0.4f;

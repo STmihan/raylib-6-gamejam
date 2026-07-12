@@ -4,6 +4,7 @@
 
 #include "ai/policy.h"
 #include "app/input/cursor.h"
+#include "audio/sound.h"
 #include "data/economy/economy.h"
 #include "data/space/hex.h"
 #include "data/space/world_config.h"
@@ -43,6 +44,7 @@ void ProcessDeploy(App& app, Camera3D camera)
     int spawned = logic::PlayCard(app.currentState, app.map, data::PlayerTeam, slot, cell.col, cell.row);
     if (spawned < 0) return;
     app.previousState.entities[spawned] = app.currentState.entities[spawned];
+    audio::Play("place-unit");
 }
 
 void ProcessMerge(App& app)
@@ -51,6 +53,7 @@ void ProcessMerge(App& app)
     int donor;
     if (!app.renderer.Hand().TakeMerge(host, donor)) return;
     logic::MergeSlots(app.currentState, data::PlayerTeam, host, donor);
+    audio::Play("button-click");
 }
 }
 
@@ -63,6 +66,8 @@ std::uint32_t NewSeed()
 
 void InitApp(App& app)
 {
+    audio::Init();
+    audio::PlayMusic();
     app.map = logic::BuildMap();
     app.renderer.Init(app.map);
     app.cameraRig.Init();
@@ -74,12 +79,14 @@ void InitApp(App& app)
 
 void StepApp(App& app)
 {
-    bool paused = false;
+    audio::Update();
+
+    bool paused = app.renderer.HudPaused();
     float speed = 1.0f;
 #if defined(DEBUG_BUILD)
     static debug::Cheats cheats;
     cheats.Update(app);
-    paused = cheats.Paused();
+    paused = paused || cheats.Paused();
     speed = cheats.Speed();
 #endif
 
@@ -92,6 +99,7 @@ void StepApp(App& app)
     }
 
     app.renderer.Ui().BeginFrame();
+    app.renderer.Controls().Update(app.renderer.Ui(), GetFrameTime());
     app.renderer.Hand().Update(app.renderer.Ui().Input(), GetFrameTime(), app.currentState);
 
     float delta = GetFrameTime() * speed;
@@ -118,6 +126,10 @@ void StepApp(App& app)
         ProcessEnemyAI(app);
     }
 
+    app.audioEvents.Observe(app.currentState);
+    audio::SetMusicOvertime(static_cast<int>(app.currentState.tick / data::TickRate) >=
+                            data::MatchDurationSeconds());
+
     app.cameraRig.Update();
 
     Camera3D camera = app.cameraRig.Camera();
@@ -143,5 +155,6 @@ void StepApp(App& app)
 void ShutdownApp(App& app)
 {
     app.renderer.Shutdown();
+    audio::Shutdown();
 }
 }

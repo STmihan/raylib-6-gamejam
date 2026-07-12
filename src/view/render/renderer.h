@@ -31,7 +31,9 @@
 #include "view/prefab/unit_view.h"
 #include "view/prefab/water.h"
 #include "view/prefab/ui/card_view.h"
+#include "view/prefab/ui/details_panel.h"
 #include "view/prefab/ui/hand_view.h"
+#include "view/prefab/ui/hud_controls.h"
 #include "view/prefab/ui/match_timer.h"
 #include "view/prefab/ui/resource_bar.h"
 #include "view/prefab/ui/ui_context.h"
@@ -59,9 +61,12 @@ public:
     data::ShadowParams& UnitShadowParamsRef() { return unitShadowParams_; }
     bool& HudHiddenRef() { return hudHidden_; }
     bool& DragZoneRef() { return dragZone_; }
+    bool& NewUiRef() { return newUi_; }
     int& HudResourceHighlightRef() { return resourceHighlight_; }
     data::CrystalStyle& CrystalStyleRef() { return crystalStyle_; }
     ui::HandView& Hand() { return hand_; }
+    ui::HudControls& Controls() { return controls_; }
+    bool HudPaused() const { return controls_.Paused(); }
     ui::UiContext& Ui() { return ui_; }
     ControlOverlayView& ControlOverlay() { return controlOverlay_; }
     data::CavityParams& CavityParamsRef() { return cavityParams_; }
@@ -106,8 +111,10 @@ private:
     debug::ProjectileTestScene projTest_;
     ui::UiContext ui_;
     ui::HandView hand_;
+    ui::HudControls controls_;
     bool hudHidden_ = false;
     bool dragZone_ = false;
+    bool newUi_ = true;
     int resourceHighlight_ = 0;
     data::CrystalStyle crystalStyle_;
     bool hexGridLoaded_ = false;

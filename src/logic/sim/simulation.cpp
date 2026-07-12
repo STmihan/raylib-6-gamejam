@@ -75,21 +75,26 @@ bool DamageBlockedByWall(const GameState &state, const Entity &attacker, const E
     return WallBetween(state, attacker.col, attacker.row, target.col, target.row);
 }
 
-int ComputeDamage(const Entity &attacker, const Entity &target) {
-    float multiplier = target.kind == EntityKind::Unit
+float HitMultiplier(const Entity &attacker, const Entity &target) {
+    return target.kind == EntityKind::Unit
         ? data::DamageMultiplier(attacker.type, target.type)
         : data::StructureDamageMultiplier();
+}
+
+int ComputeDamage(const Entity &attacker, const Entity &target) {
+    float multiplier = HitMultiplier(attacker, target);
     int damage = static_cast<int>(static_cast<float>(data::UnitStatsOf(attacker.type).baseDamage) * multiplier);
     return damage > 0 ? damage : 0;
 }
 
-void ApplyHit(Entity &victim, int damage) {
+void ApplyHit(Entity &victim, int damage, float mult = 1.0f) {
     if (damage <= 0) return;
     if (victim.kind == EntityKind::Unit && victim.armorHits > 0) {
         victim.armorHits--;
         return;
     }
     victim.hp -= damage;
+    victim.lastHitMult = mult;
 }
 
 void SpawnBeam(GameState &state, int attackerIndex, int targetSlot, int muzzleIndex) {
@@ -194,7 +199,7 @@ int AcquireAlly(const GameState &state, int index) {
         if (!other.active || other.kind != EntityKind::Unit || other.team != self.team) continue;
         if (!data::UnitStatsOf(other.type).isVehicle) continue;
         int distance = data::HexDistance(here, {other.col, other.row});
-        if (distance <= self.attackRange && distance < bestDistance) {
+        if (distance <= self.aggroRange && distance < bestDistance) {
             bestDistance = distance;
             best = j;
         }
@@ -242,6 +247,7 @@ void FireProjectile(GameState &state, int attackerIndex, int targetSlot, int muz
     p.impactTick = state.tick + static_cast<std::uint64_t>(flightTicks);
     p.damage = perShell;
     p.aoeRadius = data::UnitStatsOf(attacker.type).aoeRadius;
+    p.mult = HitMultiplier(attacker, target);
 }
 
 int AcquireTarget(const GameState &state, int index) {
@@ -260,7 +266,7 @@ int AcquireTarget(const GameState &state, int index) {
         if (!CanDamage(self, other)) continue;
         if (other.kind == EntityKind::Wall && !WallBlocksPath(self, other)) continue;
         int distance = FootDistance(other, here);
-        if (distance <= self.attackRange && distance < bestDistance) {
+        if (distance <= self.aggroRange && distance < bestDistance) {
             bestDistance = distance;
             best = j;
         }
@@ -297,7 +303,7 @@ int AcquireAirTarget(const GameState &state, int index) {
         if (other.type != data::UnitType::Plane) continue;
         if (!CanDamage(self, other)) continue;
         int distance = data::HexDistance(here, {other.col, other.row});
-        if (distance <= self.attackRange && distance < bestDistance) {
+        if (distance <= self.aggroRange && distance < bestDistance) {
             bestDistance = distance;
             best = j;
         }
@@ -328,7 +334,7 @@ bool StillValid(const GameState &state, int index, int target) {
     if (!CanDamage(self, t)) return false;
     if (t.kind == EntityKind::Wall && !WallBlocksPath(self, t)) return false;
     int dist = FootDistance(t, {self.col, self.row});
-    return dist <= self.attackRange;
+    return dist <= self.aggroRange;
 }
 
 void RefreshCell(Entity &entity) {
@@ -496,10 +502,12 @@ void Simulation::Init(GameState &state, const Map &map, std::uint32_t seed) {
         entity.armorHits = data::UnitStatsOf(type).armorHits;
         entity.armorMax = entity.armorHits;
         entity.attackRange = data::UnitStatsOf(type).attackRange;
+        entity.aggroRange = data::UnitStatsOf(type).aggroRange;
         entity.stationary = data::UnitStatsOf(type).stationary;
         entity.pathCol = -1;
         entity.pathRow = -1;
         entity.repathTimer = 0.0f;
+        entity.lastHitMult = 1.0f;
         count++;
     };
 
@@ -638,7 +646,7 @@ void Simulation::Step(GameState &state, float dt) {
             }
         }
 
-        if (target >= 0 && !isEngineer) {
+        if (target >= 0 && !isEngineer && InAttackRange(state, i, target)) {
             entity.attackCooldown -= dt;
             if (entity.attackCooldown <= 0.0f) {
                 if (UsesProjectile(entity.type)) {
@@ -653,7 +661,8 @@ void Simulation::Step(GameState &state, float dt) {
                 } else {
                     Entity &victim = state.entities[target];
                     int muzzle = entity.burstIndex;
-                    if (!DamageBlockedByWall(state, entity, victim)) ApplyHit(victim, ComputeDamage(entity, victim));
+                    if (!DamageBlockedByWall(state, entity, victim))
+                        ApplyHit(victim, ComputeDamage(entity, victim), HitMultiplier(entity, victim));
                     SpawnBeam(state, i, target, muzzle);
                     entity.burstIndex = (entity.burstIndex + 1) % data::MuzzleCount(entity.type);
                     entity.attackCooldown = data::UnitStatsOf(entity.type).attackInterval;
@@ -679,6 +688,8 @@ void Simulation::Step(GameState &state, float dt) {
         data::Offset goal;
         if (entity.forcedTarget >= 0) {
             goal = NearestFootCell(state.entities[entity.forcedTarget], here);
+        } else if (target >= 0 && !isEngineer) {
+            goal = NearestFootCell(state.entities[target], here);
         } else {
             goal = NearestBoxCell(enemyBaseMinCol_[teamIdx], enemyBaseMaxCol_[teamIdx],
                                   enemyBaseMinRow_[teamIdx], enemyBaseMaxRow_[teamIdx], here);
@@ -712,13 +723,13 @@ void Simulation::Step(GameState &state, float dt) {
                 SpawnMiss(state, victim.position);
             } else {
                 data::Offset center = {victim.col, victim.row};
-                ApplyHit(victim, p.damage);
+                ApplyHit(victim, p.damage, p.mult);
                 if (p.aoeRadius > 0) {
                     for (int k = 0; k < data::MaxEntities; k++) {
                         if (k == p.targetSlot) continue;
                         Entity &other = state.entities[k];
                         if (!other.active || other.kind != EntityKind::Unit || other.team == p.team) continue;
-                        if (data::HexDistance(center, {other.col, other.row}) <= p.aoeRadius) ApplyHit(other, p.damage);
+                        if (data::HexDistance(center, {other.col, other.row}) <= p.aoeRadius) ApplyHit(other, p.damage, p.mult);
                     }
                 }
             }
@@ -785,21 +796,16 @@ int Simulation::Deploy(GameState &state, data::UnitType type, int donor, data::T
     e.deployTimer = data::DeployFreezeSeconds();
     e.hasMoveOrder = false;
     e.moveTarget = {};
-    e.armorHits = data::UnitStatsOf(type).armorHits;
-    e.attackRange = data::UnitStatsOf(type).attackRange;
-    e.stationary = data::UnitStatsOf(type).stationary;
+    data::UnitStats merged = data::MergedStats(type, donor);
+    e.armorHits = merged.armorHits;
+    e.attackRange = merged.attackRange;
+    e.aggroRange = merged.aggroRange;
+    e.stationary = merged.stationary;
     e.pathCol = -1;
     e.pathRow = -1;
     e.repathTimer = 0.0f;
+    e.lastHitMult = 1.0f;
 
-    if (donor == static_cast<int>(data::UnitType::Tank)) {
-        if (e.armorHits < 2) e.armorHits = 2;
-    } else if (donor == static_cast<int>(data::UnitType::Rocketeer)) {
-        if (type != data::UnitType::Plane) e.attackRange += 2;
-    } else if (donor == static_cast<int>(data::UnitType::AA)) {
-        e.stationary = true;
-        e.attackRange += 1;
-    }
     e.armorMax = e.armorHits;
 
     if (slot >= state.entityCount) state.entityCount = slot + 1;

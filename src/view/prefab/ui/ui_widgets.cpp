@@ -1,9 +1,50 @@
 #include "view/prefab/ui/ui_widgets.h"
 
+#include <vector>
+
 namespace view::ui
 {
 namespace
 {
+    struct RichItem
+    {
+        bool icon;
+        std::string text;
+    };
+
+    std::vector<RichItem> ParseRich(const std::string& s)
+    {
+        std::vector<RichItem> items;
+        std::string word;
+        auto flush = [&] {
+            if (!word.empty())
+            {
+                items.push_back({false, word});
+                word.clear();
+            }
+        };
+        for (std::size_t i = 0; i < s.size();)
+        {
+            char c = s[i];
+            if (c == '[')
+            {
+                std::size_t close = s.find(']', i);
+                if (close != std::string::npos)
+                {
+                    flush();
+                    items.push_back({true, s.substr(i + 1, close - i - 1)});
+                    i = close + 1;
+                    continue;
+                }
+            }
+            if (c == ' ' || c == '\n' || c == '\t') flush();
+            else word.push_back(c);
+            i++;
+        }
+        flush();
+        return items;
+    }
+
     Color Scale(Color c, float f)
     {
         auto ch = [f](unsigned char v) {
@@ -68,5 +109,46 @@ void LabelCentered(UiContext& ui, const char* text, Rectangle rect, float size, 
     Vector2 sz = ui.Text().Measure(text, size);
     Vector2 pos = {rect.x + (rect.width - sz.x) * 0.5f, rect.y + (rect.height - sz.y) * 0.5f};
     ui.Text().Draw(text, pos, size, color, 0.0f, bold);
+}
+
+float DrawRichText(UiContext& ui, const std::string& text, Rectangle rect, float size, Color color,
+                   Color iconTint, bool bold, float iconScale)
+{
+    std::vector<RichItem> items = ParseRich(text);
+    float spaceW = ui.Text().Width(" ", size);
+    float lineH = ui.Text().LineHeight(size);
+    float iconSize = size * iconScale;
+    float x = rect.x;
+    float y = rect.y;
+    bool lineStart = true;
+
+    for (const RichItem& item : items)
+    {
+        bool asIcon = item.icon && ui.Atlas().Has(item.text);
+        std::string glyphs = item.icon ? ("[" + item.text + "]") : item.text;
+        float w = asIcon ? iconSize : ui.Text().Width(glyphs.c_str(), size);
+
+        if (!lineStart && x + w > rect.x + rect.width)
+        {
+            x = rect.x;
+            y += lineH;
+            lineStart = true;
+        }
+
+        if (asIcon)
+        {
+            float iy = y + (size - iconSize) * 0.5f;
+            ui.Atlas().DrawSprite(item.text, Rectangle{x, iy, iconSize, iconSize}, iconTint);
+        }
+        else
+        {
+            ui.Text().Draw(glyphs.c_str(), Vector2{x, y}, size, color, 0.0f, bold);
+        }
+
+        x += w + spaceW;
+        lineStart = false;
+    }
+
+    return (y + lineH) - rect.y;
 }
 }

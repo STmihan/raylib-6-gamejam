@@ -38,10 +38,19 @@ void ApplyUnit(Balance& b, int idx, const json& u)
     s.stationary = u.value("stationary", s.stationary);
     s.armorHits = u.value("armorHits", s.armorHits);
     s.aoeRadius = u.value("aoeRadius", s.aoeRadius);
+    s.aggroRange = u.value("aggroRange", s.aggroRange);
 
     b.cardCost[static_cast<std::size_t>(idx)] = u.value("cost", b.cardCost[static_cast<std::size_t>(idx)]);
     b.cardCharges[static_cast<std::size_t>(idx)] =
         u.value("charges", b.cardCharges[static_cast<std::size_t>(idx)]);
+    if (u.contains("description") && u["description"].is_array())
+    {
+        std::vector<std::string> points;
+        for (const auto& p : u["description"]) points.push_back(p.get<std::string>());
+        b.cardDescription[static_cast<std::size_t>(idx)] = points;
+    }
+    b.cardMergeGrant[static_cast<std::size_t>(idx)] =
+        u.value("mergeGrant", b.cardMergeGrant[static_cast<std::size_t>(idx)]);
 }
 }
 

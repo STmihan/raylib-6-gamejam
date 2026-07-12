@@ -41,6 +41,7 @@ target_link_libraries(game_core PRIVATE nlohmann_json::nlohmann_json)
 
 file(GLOB_RECURSE GAME_SOURCES CONFIGURE_DEPENDS
         "${CMAKE_SOURCE_DIR}/src/app/*.cpp"
+        "${CMAKE_SOURCE_DIR}/src/audio/*.cpp"
         "${CMAKE_SOURCE_DIR}/src/view/*.cpp"
         "${CMAKE_SOURCE_DIR}/src/debug/*.cpp"
         "${CMAKE_SOURCE_DIR}/src/main.cpp")
@@ -48,7 +49,7 @@ file(GLOB_RECURSE GAME_HEADERS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.h")
 
 add_executable(${PROJECT_NAME} ${GAME_SOURCES} ${GAME_HEADERS})
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(${PROJECT_NAME} PRIVATE game_core raylib)
+target_link_libraries(${PROJECT_NAME} PRIVATE game_core raylib nlohmann_json::nlohmann_json)
 target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:DEBUG_BUILD>)
 
 if (NOT EMSCRIPTEN)
@@ -88,6 +89,12 @@ if (EMSCRIPTEN)
             --shell-file "${CMAKE_SOURCE_DIR}/src/shell.html"
             "--preload-file=${ASSETS_DIR}@assets"
     )
+
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy
+            "${ASSETS_DIR}/icons/ui/icon.png"
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>/icon.png"
+            COMMENT "Copying favicon next to index.html")
 else ()
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_directory

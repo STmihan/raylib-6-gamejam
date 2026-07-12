@@ -112,6 +112,7 @@ void DamageNumbers::Update(const logic::GameState& current, float dt)
                 r.amount += magnitude;
                 r.age = 0.0f;
                 r.origin = e.position;
+                r.mult = e.lastHitMult;
                 std::snprintf(r.text, sizeof(r.text), "%s%d", heal ? "+" : "-", r.amount);
                 merged = true;
             }
@@ -127,6 +128,7 @@ void DamageNumbers::Update(const logic::GameState& current, float dt)
             p.amount = magnitude;
             p.heal = heal;
             p.miss = false;
+            p.mult = e.lastHitMult;
             p.age = 0.0f;
             std::snprintf(p.text, sizeof(p.text), "%s%d", heal ? "+" : "-", magnitude);
             recent_[i] = idx;
@@ -160,6 +162,8 @@ void DamageNumbers::Update(const logic::GameState& current, float dt)
 void DamageNumbers::Draw(ui::UiContext& ui, Camera3D camera) const
 {
     const Color damage = {255, 90, 80, 255};
+    const Color strongDamage = {255, 44, 40, 255};
+    const Color weakDamage = {255, 214, 60, 255};
     const Color healColor = {90, 235, 130, 255};
     for (const Popup& p : pool_)
     {
@@ -172,14 +176,40 @@ void DamageNumbers::Draw(ui::UiContext& ui, Camera3D camera) const
             continue;
         screen.y -= t * RisePixels;
 
-        Color color = p.miss ? Color{240, 240, 240, 255} : (p.heal ? healColor : damage);
+        Color color;
+        float size;
+        if (p.miss)
+        {
+            color = Color{240, 240, 240, 255};
+            size = 13.0f;
+        }
+        else if (p.heal)
+        {
+            color = healColor;
+            size = 12.0f;
+        }
+        else if (p.mult > 1.001f)
+        {
+            color = strongDamage;
+            size = 15.0f;
+        }
+        else if (p.mult < 0.999f)
+        {
+            color = weakDamage;
+            size = 12.0f;
+        }
+        else
+        {
+            color = damage;
+            size = 12.0f;
+        }
+
         if (t > 0.65f)
         {
             float fade = 1.0f - (t - 0.65f) / 0.35f;
             color.a = static_cast<unsigned char>(255.0f * (fade < 0.0f ? 0.0f : fade));
         }
 
-        float size = p.miss ? 13.0f : 12.0f;
         DrawBoldCentered(ui, p.text, screen, size, color);
     }
 }

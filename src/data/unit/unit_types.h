@@ -44,6 +44,7 @@ struct UnitStats
     bool stationary;
     int armorHits;
     int aoeRadius;
+    int aggroRange;
 };
 
 inline const char* UnitTypeName(UnitType type)

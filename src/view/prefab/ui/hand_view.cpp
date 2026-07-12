@@ -12,8 +12,8 @@ namespace view::ui
 {
 namespace
 {
-    constexpr float CardW = 118.0f;
-    constexpr float CardH = 166.0f;
+    constexpr float CardW = 100.0f;
+    constexpr float CardH = 140.0f;
     constexpr float DegToRad = 0.0174532925f;
     constexpr float MergeCenterFrac = 0.5f;
 
@@ -61,6 +61,7 @@ void HandView::HandleHotkeys(Vector2 m, int count)
         keyboardDrag_ = true;
         armedLeftHand_ = false;
         dragPos_ = m;
+        slots_[static_cast<std::size_t>(key)].drag = 1.0f;
     }
     else if (keyboardDrag_)
     {
@@ -74,6 +75,7 @@ void HandView::HandleHotkeys(Vector2 m, int count)
         {
             dragging_ = key;
             armedLeftHand_ = false;
+            slots_[static_cast<std::size_t>(key)].drag = 1.0f;
         }
     }
 }
@@ -214,12 +216,20 @@ void HandView::Update(UiInput& input, float dt, const logic::GameState& state)
         float dragTarget = 0.0f;
         if (dragging_ == i)
         {
-            Vector2 slotCenter = FanCenter(i);
-            float dx = dragPos_.x - slotCenter.x;
-            float dy = dragPos_.y - slotCenter.y;
-            dragTarget = std::sqrt(dx * dx + dy * dy) > params_.dragRadius ? 1.0f : 0.0f;
+            if (keyboardDrag_)
+            {
+                dragTarget = 1.0f;
+            }
+            else
+            {
+                Vector2 slotCenter = FanCenter(i);
+                float dx = dragPos_.x - slotCenter.x;
+                float dy = dragPos_.y - slotCenter.y;
+                dragTarget = std::sqrt(dx * dx + dy * dy) > params_.dragRadius ? 1.0f : 0.0f;
+            }
         }
-        s.drag += (dragTarget - s.drag) * k;
+        if (keyboardDrag_ && dragging_ == i) s.drag = dragTarget;
+        else s.drag += (dragTarget - s.drag) * k;
     }
 
     for (int i = 0; i < count; i++)
@@ -243,7 +253,7 @@ void HandView::DrawSlot(UiContext& ui, const TextureRegistry& textures, RenderTe
     const Texture2D& donorIcon =
         s.donor >= 0 ? textures.MergeIcon(static_cast<data::UnitType>(s.donor)) : textures.White();
     DrawCardTransformed(ui, target, data::CardDefOf(s.type), textures.Preview(s.type), c, ang, sc, CardW, CardH,
-                        s.chargesLeft, SlotCost(s), s.donor, donorIcon);
+                        s.chargesLeft, SlotCost(s), s.donor, donorIcon, newUi_);
 }
 
 void HandView::DrawMergeBadge(UiContext& ui, const TextureRegistry& textures, Vector2 pos,
@@ -322,8 +332,9 @@ int HandView::SlotCost(const Slot& s) const
     return cost;
 }
 
-void HandView::Draw(UiContext& ui, const TextureRegistry& textures, RenderTexture2D& target)
+void HandView::Draw(UiContext& ui, const TextureRegistry& textures, RenderTexture2D& target, bool newUi)
 {
+    newUi_ = newUi;
     int count = static_cast<int>(slots_.size());
     for (int i = 0; i < count; i++)
     {
@@ -341,6 +352,24 @@ void HandView::Draw(UiContext& ui, const TextureRegistry& textures, RenderTextur
 }
 
 data::UnitType HandView::DraggedType() const
+{
+    if (dragging_ < 0) return data::UnitType::Infantry;
+    return slots_[static_cast<std::size_t>(dragging_)].type;
+}
+
+data::UnitType HandView::HoveredType() const
+{
+    if (!Hovering()) return data::UnitType::Infantry;
+    return slots_[static_cast<std::size_t>(hovered_)].type;
+}
+
+data::UnitType HandView::MergeHostType() const
+{
+    if (mergeHost_ < 0) return data::UnitType::Infantry;
+    return slots_[static_cast<std::size_t>(mergeHost_)].type;
+}
+
+data::UnitType HandView::MergeDonorType() const
 {
     if (dragging_ < 0) return data::UnitType::Infantry;
     return slots_[static_cast<std::size_t>(dragging_)].type;

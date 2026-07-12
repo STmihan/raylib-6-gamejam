@@ -6,9 +6,6 @@ namespace view
 {
 void TextureRegistry::Load()
 {
-    cards_ = LoadTexture("assets/cards.png");
-    SetTextureFilter(cards_, TEXTURE_FILTER_BILINEAR);
-
     Image w = GenImageColor(1, 1, WHITE);
     white_ = LoadTextureFromImage(w);
     UnloadImage(w);
@@ -29,7 +26,6 @@ void TextureRegistry::Load()
 void TextureRegistry::Unload()
 {
     if (!loaded_) return;
-    UnloadTexture(cards_);
     UnloadTexture(white_);
     for (Texture2D& tex : previews_) UnloadTexture(tex);
     for (Texture2D& tex : mergeIcons_) UnloadTexture(tex);

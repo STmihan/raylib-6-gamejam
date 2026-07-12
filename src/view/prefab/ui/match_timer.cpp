@@ -9,7 +9,7 @@
 
 namespace view::ui
 {
-void DrawMatchTimer(UiContext& ui, Rectangle rect, std::uint64_t tick)
+void DrawMatchTimer(UiContext& ui, Rectangle rect, std::uint64_t tick, bool useAtlas)
 {
     int elapsed = static_cast<int>(tick / data::TickRate);
     bool overtime = elapsed >= data::MatchDurationSeconds();
@@ -19,18 +19,28 @@ void DrawMatchTimer(UiContext& ui, Rectangle rect, std::uint64_t tick)
     char text[8];
     std::snprintf(text, sizeof(text), "%d:%02d", shown / 60, shown % 60);
 
+    bool atlas = useAtlas && ui.Atlas().Ready();
+    const Color white = {245, 245, 245, 255};
+    const Color red = {176, 36, 32, 245};
+
     if (!overtime)
     {
-        Panel(ui, rect, Color{28, 32, 24, 235});
+        if (atlas) ui.Atlas().DrawNPatch("panel-base", rect);
+        else Panel(ui, rect, Color{28, 32, 24, 235});
         LabelCentered(ui, text, rect, 30.0f, RAYWHITE, true);
         return;
     }
 
-    const Color white = {245, 245, 245, 255};
-    const Color red = {176, 36, 32, 245};
-    Rectangle outline = {rect.x - 3.0f, rect.y - 3.0f, rect.width + 6.0f, rect.height + 6.0f};
-    ui.Theme().Panel(outline, white);
-    Panel(ui, rect, red);
+    if (atlas)
+    {
+        ui.Atlas().DrawNPatch("panel-base", rect, red);
+    }
+    else
+    {
+        Rectangle outline = {rect.x - 3.0f, rect.y - 3.0f, rect.width + 6.0f, rect.height + 6.0f};
+        ui.Theme().Panel(outline, white);
+        Panel(ui, rect, red);
+    }
     LabelCentered(ui, text, rect, 30.0f, white, true);
 
     const char* stamp = "OVERTIME";
