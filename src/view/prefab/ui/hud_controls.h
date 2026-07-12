@@ -14,10 +14,12 @@ public:
     void Draw(UiContext& ui);
 
     bool Paused() const { return paused_; }
+    bool HelpOpen() const { return helpOpen_; }
 
 private:
     struct Layout
     {
+        Rectangle help;
         Rectangle pause;
         Rectangle sound;
         Rectangle panel;
@@ -25,8 +27,11 @@ private:
     };
 
     Layout Compute() const;
+    Rectangle HelpOkButton() const;
+    void DrawHelp(UiContext& ui);
 
     bool paused_ = false;
+    bool helpOpen_ = true;
     float volume_ = 1.0f;
     float lastVolume_ = 1.0f;
     float panelOpen_ = 0.0f;

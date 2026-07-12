@@ -102,6 +102,11 @@ void StepApp(App& app)
 
     app.renderer.Ui().BeginFrame();
     app.renderer.Controls().Update(app.renderer.Ui(), GetFrameTime());
+    if (app.renderer.Controls().HelpOpen())
+    {
+        paused = true;
+        matchOver = true;
+    }
     if (!matchOver)
         app.renderer.Hand().Update(app.renderer.Ui().Input(), GetFrameTime(), app.currentState);
 

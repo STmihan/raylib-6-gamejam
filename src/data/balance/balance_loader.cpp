@@ -118,6 +118,13 @@ void LoadRules(const char* path)
 
     b.forestMissPercent = root.value("forestMissPercent", b.forestMissPercent);
 
+    if (root.contains("tutorial") && root["tutorial"].is_array())
+    {
+        std::vector<std::string> lines;
+        for (const json& line : root["tutorial"]) lines.push_back(line.get<std::string>());
+        b.tutorialLines = lines;
+    }
+
     if (root.contains("deck") && root["deck"].is_array())
     {
         int n = 0;

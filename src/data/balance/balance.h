@@ -17,6 +17,7 @@ struct Balance
     std::array<int, UnitTypeCount> cardCharges;
     std::array<std::vector<std::string>, UnitTypeCount> cardDescription;
     std::array<std::string, UnitTypeCount> cardMergeGrant;
+    std::vector<std::string> tutorialLines;
     std::array<std::array<float, UnitTypeCount>, UnitTypeCount> damageMatrix;
     float structureDamageMultiplier;
 
@@ -100,6 +101,12 @@ inline Balance DefaultBalance()
     b.cardMergeGrant[static_cast<int>(UnitType::RL)] = "Redeploys anywhere, more [stat-range] range.";
     b.cardMergeGrant[static_cast<int>(UnitType::Tank)] = "Stronger [stat-shield] armor.";
     b.cardMergeGrant[static_cast<int>(UnitType::Plane)] = "Place it anywhere.";
+
+    b.tutorialLines = {
+        "Play unit cards",
+        "MERGE units together to grant them new abilities",
+        "Once the timer runs out, both bases take damage OVER TIME",
+    };
 
     b.damageMatrix = {{
         {1.00f, 1.00f, 1.00f, 0.30f, 0.30f, 0.00f},

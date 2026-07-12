@@ -26,6 +26,11 @@
   },
   "forestMissPercent": 30,
   "structureDamageMultiplier": 1.0,
+  "tutorial": [
+    "Play unit CARDS",
+    "MERGE units together to grant them new abilities",
+    "Once the timer runs out, both bases take damage OVER TIME"
+  ],
   "units": {
     "Infantry": {
       "hp": 60,

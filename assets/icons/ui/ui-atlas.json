@@ -23,6 +23,7 @@
    { "name": "Layer 3", "opacity": 31, "blendMode": "screen" }
   ],
   "slices": [
+   { "name": "question-icon", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 142, "y": 104, "w": 14, "h": 22 } }] },
    { "name": "cards-icon", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 106, "y": 101, "w": 32, "h": 32 } }] },
    { "name": "timer-icon", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 77, "y": 103, "w": 25, "h": 30 } }] },
    { "name": "button-pressed", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 51, "y": 108, "w": 22, "h": 22 }, "center": {"x": 6, "y": 6, "w": 10, "h": 10 } }] },

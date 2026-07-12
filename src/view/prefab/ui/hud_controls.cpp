@@ -1,6 +1,7 @@
 #include "view/prefab/ui/hud_controls.h"
 
 #include "audio/sound.h"
+#include "data/balance/balance.h"
 #include "view/prefab/ui/ui_widgets.h"
 
 namespace view::ui
@@ -20,9 +21,16 @@ namespace
     constexpr float TrackHeight = 16.0f;
     constexpr float TrackBorderWidth = 2.0f;
 
+    constexpr float HelpPanelW = 500.0f;
+    constexpr float HelpPanelH = 340.0f;
+    constexpr float HelpOkW = 120.0f;
+    constexpr float HelpOkH = 48.0f;
+
     const Color TrackBorder = {18, 22, 16, 255};
     const Color TrackBg = {52, 58, 44, 255};
     const Color TrackFill = {240, 192, 58, 255};
+    const Color Ink = {236, 232, 216, 255};
+    const Color Dim = {206, 201, 184, 255};
 
     void DrawCenteredSprite(UiAtlas& atlas, const char* name, Rectangle box, float scale, Color tint)
     {
@@ -38,18 +46,45 @@ namespace
 HudControls::Layout HudControls::Compute() const
 {
     Layout l;
-    l.pause = {OriginX, OriginY, ButtonSize, ButtonSize};
-    l.sound = {OriginX + ButtonSize + Gap, OriginY, ButtonSize, ButtonSize};
+    float step = ButtonSize + Gap;
+    l.help = {OriginX, OriginY, ButtonSize, ButtonSize};
+    l.pause = {OriginX + step, OriginY, ButtonSize, ButtonSize};
+    l.sound = {OriginX + step * 2.0f, OriginY, ButtonSize, ButtonSize};
     float visLeft = l.sound.x + l.sound.width;
     l.panel = {visLeft - Overlap, OriginY, PanelWidth, ButtonSize};
     l.track = {l.panel.x + TrackInset, OriginY + (ButtonSize - TrackHeight) * 0.5f, TrackWidth, TrackHeight};
     return l;
 }
 
+Rectangle HudControls::HelpOkButton() const
+{
+    float sw = static_cast<float>(GetScreenWidth());
+    float sh = static_cast<float>(GetScreenHeight());
+    Rectangle panel = {(sw - HelpPanelW) * 0.5f, (sh - HelpPanelH) * 0.5f, HelpPanelW, HelpPanelH};
+    return {panel.x + (panel.width - HelpOkW) * 0.5f, panel.y + panel.height - 28.0f - HelpOkH, HelpOkW, HelpOkH};
+}
+
 void HudControls::Update(UiContext& ui, float dt)
 {
     UiInput& in = ui.Input();
     Layout l = Compute();
+
+    if (helpOpen_)
+    {
+        if (in.Pressed(HelpOkButton()))
+        {
+            helpOpen_ = false;
+            audio::Play("button-click");
+        }
+        in.Block(Rectangle{0.0f, 0.0f, static_cast<float>(GetScreenWidth()), static_cast<float>(GetScreenHeight())});
+        return;
+    }
+
+    if (in.Pressed(l.help))
+    {
+        helpOpen_ = true;
+        audio::Play("button-click");
+    }
 
     if (in.Pressed(l.pause))
     {
@@ -90,6 +125,7 @@ void HudControls::Update(UiContext& ui, float dt)
     }
     audio::SetMasterVolume(volume_);
 
+    in.Block(l.help);
     in.Block(l.pause);
     in.Block(l.sound);
     if (panelOpen_ > 0.05f) in.Block(l.panel);
@@ -101,6 +137,13 @@ void HudControls::Draw(UiContext& ui)
     if (!atlas.Ready()) return;
     UiInput& in = ui.Input();
     Layout l = Compute();
+
+    bool helpHover = in.Hover(l.help);
+    bool helpDown = helpHover && in.Down();
+    const char* helpBg =
+        helpDown ? "button-pressed" : ((helpOpen_ || helpHover) ? "button-hover" : "button-normal");
+    atlas.DrawSprite(helpBg, l.help);
+    DrawCenteredSprite(atlas, "question-icon", l.help, 0.5f, WHITE);
 
     bool pauseHover = in.Hover(l.pause);
     bool pauseDown = pauseHover && in.Down();
@@ -136,5 +179,45 @@ void HudControls::Draw(UiContext& ui)
         soundDown ? "button-pressed" : ((panelOpen_ > 0.5f || soundHover) ? "button-hover" : "button-normal");
     atlas.DrawSprite(soundBg, l.sound);
     DrawCenteredSprite(atlas, "sound-icon", l.sound, 0.5f, WHITE);
+
+    if (helpOpen_) DrawHelp(ui);
+}
+
+void HudControls::DrawHelp(UiContext& ui)
+{
+    UiAtlas& atlas = ui.Atlas();
+    UiInput& in = ui.Input();
+
+    float sw = static_cast<float>(GetScreenWidth());
+    float sh = static_cast<float>(GetScreenHeight());
+    ui.Theme().Fill(Rectangle{0.0f, 0.0f, sw, sh}, Color{0, 0, 0, 178});
+
+    Rectangle panel = {(sw - HelpPanelW) * 0.5f, (sh - HelpPanelH) * 0.5f, HelpPanelW, HelpPanelH};
+    atlas.DrawNPatch("panel-base", panel);
+
+    const float pad = 32.0f;
+    Rectangle titleRect = {panel.x, panel.y + pad, panel.width, 44.0f};
+    LabelCentered(ui, "HOW TO PLAY", titleRect, 34.0f, Ink, true);
+
+    const std::vector<std::string>& lines = data::Rules().tutorialLines;
+    const float bullet = 6.0f;
+    const float indent = 20.0f;
+    const float fontSize = 22.0f;
+    float lineW = panel.width - pad * 2.0f - indent;
+    float y = panel.y + pad + 66.0f;
+    for (const std::string& line : lines)
+    {
+        ui.Theme().Fill(Rectangle{panel.x + pad, y + fontSize * 0.45f, bullet, bullet}, Dim);
+        float h = DrawRichText(ui, line, Rectangle{panel.x + pad + indent, y, lineW, fontSize}, fontSize, Ink, WHITE,
+                               true);
+        y += h + 14.0f;
+    }
+
+    Rectangle ok = HelpOkButton();
+    bool okHover = in.Hover(ok);
+    bool okDown = okHover && in.Down();
+    Color okTint = okDown ? Color{56, 62, 48, 255} : (okHover ? Color{96, 106, 82, 255} : Color{70, 78, 60, 255});
+    atlas.DrawNPatch("panel-base", ok, okTint);
+    LabelCentered(ui, "OK", ok, 24.0f, Ink, true);
 }
 }
