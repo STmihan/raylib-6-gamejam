@@ -24,15 +24,15 @@
   "ai": {
     "deployCooldownSeconds": 3.0
   },
-  "forestMissPercent": 30,
+  "forestMissPercent": 10,
   "structureDamageMultiplier": 1.0,
   "tutorial": [
-    "Play unit CARDS",
-    "MERGE units together to grant them new abilities",
-    "Once the timer runs out, both bases take damage OVER TIME",
     "Hotkeys:",
     "1/2/3 - for cards",
-    "SPACE - for pause"
+    "SPACE - for pause",
+    "Play unit CARDS",
+    "MERGE units together to grant them new abilities",
+    "Once the timer runs out, both bases take damage OVER TIME"
   ],
   "units": {
     "Infantry": {

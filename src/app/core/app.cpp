@@ -96,6 +96,7 @@ void StepApp(App& app)
         app.previousState = app.currentState;
         app.accumulator = 0.0;
         app.lastAiTick = 0;
+        app.renderer.VignetteParamsRef().enabled = false;
     }
 
     bool matchOver = app.currentState.winner >= 0;
@@ -135,8 +136,11 @@ void StepApp(App& app)
     }
 
     app.audioEvents.Observe(app.currentState);
-    audio::SetMusicOvertime(static_cast<int>(app.currentState.tick / data::TickRate) >=
-                            data::MatchDurationSeconds());
+    bool overtime = static_cast<int>(app.currentState.tick / data::TickRate) >= data::MatchDurationSeconds();
+    audio::SetMusicOvertime(overtime);
+    static bool wasOvertime = false;
+    if (overtime && !wasOvertime) app.renderer.VignetteParamsRef().enabled = true;
+    wasOvertime = overtime;
 
     app.cameraRig.Update();
 

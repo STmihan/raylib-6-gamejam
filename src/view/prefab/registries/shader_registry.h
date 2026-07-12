@@ -22,6 +22,7 @@ public:
     const Shader& Crystal() const { return crystal_; }
     const Shader& Ring() const { return ring_; }
     const Shader& Blob() const { return blob_; }
+    const Shader& Vignette() const { return vignette_; }
 
 private:
     Shader toon_{};
@@ -35,6 +36,7 @@ private:
     Shader crystal_{};
     Shader ring_{};
     Shader blob_{};
+    Shader vignette_{};
     bool loaded_ = false;
 };
 }

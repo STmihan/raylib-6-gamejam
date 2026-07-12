@@ -8,6 +8,7 @@
 
 #include "data/render/cavity_params.h"
 #include "data/render/shadow_params.h"
+#include "data/render/vignette_params.h"
 #include "logic/state/game_state.h"
 #include "logic/world/map.h"
 #include "debug/preview_scene.h"
@@ -63,6 +64,7 @@ public:
     bool& HudHiddenRef() { return hudHidden_; }
     bool& DragZoneRef() { return dragZone_; }
     bool& NewUiRef() { return newUi_; }
+    data::VignetteParams& VignetteParamsRef() { return vignette_; }
     int& HudResourceHighlightRef() { return resourceHighlight_; }
     data::CrystalStyle& CrystalStyleRef() { return crystalStyle_; }
     ui::HandView& Hand() { return hand_; }
@@ -89,6 +91,7 @@ private:
     void ConfigureBlobShadow();
     void UseEnvShadow();
     void UseUnitShadow();
+    void DrawVignette();
 
     ShaderRegistry shaders_;
     TextureRegistry textures_;
@@ -116,6 +119,7 @@ private:
     bool hudHidden_ = false;
     bool dragZone_ = false;
     bool newUi_ = true;
+    data::VignetteParams vignette_;
     int resourceHighlight_ = 0;
     data::CrystalStyle crystalStyle_;
     bool hexGridLoaded_ = false;

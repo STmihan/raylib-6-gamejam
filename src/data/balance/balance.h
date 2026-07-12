@@ -134,7 +134,7 @@ inline Balance DefaultBalance()
     b.maxRegenDoublings = 2;
     b.overtimeBaseDamage = 20;
     b.overtimeDoubleEverySeconds = 30;
-    b.forestMissPercent = 30;
+    b.forestMissPercent = 10;
     b.baseHp = 1500;
     b.wallHp = 75;
     b.aiDeployCooldownSeconds = 3.0f;

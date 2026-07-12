@@ -61,6 +61,21 @@ void Renderer::Init(const logic::Map& map)
     ui_.Load(shaders_, textures_);
 }
 
+void Renderer::DrawVignette()
+{
+    Shader vig = shaders_.Vignette();
+    SetShaderValue(vig, GetShaderLocation(vig, "vColor"), &vignette_.color, SHADER_UNIFORM_VEC3);
+    SetShaderValue(vig, GetShaderLocation(vig, "vIntensity"), &vignette_.intensity, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(vig, GetShaderLocation(vig, "vRadius"), &vignette_.radius, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(vig, GetShaderLocation(vig, "vSoftness"), &vignette_.softness, SHADER_UNIFORM_FLOAT);
+
+    Rectangle src = {0.0f, 0.0f, 1.0f, 1.0f};
+    Rectangle dst = {0.0f, 0.0f, static_cast<float>(GetScreenWidth()), static_cast<float>(GetScreenHeight())};
+    BeginShaderMode(vig);
+    DrawTexturePro(textures_.White(), src, dst, Vector2{0.0f, 0.0f}, 0.0f, WHITE);
+    EndShaderMode();
+}
+
 void Renderer::Shutdown()
 {
     ui_.Unload();
@@ -268,6 +283,7 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
                              occluded_.data());
     };
     passes.composite2D = [&] {
+        if (vignette_.enabled) DrawVignette();
         if (!hudHidden_)
         {
             hpBars_.DrawEntities(camera, previous, current, alpha);

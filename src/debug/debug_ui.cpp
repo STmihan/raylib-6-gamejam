@@ -268,6 +268,15 @@ void DrawDebugOverlay(float& cameraBoundsRadius, view::Renderer& renderer,
     {
         ImGui::Checkbox("Hide HUD", &renderer.HudHiddenRef());
         ImGui::Checkbox("New UI", &renderer.NewUiRef());
+        if (ImGui::CollapsingHeader("Vignette", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            data::VignetteParams& vp = renderer.VignetteParamsRef();
+            ImGui::Checkbox("Vignette Enabled", &vp.enabled);
+            ImGui::ColorEdit3("Vignette Color", &vp.color.x);
+            ImGui::SliderFloat("Vignette Intensity", &vp.intensity, 0.0f, 1.0f);
+            ImGui::SliderFloat("Vignette Radius", &vp.radius, 0.0f, 1.0f);
+            ImGui::SliderFloat("Vignette Softness", &vp.softness, 0.01f, 1.0f);
+        }
         ImGui::SliderInt("Resource highlight N", &renderer.HudResourceHighlightRef(), 0, 6);
         if (ImGui::Button("Reset player resource") && onResetResource) onResetResource();
         if (ImGui::CollapsingHeader("Resource crystal", ImGuiTreeNodeFlags_DefaultOpen))
