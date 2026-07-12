@@ -52,13 +52,13 @@ inline Balance DefaultBalance()
     b.units[static_cast<int>(UnitType::Infantry)] =
         {60, 110.0f, true, false, false, false, 15.0f, 2, 1.0f, 15, false, 0, 0, 4};
     b.units[static_cast<int>(UnitType::Rocketeer)] =
-        {50, 100.0f, true, false, false, true, 15.0f, 4, 1.5f, 22, false, 0, 1, 5};
+        {50, 100.0f, true, false, false, true, 15.0f, 4, 1.2f, 26, false, 0, 1, 5};
     b.units[static_cast<int>(UnitType::Engineer)] =
         {50, 100.0f, true, false, false, false, 15.0f, 1, 1.0f, 0, false, 0, 0, 1};
     b.units[static_cast<int>(UnitType::RL)] =
-        {140, 80.0f, false, false, true, true, 55.0f, 5, 0.8f, 20, true, 0, 0, 8};
+        {140, 80.0f, false, false, true, true, 55.0f, 5, 0.8f, 26, true, 0, 0, 8};
     b.units[static_cast<int>(UnitType::Tank)] =
-        {260, 100.0f, false, false, true, true, 60.0f, 2, 1.1f, 40, false, 3, 0, 4};
+        {260, 100.0f, false, false, true, true, 60.0f, 2, 1.1f, 34, false, 3, 0, 4};
     b.units[static_cast<int>(UnitType::Plane)] =
         {120, 180.0f, false, true, true, true, 0.0f, 1, 1.0f, 30, false, 0, 0, 3};
 
@@ -110,9 +110,9 @@ inline Balance DefaultBalance()
 
     b.damageMatrix = {{
         {1.00f, 1.00f, 1.00f, 0.30f, 0.30f, 0.00f},
-        {0.30f, 0.30f, 0.30f, 1.00f, 1.00f, 0.80f},
+        {0.30f, 0.30f, 0.30f, 1.00f, 1.80f, 1.00f},
         {0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f},
-        {0.10f, 0.10f, 0.50f, 0.50f, 0.50f, 1.00f},
+        {0.20f, 0.20f, 0.50f, 0.50f, 0.50f, 1.00f},
         {1.50f, 1.00f, 1.00f, 1.00f, 1.00f, 0.30f},
         {0.50f, 0.50f, 1.00f, 1.20f, 1.20f, 1.00f},
     }};
