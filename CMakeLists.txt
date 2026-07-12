@@ -116,4 +116,19 @@ else ()
             "${ASSETS_DIR}"
             "$<TARGET_FILE_DIR:sim_harness>/assets"
             COMMENT "Copying assets next to the harness")
+
+    file(GLOB_RECURSE SHOT_VIEW_SOURCES CONFIGURE_DEPENDS
+            "${CMAKE_SOURCE_DIR}/src/view/*.cpp"
+            "${CMAKE_SOURCE_DIR}/src/audio/*.cpp")
+    list(FILTER SHOT_VIEW_SOURCES EXCLUDE REGEX "render/renderer\\.cpp$")
+    file(GLOB_RECURSE SHOT_SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/tools/scene_shot/*.cpp")
+    add_executable(scene_shot ${SHOT_SOURCES} ${SHOT_VIEW_SOURCES})
+    target_include_directories(scene_shot PRIVATE "${CMAKE_SOURCE_DIR}/src")
+    target_link_libraries(scene_shot PRIVATE game_core raylib nlohmann_json::nlohmann_json)
+
+    add_custom_command(TARGET scene_shot POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${ASSETS_DIR}"
+            "$<TARGET_FILE_DIR:scene_shot>/assets"
+            COMMENT "Copying assets next to scene_shot")
 endif ()
