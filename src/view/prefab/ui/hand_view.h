@@ -49,6 +49,8 @@ private:
     };
 
     void Sync(const logic::GameState& state);
+    void HandleHotkeys(Vector2 m, int count);
+    bool CursorOverHand(Vector2 m) const;
     float FanAngle(int i) const;
     Vector2 FanCenter(int i) const;
     void Transform(int i, Vector2& center, float& angle, float& scale) const;
@@ -74,6 +76,9 @@ private:
     bool hasMerge_ = false;
     int mergeHostOut_ = -1;
     int mergeDonorOut_ = -1;
+
+    bool keyboardDrag_ = false;
+    bool armedLeftHand_ = false;
 };
 }
 

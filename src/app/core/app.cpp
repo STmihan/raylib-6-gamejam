@@ -2,7 +2,9 @@
 
 #include <random>
 
+#include "ai/policy.h"
 #include "app/input/cursor.h"
+#include "data/economy/economy.h"
 #include "data/space/hex.h"
 #include "data/space/world_config.h"
 #include "data/time/time_config.h"
@@ -14,6 +16,20 @@ namespace app
 {
 namespace
 {
+void ProcessEnemyAI(App& app)
+{
+    if (app.currentState.winner >= 0) return;
+    std::uint64_t cooldown = static_cast<std::uint64_t>(data::AiDeployCooldownSeconds() * data::TickRate);
+    if (cooldown < 1) cooldown = 1;
+    if (app.currentState.tick - app.lastAiTick < cooldown) return;
+    app.lastAiTick = app.currentState.tick;
+
+    ai::Action action = ai::DecideAction(app.currentState, app.map, data::EnemyTeam);
+    int spawned = ai::ApplyAction(app.currentState, app.map, data::EnemyTeam, action);
+    if (spawned >= 0) app.previousState.entities[spawned] = app.currentState.entities[spawned];
+    ai::RunMicro(app.currentState, app.map, data::EnemyTeam);
+}
+
 void ProcessDeploy(App& app, Camera3D camera)
 {
     int slot;
@@ -51,6 +67,7 @@ void InitApp(App& app)
     app.renderer.Init(app.map);
     app.cameraRig.Init();
     app.accumulator = 0.0;
+    app.lastAiTick = 0;
     app.simulation.Init(app.currentState, app.map, NewSeed());
     app.previousState = app.currentState;
 }
@@ -71,6 +88,7 @@ void StepApp(App& app)
         app.simulation.Init(app.currentState, app.map, NewSeed());
         app.previousState = app.currentState;
         app.accumulator = 0.0;
+        app.lastAiTick = 0;
     }
 
     app.renderer.Ui().BeginFrame();
@@ -97,6 +115,7 @@ void StepApp(App& app)
         {
             app.accumulator = 0.0;
         }
+        ProcessEnemyAI(app);
     }
 
     app.cameraRig.Update();

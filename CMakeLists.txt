@@ -21,12 +21,34 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(raylib)
 
-file(GLOB_RECURSE GAME_SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.cpp")
+set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(
+        nlohmann_json
+        GIT_REPOSITORY https://github.com/nlohmann/json.git
+        GIT_TAG v3.11.3
+        GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(nlohmann_json)
+
+# Headless-safe core: logic + rules (no raylib). Shared by the game and the sim harness.
+file(GLOB_RECURSE CORE_SOURCES CONFIGURE_DEPENDS
+        "${CMAKE_SOURCE_DIR}/src/ai/*.cpp"
+        "${CMAKE_SOURCE_DIR}/src/logic/*.cpp"
+        "${CMAKE_SOURCE_DIR}/src/data/*.cpp")
+add_library(game_core STATIC ${CORE_SOURCES})
+target_include_directories(game_core PUBLIC "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(game_core PRIVATE nlohmann_json::nlohmann_json)
+
+file(GLOB_RECURSE GAME_SOURCES CONFIGURE_DEPENDS
+        "${CMAKE_SOURCE_DIR}/src/app/*.cpp"
+        "${CMAKE_SOURCE_DIR}/src/view/*.cpp"
+        "${CMAKE_SOURCE_DIR}/src/debug/*.cpp"
+        "${CMAKE_SOURCE_DIR}/src/main.cpp")
 file(GLOB_RECURSE GAME_HEADERS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.h")
 
 add_executable(${PROJECT_NAME} ${GAME_SOURCES} ${GAME_HEADERS})
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
+target_link_libraries(${PROJECT_NAME} PRIVATE game_core raylib)
 target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:DEBUG_BUILD>)
 
 if (NOT EMSCRIPTEN)
@@ -77,4 +99,14 @@ else ()
         target_link_libraries(${PROJECT_NAME} PRIVATE
                 "-framework IOKit" "-framework Cocoa" "-framework OpenGL")
     endif ()
+
+    file(GLOB_RECURSE HARNESS_SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/tools/sim_harness/*.cpp")
+    add_executable(sim_harness ${HARNESS_SOURCES})
+    target_link_libraries(sim_harness PRIVATE game_core)
+
+    add_custom_command(TARGET sim_harness POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${ASSETS_DIR}"
+            "$<TARGET_FILE_DIR:sim_harness>/assets"
+            COMMENT "Copying assets next to the harness")
 endif ()

@@ -41,7 +41,7 @@ void DeployRingView::Draw(Camera3D camera, const logic::GameState& previous, con
         float timer = prevTimer * (1.0f - alpha) + e.deployTimer * alpha;
         if (timer <= 0.001f) continue;
 
-        float progress = 1.0f - timer / data::DeployFreezeSeconds;
+        float progress = 1.0f - timer / data::DeployFreezeSeconds();
         if (progress < 0.0f) progress = 0.0f;
         if (progress > 1.0f) progress = 1.0f;
 

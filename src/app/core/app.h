@@ -23,6 +23,7 @@ struct App
     view::Renderer renderer;
     view::CameraRig cameraRig;
     double accumulator;
+    std::uint64_t lastAiTick;
     UnitControl unitControl;
 };
 

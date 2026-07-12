@@ -8,6 +8,7 @@
 
 #include "app/core/app.h"
 #include "data/app/app_config.h"
+#include "data/balance/balance.h"
 
 namespace app {
 
@@ -23,6 +24,8 @@ void FrameTrampoline() {
 
 int RunWeb() {
     InitWindow(data::ScreenWidth, data::ScreenHeight, data::WindowTitle);
+
+    data::LoadRules("assets/config.json");
 
     static App app;
     g_app = &app;

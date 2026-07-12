@@ -45,6 +45,48 @@ void HandView::Sync(const logic::GameState& state)
     }
 }
 
+void HandView::HandleHotkeys(Vector2 m, int count)
+{
+    int key = -1;
+    if (IsKeyPressed(KEY_ONE)) key = 0;
+    else if (IsKeyPressed(KEY_TWO)) key = 1;
+    else if (IsKeyPressed(KEY_THREE)) key = 2;
+    if (key < 0 || key >= count) return;
+
+    if (dragging_ < 0)
+    {
+        dragging_ = key;
+        hovered_ = -1;
+        keyboardDrag_ = true;
+        armedLeftHand_ = false;
+        dragPos_ = m;
+    }
+    else if (keyboardDrag_)
+    {
+        if (dragging_ == key)
+        {
+            dragging_ = -1;
+            keyboardDrag_ = false;
+            armedLeftHand_ = false;
+        }
+        else
+        {
+            dragging_ = key;
+            armedLeftHand_ = false;
+        }
+    }
+}
+
+bool HandView::CursorOverHand(Vector2 m) const
+{
+    int count = static_cast<int>(slots_.size());
+    for (int i = 0; i < count; i++)
+    {
+        if (HitCard(m, FanCenter(i), FanAngle(i), CardW, CardH)) return true;
+    }
+    return false;
+}
+
 float HandView::FanAngle(int i) const
 {
     int count = static_cast<int>(slots_.size());
@@ -84,6 +126,8 @@ void HandView::Update(UiInput& input, float dt, const logic::GameState& state)
     Vector2 m = input.Mouse();
     int count = static_cast<int>(slots_.size());
 
+    HandleHotkeys(m, count);
+
     if (dragging_ < 0)
     {
         hovered_ = -1;
@@ -103,29 +147,58 @@ void HandView::Update(UiInput& input, float dt, const logic::GameState& state)
         {
             dragging_ = hovered_;
             hovered_ = -1;
+            keyboardDrag_ = false;
         }
     }
 
     if (dragging_ >= 0)
     {
         dragPos_ = m;
-        mergeHost_ = ValidMergeHost(m);
-        if (!input.Down())
+
+        if (keyboardDrag_)
         {
-            if (mergeHost_ >= 0)
-            {
-                hasMerge_ = true;
-                mergeHostOut_ = mergeHost_;
-                mergeDonorOut_ = dragging_;
-            }
-            else if (DragOutside())
-            {
-                hasDrop_ = true;
-                dropSlot_ = dragging_;
-                dropPos_ = m;
-            }
-            dragging_ = -1;
             mergeHost_ = -1;
+            bool overHand = CursorOverHand(m);
+            if (!overHand) armedLeftHand_ = true;
+            if (armedLeftHand_ && overHand)
+            {
+                dragging_ = -1;
+                keyboardDrag_ = false;
+                armedLeftHand_ = false;
+            }
+            else if (input.Released())
+            {
+                if (DragOutside())
+                {
+                    hasDrop_ = true;
+                    dropSlot_ = dragging_;
+                    dropPos_ = m;
+                }
+                dragging_ = -1;
+                keyboardDrag_ = false;
+                armedLeftHand_ = false;
+            }
+        }
+        else
+        {
+            mergeHost_ = ValidMergeHost(m);
+            if (!input.Down())
+            {
+                if (mergeHost_ >= 0)
+                {
+                    hasMerge_ = true;
+                    mergeHostOut_ = mergeHost_;
+                    mergeDonorOut_ = dragging_;
+                }
+                else if (DragOutside())
+                {
+                    hasDrop_ = true;
+                    dropSlot_ = dragging_;
+                    dropPos_ = m;
+                }
+                dragging_ = -1;
+                mergeHost_ = -1;
+            }
         }
     }
 

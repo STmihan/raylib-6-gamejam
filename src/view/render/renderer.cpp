@@ -5,6 +5,7 @@
 #include "rlgl.h"
 
 #include "data/card/card.h"
+#include "data/economy/economy.h"
 #include "data/render/render_params.h"
 #include "data/space/hex.h"
 #include "data/space/world_config.h"
@@ -281,8 +282,8 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
             float res = previous.resource[player] * (1.0f - alpha) + current.resource[player] * alpha;
             int highlight = hand_.HasHighlight() ? hand_.HighlightCost() : resourceHighlight_;
             ui::Panel(ui_, Rectangle{486.0f, 604.0f, 220.0f, 40.0f}, panelTint);
-            ui::DrawResourceBar(ui_, Rectangle{498.0f, 613.0f, 196.0f, 22.0f}, res, 6, highlight,
-                                animTime, crystalStyle_);
+            ui::DrawResourceBar(ui_, Rectangle{498.0f, 613.0f, 196.0f, 22.0f}, res,
+                                static_cast<int>(data::ResourceCap()), highlight, animTime, crystalStyle_);
 
             hand_.Draw(ui_, textures_, cardTarget_);
             if (dragZone_) hand_.DrawDragZone(textures_);

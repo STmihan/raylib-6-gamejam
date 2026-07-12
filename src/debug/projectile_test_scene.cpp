@@ -188,10 +188,10 @@ void ProjectileTestScene::Step()
             logic::HealPulse& pulse = current_.healPulses[slot];
             pulse.active = true;
             pulse.center = a.position;
-            pulse.radius = data::EngineerHealPulseRadius;
+            pulse.radius = data::EngineerHealPulseRadius();
             pulse.startTick = current_.tick;
         }
-        a.attackCooldown = data::EngineerHealPulseInterval;
+        a.attackCooldown = data::EngineerHealPulseInterval();
     }
 
     for (int j = 0; j < data::MaxProjectiles; j++)

@@ -1,14 +1,16 @@
 #ifndef DATA_SIM_SIM_CONFIG_H
 #define DATA_SIM_SIM_CONFIG_H
 
+#include "data/balance/balance.h"
+
 namespace data
 {
 inline constexpr int MaxEntities = 256;
 
 inline constexpr float CellReachedEpsilon = 1.0f;
 
-inline constexpr int BaseHp = 2000;
-inline constexpr int WallHp = 300;
+inline int BaseHp() { return Rules().baseHp; }
+inline int WallHp() { return Rules().wallHp; }
 
 inline constexpr int MaxProjectiles = 128;
 inline constexpr int MaxHealPulses = 32;

@@ -78,7 +78,7 @@ bool DamageBlockedByWall(const GameState &state, const Entity &attacker, const E
 int ComputeDamage(const Entity &attacker, const Entity &target) {
     float multiplier = target.kind == EntityKind::Unit
         ? data::DamageMultiplier(attacker.type, target.type)
-        : data::StructureDamageMultiplier;
+        : data::StructureDamageMultiplier();
     int damage = static_cast<int>(static_cast<float>(data::UnitStatsOf(attacker.type).baseDamage) * multiplier);
     return damage > 0 ? damage : 0;
 }
@@ -180,7 +180,7 @@ bool ShotMisses(const GameState &state, const Map &map, const Projectile &p) {
                                 ^ Hash32(static_cast<std::uint32_t>(p.launchTick) * 2654435761U)
                                 ^ Hash32(static_cast<std::uint32_t>(p.attackerSlot * 2246822519U
                                                                     + p.targetSlot * 3266489917U)));
-    return roll % 100U < static_cast<std::uint32_t>(data::ForestMissPercent);
+    return roll % 100U < static_cast<std::uint32_t>(data::ForestMissPercent());
 }
 
 int AcquireAlly(const GameState &state, int index) {
@@ -509,7 +509,7 @@ void Simulation::Init(GameState &state, const Map &map, std::uint32_t seed) {
             data::TileType tile = map.At(col, row);
             data::Team owner = row < MapRows / 2 ? data::Team::Top : data::Team::Bottom;
             if (tile == data::TileType::Wall) {
-                addEntity(EntityKind::Wall, data::UnitType::Infantry, owner, col, row, data::WallHp);
+                addEntity(EntityKind::Wall, data::UnitType::Infantry, owner, col, row, data::WallHp());
             }
         }
     }
@@ -543,7 +543,7 @@ void Simulation::Init(GameState &state, const Map &map, std::uint32_t seed) {
         baseMinRow[idx] = minRow;
         baseMaxRow[idx] = maxRow;
         int baseIndex = count;
-        addEntity(EntityKind::Base, data::UnitType::Infantry, team, centerCol, centerRow, data::BaseHp);
+        addEntity(EntityKind::Base, data::UnitType::Infantry, team, centerCol, centerRow, data::BaseHp());
         Entity &base = state.entities[baseIndex];
         base.footMinCol = minCol;
         base.footMaxCol = maxCol;
@@ -582,12 +582,12 @@ void Simulation::Step(GameState &state, float dt) {
     float regen = data::RegenPerSec(seconds) * dt;
     for (int t = 0; t < 2; t++) {
         state.resource[t] += regen;
-        if (state.resource[t] > data::ResourceCap) state.resource[t] = data::ResourceCap;
+        if (state.resource[t] > data::ResourceCap()) state.resource[t] = data::ResourceCap();
     }
 
     int elapsedSeconds = static_cast<int>(state.tick / data::TickRate);
-    if (elapsedSeconds >= data::MatchDurationSeconds && state.tick % data::TickRate == 0) {
-        int damage = data::OvertimeDamageAt(elapsedSeconds - data::MatchDurationSeconds);
+    if (elapsedSeconds >= data::MatchDurationSeconds() && state.tick % data::TickRate == 0) {
+        int damage = data::OvertimeDamageAt(elapsedSeconds - data::MatchDurationSeconds());
         for (int i = 0; i < data::MaxEntities; i++) {
             Entity &base = state.entities[i];
             if (base.active && base.kind == EntityKind::Base) base.hp -= damage;
@@ -631,9 +631,9 @@ void Simulation::Step(GameState &state, float dt) {
         if (isEngineer) {
             entity.attackCooldown -= dt;
             if (entity.attackCooldown <= 0.0f) {
-                ApplyHealArea(state, entity.team, entity.col, entity.row, data::EngineerHealPulseRadius, false,
-                              static_cast<float>(data::EngineerHealPulseAmount));
-                entity.attackCooldown = data::EngineerHealPulseInterval;
+                ApplyHealArea(state, entity.team, entity.col, entity.row, data::EngineerHealPulseRadius(), false,
+                              static_cast<float>(data::EngineerHealPulseAmount()));
+                entity.attackCooldown = data::EngineerHealPulseInterval();
             }
         }
 
@@ -689,16 +689,16 @@ void Simulation::Step(GameState &state, float dt) {
         Entity &base = state.entities[i];
         if (!base.active || base.kind != EntityKind::Base) continue;
 
-        int target = AcquireBaseTarget(state, i, data::BaseTurretRange);
+        int target = AcquireBaseTarget(state, i, data::BaseTurretRange());
         base.targetSlot = target;
         if (target < 0) continue;
 
         base.attackCooldown -= dt;
         if (base.attackCooldown <= 0.0f) {
-            ApplyHit(state.entities[target], data::BaseTurretDamage);
+            ApplyHit(state.entities[target], data::BaseTurretDamage());
             SpawnBeam(state, i, target, base.burstIndex);
             base.burstIndex++;
-            base.attackCooldown = data::BaseTurretInterval;
+            base.attackCooldown = data::BaseTurretInterval();
         }
     }
 
@@ -769,7 +769,7 @@ int Simulation::Deploy(GameState &state, data::UnitType type, int donor, data::T
     e.forcedTarget = -1;
     e.attackCooldown = 0.0f;
     e.burstIndex = 0;
-    e.deployTimer = data::DeployFreezeSeconds;
+    e.deployTimer = data::DeployFreezeSeconds();
     e.hasMoveOrder = false;
     e.moveTarget = {};
     e.armorHits = data::UnitStatsOf(type).armorHits;
@@ -792,10 +792,10 @@ int Simulation::Deploy(GameState &state, data::UnitType type, int donor, data::T
     if (slot >= state.entityCount) state.entityCount = slot + 1;
 
     if (type == data::UnitType::Engineer) {
-        e.attackCooldown = data::EngineerHealPulseInterval;
-        ApplyHealArea(state, team, col, row, data::EngineerHealDeployRadius, true, data::EngineerHealDeployFraction);
+        e.attackCooldown = data::EngineerHealPulseInterval();
+        ApplyHealArea(state, team, col, row, data::EngineerHealDeployRadius(), true, data::EngineerHealDeployFraction());
     } else if (donor == static_cast<int>(data::UnitType::Engineer)) {
-        ApplyHealArea(state, team, col, row, data::EngineerHealDeployRadius, true, data::EngineerHealDeployFraction);
+        ApplyHealArea(state, team, col, row, data::EngineerHealDeployRadius(), true, data::EngineerHealDeployFraction());
     }
     return slot;
 }

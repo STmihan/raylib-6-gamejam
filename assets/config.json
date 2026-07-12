@@ -1,0 +1,53 @@
+{
+  "economy": {
+    "resourceCap": 10.0,
+    "baseRegenPerSec": 0.5,
+    "deployFreezeSeconds": 1.0,
+    "engineerHealDeployRadius": 2,
+    "engineerHealDeployFraction": 0.4,
+    "engineerHealPulseRadius": 1,
+    "engineerHealPulseAmount": 10,
+    "engineerHealPulseInterval": 2.0,
+    "baseTurretRange": 4,
+    "baseTurretDamage": 25,
+    "baseTurretInterval": 0.8,
+    "matchDurationSeconds": 120,
+    "regenStepSeconds": 60,
+    "maxRegenDoublings": 2,
+    "baseHp": 1500,
+    "wallHp": 75
+  },
+  "overtime": {
+    "baseDamage": 20,
+    "doubleEverySeconds": 30
+  },
+  "ai": {
+    "deployCooldownSeconds": 3.0
+  },
+  "forestMissPercent": 30,
+  "structureDamageMultiplier": 1.0,
+  "units": {
+    "Infantry": { "hp": 60, "moveSpeed": 55, "attackRange": 2, "attackInterval": 1.0, "baseDamage": 15, "stationary": false, "armorHits": 0, "cost": 1, "charges": 3 },
+    "Rocketeer": { "hp": 50, "moveSpeed": 50, "attackRange": 4, "attackInterval": 1.5, "baseDamage": 15, "stationary": false, "armorHits": 0, "cost": 2, "charges": 2 },
+    "Engineer": { "hp": 70, "moveSpeed": 50, "attackRange": 1, "attackInterval": 1.0, "baseDamage": 0, "stationary": false, "armorHits": 0, "cost": 2, "charges": 1 },
+    "AA": { "hp": 140, "moveSpeed": 40, "attackRange": 3, "attackInterval": 0.8, "baseDamage": 20, "stationary": true, "armorHits": 0, "cost": 3, "charges": 1 },
+    "Tank": { "hp": 260, "moveSpeed": 45, "attackRange": 2, "attackInterval": 1.3, "baseDamage": 40, "stationary": false, "armorHits": 3, "cost": 4, "charges": 1 },
+    "Plane": { "hp": 120, "moveSpeed": 90, "attackRange": 1, "attackInterval": 1.0, "baseDamage": 30, "stationary": false, "armorHits": 0, "cost": 5, "charges": 1 }
+  },
+  "damageMatrix": {
+    "Infantry": { "Infantry": 1.0, "Rocketeer": 1.0, "Engineer": 1.0, "AA": 0.3, "Tank": 0.3, "Plane": 0.0 },
+    "Rocketeer": { "Infantry": 0.3, "Rocketeer": 0.3, "Engineer": 0.3, "AA": 1.0, "Tank": 1.0, "Plane": 0.8 },
+    "Engineer": { "Infantry": 0.0, "Rocketeer": 0.0, "Engineer": 0.0, "AA": 0.0, "Tank": 0.0, "Plane": 0.0 },
+    "AA": { "Infantry": 0.1, "Rocketeer": 0.1, "Engineer": 0.5, "AA": 0.5, "Tank": 0.5, "Plane": 1.0 },
+    "Tank": { "Infantry": 1.5, "Rocketeer": 1.0, "Engineer": 1.0, "AA": 1.0, "Tank": 1.0, "Plane": 0.3 },
+    "Plane": { "Infantry": 0.5, "Rocketeer": 0.5, "Engineer": 1.0, "AA": 1.2, "Tank": 1.2, "Plane": 1.0 }
+  },
+  "deck": [
+    { "type": "Infantry", "count": 2 },
+    { "type": "Rocketeer", "count": 2 },
+    { "type": "Engineer", "count": 2 },
+    { "type": "AA", "count": 2 },
+    { "type": "Tank", "count": 2 },
+    { "type": "Plane", "count": 2 }
+  ]
+}

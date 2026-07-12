@@ -11,6 +11,7 @@ void Cheats::Update(app::App& app)
         app.simulation.Init(app.currentState, app.map, app::NewSeed());
         app.previousState = app.currentState;
         app.accumulator = 0.0;
+        app.lastAiTick = 0;
     }
 
     if (IsKeyPressed(KEY_P)) paused_ = !paused_;

@@ -6,6 +6,7 @@
 
 #include "app/core/app.h"
 #include "data/app/app_config.h"
+#include "data/balance/balance.h"
 #include "debug/debug_ui.h"
 
 namespace app
@@ -16,6 +17,8 @@ int RunDesktop()
     ChangeDirectory(GetApplicationDirectory());
     SetTargetFPS(data::TargetFps);
     debug::DebugUiSetup();
+
+    data::LoadRules("assets/config.json");
 
     App app{};
     InitApp(app);

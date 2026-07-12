@@ -28,8 +28,8 @@ namespace
     {
         switch (entity.kind)
         {
-        case logic::EntityKind::Base: return data::BaseHp;
-        case logic::EntityKind::Wall: return data::WallHp;
+        case logic::EntityKind::Base: return data::BaseHp();
+        case logic::EntityKind::Wall: return data::WallHp();
         default: return data::UnitStatsOf(entity.type).hp;
         }
     }

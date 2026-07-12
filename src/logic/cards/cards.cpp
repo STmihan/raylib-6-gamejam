@@ -63,12 +63,13 @@ void InitPlayerCards(GameState& state, std::uint32_t seed)
         PlayerCards& player = state.players[static_cast<std::size_t>(t)];
         Deck& deck = player.deck;
 
+        const data::Balance& rules = data::Rules();
         int n = 0;
-        for (int e = 0; e < data::DeckEntryCount; e++)
+        for (int e = 0; e < rules.deckEntryCount; e++)
         {
-            for (int c = 0; c < data::DeckList[e].count; c++)
+            for (int c = 0; c < rules.deck[static_cast<std::size_t>(e)].count; c++)
             {
-                deck.cards[static_cast<std::size_t>(n)] = data::DeckList[e].type;
+                deck.cards[static_cast<std::size_t>(n)] = rules.deck[static_cast<std::size_t>(e)].type;
                 n++;
             }
         }

@@ -12,9 +12,9 @@ namespace view::ui
 void DrawMatchTimer(UiContext& ui, Rectangle rect, std::uint64_t tick)
 {
     int elapsed = static_cast<int>(tick / data::TickRate);
-    bool overtime = elapsed >= data::MatchDurationSeconds;
+    bool overtime = elapsed >= data::MatchDurationSeconds();
 
-    int shown = overtime ? elapsed - data::MatchDurationSeconds : data::MatchDurationSeconds - elapsed;
+    int shown = overtime ? elapsed - data::MatchDurationSeconds() : data::MatchDurationSeconds() - elapsed;
     if (shown < 0) shown = 0;
     char text[8];
     std::snprintf(text, sizeof(text), "%d:%02d", shown / 60, shown % 60);

@@ -7,6 +7,7 @@ void UiInput::BeginFrame()
     mouse_ = GetMousePosition();
     down_ = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
     pressed_ = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+    released_ = IsMouseButtonReleased(MOUSE_BUTTON_LEFT);
     blockers_.clear();
 }
 

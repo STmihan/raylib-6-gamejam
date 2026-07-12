@@ -1,6 +1,9 @@
 #ifndef DATA_CARD_CARD_H
 #define DATA_CARD_CARD_H
 
+#include <cstddef>
+
+#include "data/balance/balance.h"
 #include "data/unit/unit.h"
 
 namespace data
@@ -16,22 +19,19 @@ struct CardDef
 
 inline CardDef CardDefOf(UnitType type)
 {
+    const char* name = "Unit";
+    const char* portrait = "";
     switch (type)
     {
-    case UnitType::Infantry:
-        return {type, "Infantry", "assets/previews/soldier_infantry.png", 1, 3};
-    case UnitType::Rocketeer:
-        return {type, "Rocketeer", "assets/previews/soldier_rocket.png", 1, 2};
-    case UnitType::Engineer:
-        return {type, "Engineer", "assets/previews/soldier_engineer.png", 1, 1};
-    case UnitType::AA:
-        return {type, "AA", "assets/previews/pvo.png", 2, 1};
-    case UnitType::Tank:
-        return {type, "Tank", "assets/previews/tank.png", 2, 1};
-    case UnitType::Plane:
-        return {type, "Plane", "assets/previews/plane.png", 3, 1};
+    case UnitType::Infantry: name = "Infantry"; portrait = "assets/previews/soldier_infantry.png"; break;
+    case UnitType::Rocketeer: name = "Rocketeer"; portrait = "assets/previews/soldier_rocket.png"; break;
+    case UnitType::Engineer: name = "Engineer"; portrait = "assets/previews/soldier_engineer.png"; break;
+    case UnitType::AA: name = "AA"; portrait = "assets/previews/pvo.png"; break;
+    case UnitType::Tank: name = "Tank"; portrait = "assets/previews/tank.png"; break;
+    case UnitType::Plane: name = "Plane"; portrait = "assets/previews/plane.png"; break;
     }
-    return {type, "Unit", "", 1, 1};
+    return {type, name, portrait, Rules().cardCost[static_cast<std::size_t>(type)],
+            Rules().cardCharges[static_cast<std::size_t>(type)]};
 }
 }
 
