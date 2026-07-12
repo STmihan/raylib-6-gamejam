@@ -46,7 +46,7 @@ const Muzzle* MuzzleRegistry::ForUnit(data::UnitType type, int index) const
     case data::UnitType::Infantry: std::snprintf(name, sizeof(name), "muzzle_infantry"); break;
     case data::UnitType::Rocketeer: std::snprintf(name, sizeof(name), "muzzle_rocket"); break;
     case data::UnitType::Tank: std::snprintf(name, sizeof(name), "muzzle_tank"); break;
-    case data::UnitType::AA: std::snprintf(name, sizeof(name), "muzzle_pvo_%d", index); break;
+    case data::UnitType::RL: std::snprintf(name, sizeof(name), "muzzle_pvo_%d", index); break;
     case data::UnitType::Plane: std::snprintf(name, sizeof(name), "muzzle_plane_%s", index == 0 ? "L" : "R"); break;
     default: return nullptr;
     }

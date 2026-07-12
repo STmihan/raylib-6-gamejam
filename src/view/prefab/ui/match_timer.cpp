@@ -16,8 +16,8 @@ void DrawMatchTimer(UiContext& ui, Rectangle rect, std::uint64_t tick, bool useA
 
     int shown = overtime ? elapsed - data::MatchDurationSeconds() : data::MatchDurationSeconds() - elapsed;
     if (shown < 0) shown = 0;
-    char text[8];
-    std::snprintf(text, sizeof(text), "%d:%02d", shown / 60, shown % 60);
+    char text[10];
+    std::snprintf(text, sizeof(text), "%s%d:%02d", overtime ? "-" : "", shown / 60, shown % 60);
 
     bool atlas = useAtlas && ui.Atlas().Ready();
     const Color white = {245, 245, 245, 255};
@@ -27,7 +27,7 @@ void DrawMatchTimer(UiContext& ui, Rectangle rect, std::uint64_t tick, bool useA
     {
         if (atlas) ui.Atlas().DrawNPatch("panel-base", rect);
         else Panel(ui, rect, Color{28, 32, 24, 235});
-        LabelCentered(ui, text, rect, 30.0f, RAYWHITE, true);
+        LabelCentered(ui, text, rect, 30.0f, white, true);
         return;
     }
 
@@ -47,7 +47,7 @@ void DrawMatchTimer(UiContext& ui, Rectangle rect, std::uint64_t tick, bool useA
     float stampSize = 12.0f;
     Vector2 sz = ui.Text().Measure(stamp, stampSize);
     Vector2 origin = {sz.x * 0.5f, sz.y * 0.5f};
-    Vector2 pos = {rect.x + rect.width * 0.5f, rect.y + rect.height - 9.0f};
+    Vector2 pos = {rect.x + rect.width * 0.8f, rect.y + rect.height - 9.0f};
     ui.Text().DrawRotated(stamp, pos, origin, -18.0f, stampSize, white, 0.0f, true);
 }
 }

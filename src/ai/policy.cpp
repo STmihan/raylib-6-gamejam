@@ -206,7 +206,7 @@ void RunMicro(logic::GameState& state, const logic::Map& map, data::Team team)
     {
         logic::Entity& e = state.entities[i];
         if (!e.active || e.kind != logic::EntityKind::Unit || e.team != team) continue;
-        if (e.type != data::UnitType::AA || e.deployTimer > 0.0f || e.hasMoveOrder) continue;
+        if (e.type != data::UnitType::RL || e.deployTimer > 0.0f || e.hasMoveOrder) continue;
         if (DefensiveScore(map, team, e.col, e.row) >= 2) continue;
 
         int bestScore = 1;

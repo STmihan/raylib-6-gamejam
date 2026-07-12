@@ -233,7 +233,7 @@ const Model& ModelRegistry::UnitBody(data::UnitType type) const
     case data::UnitType::Infantry: return soldierInfantry_;
     case data::UnitType::Rocketeer: return soldierRocket_;
     case data::UnitType::Engineer: return soldierEngineer_;
-    case data::UnitType::AA: return pvoHull_;
+    case data::UnitType::RL: return pvoHull_;
     case data::UnitType::Tank: return tankHull_;
     case data::UnitType::Plane: return plane_;
     }
@@ -257,7 +257,7 @@ const Model& ModelRegistry::BlobShadow() const
 
 ModelRegistry::VehicleModels ModelRegistry::VehicleFor(data::UnitType type) const
 {
-    if (type == data::UnitType::AA)
+    if (type == data::UnitType::RL)
     {
         return {&pvoHull_, &pvoLauncher_, &pvoWheels_, &pvoBand_, &trackLink_};
     }
@@ -271,11 +271,11 @@ float ModelRegistry::UnitGroundOffset(data::UnitType type) const
 
 float ModelRegistry::VehicleLowestY(data::UnitType type) const
 {
-    return type == data::UnitType::AA ? pvoLowestY_ : tankLowestY_;
+    return type == data::UnitType::RL ? pvoLowestY_ : tankLowestY_;
 }
 
 const std::vector<Vector3>& ModelRegistry::WheelCenters(data::UnitType type) const
 {
-    return type == data::UnitType::AA ? pvoWheelCenters_ : tankWheelCenters_;
+    return type == data::UnitType::RL ? pvoWheelCenters_ : tankWheelCenters_;
 }
 }

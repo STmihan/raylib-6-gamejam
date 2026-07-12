@@ -15,20 +15,20 @@ namespace debug
 {
 namespace
 {
-    const data::UnitType Attackers[] = {data::UnitType::AA, data::UnitType::Rocketeer, data::UnitType::Tank,
+    const data::UnitType Attackers[] = {data::UnitType::RL, data::UnitType::Rocketeer, data::UnitType::Tank,
                                         data::UnitType::Infantry, data::UnitType::Plane, data::UnitType::Engineer};
-    const char* AttackerNames[] = {"AA", "Rocketeer", "Tank", "Infantry", "Plane", "Engineer"};
+    const char* AttackerNames[] = {"Rocket Launcher", "Rocketeer", "Tank", "Infantry", "Plane", "Engineer"};
 
     bool UsesProjectile(data::UnitType type)
     {
-        return type == data::UnitType::AA || type == data::UnitType::Rocketeer || type == data::UnitType::Tank;
+        return type == data::UnitType::RL || type == data::UnitType::Rocketeer || type == data::UnitType::Tank;
     }
 
     const data::UnitType Targets[] = {
         data::UnitType::Infantry, data::UnitType::Rocketeer, data::UnitType::Engineer,
-        data::UnitType::AA, data::UnitType::Tank, data::UnitType::Plane,
+        data::UnitType::RL, data::UnitType::Tank, data::UnitType::Plane,
     };
-    const char* TargetNames[] = {"Infantry", "Rocketeer", "Engineer", "AA", "Tank", "Plane"};
+    const char* TargetNames[] = {"Infantry", "Rocketeer", "Engineer", "Rocket Launcher", "Tank", "Plane"};
 
     constexpr float AttackerY = -150.0f;
     constexpr float TargetY = 150.0f;
@@ -126,7 +126,7 @@ void ProjectileTestScene::Step()
             float dx = t.position.x - a.position.x;
             float dy = t.position.y - a.position.y;
             float distance = std::sqrt(dx * dx + dy * dy);
-            bool aa = a.type == data::UnitType::AA;
+            bool aa = a.type == data::UnitType::RL;
             float speed = aa ? data::ShellSpeedAA : data::ShellSpeedRocketeer;
             int flightTicks = static_cast<int>(distance / speed / static_cast<float>(data::TickDelta) + 0.5f);
             if (flightTicks < 1) flightTicks = 1;

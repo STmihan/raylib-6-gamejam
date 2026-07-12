@@ -208,7 +208,7 @@ int AcquireAlly(const GameState &state, int index) {
 }
 
 bool UsesProjectile(data::UnitType type) {
-    return type == data::UnitType::AA || type == data::UnitType::Rocketeer || type == data::UnitType::Tank;
+    return type == data::UnitType::RL || type == data::UnitType::Rocketeer || type == data::UnitType::Tank;
 }
 
 void FireProjectile(GameState &state, int attackerIndex, int targetSlot, int muzzleIndex) {
@@ -224,7 +224,7 @@ void FireProjectile(GameState &state, int attackerIndex, int targetSlot, int muz
     float dx = target.position.x - attacker.position.x;
     float dy = target.position.y - attacker.position.y;
     float distance = std::sqrt(dx * dx + dy * dy);
-    bool aa = attacker.type == data::UnitType::AA;
+    bool aa = attacker.type == data::UnitType::RL;
     float speed = aa ? data::ShellSpeedAA : data::ShellSpeedRocketeer;
     int flightTicks = static_cast<int>(distance / speed / static_cast<float>(data::TickDelta) + 0.5f);
     if (flightTicks < 1) flightTicks = 1;
@@ -460,6 +460,8 @@ void Simulation::Init(GameState &state, const Map &map, std::uint32_t seed) {
     state.seed = seed;
     state.resource[0] = 0.0f;
     state.resource[1] = 0.0f;
+    state.unitsDeployed[0] = 0;
+    state.unitsDeployed[1] = 0;
     for (int i = 0; i < data::MaxEntities; i++) {
         state.entities[i].active = false;
     }
@@ -809,6 +811,7 @@ int Simulation::Deploy(GameState &state, data::UnitType type, int donor, data::T
     e.armorMax = e.armorHits;
 
     if (slot >= state.entityCount) state.entityCount = slot + 1;
+    state.unitsDeployed[data::TeamIndex(team)]++;
 
     if (type == data::UnitType::Engineer) {
         e.attackCooldown = data::EngineerHealPulseInterval();

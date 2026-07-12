@@ -16,7 +16,7 @@ int UnitIndex(const std::string& name)
     if (name == "Infantry") return static_cast<int>(UnitType::Infantry);
     if (name == "Rocketeer") return static_cast<int>(UnitType::Rocketeer);
     if (name == "Engineer") return static_cast<int>(UnitType::Engineer);
-    if (name == "AA") return static_cast<int>(UnitType::AA);
+    if (name == "RL") return static_cast<int>(UnitType::RL);
     if (name == "Tank") return static_cast<int>(UnitType::Tank);
     if (name == "Plane") return static_cast<int>(UnitType::Plane);
     return -1;

@@ -42,6 +42,12 @@ namespace
         return active;
     }
 
+    float VolumeFor(const std::string& key)
+    {
+        if (key == "heal") return SfxVolume * 0.5f;
+        return SfxVolume;
+    }
+
     SoundBank& AcquireBank(const std::string& key)
     {
         auto it = g_sounds.find(key);
@@ -53,10 +59,11 @@ namespace
         SoundBank bank;
         bank.base = LoadSound(path.c_str());
         bank.voices.reserve(VoicesPerSound);
+        float volume = VolumeFor(key);
         for (int i = 0; i < VoicesPerSound; i++)
         {
             ::Sound voice = LoadSoundAlias(bank.base);
-            SetSoundVolume(voice, SfxVolume);
+            SetSoundVolume(voice, volume);
             bank.voices.push_back(voice);
         }
         return g_sounds.emplace(key, std::move(bank)).first->second;

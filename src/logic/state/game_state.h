@@ -109,6 +109,7 @@ struct GameState {
     int entityCount;
     int winner;
     std::array<float, 2> resource;
+    std::array<int, 2> unitsDeployed;
     std::array<Entity, data::MaxEntities> entities;
     std::array<Projectile, data::MaxProjectiles> projectiles;
     std::array<HealPulse, data::MaxHealPulses> healPulses;

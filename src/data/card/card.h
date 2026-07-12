@@ -26,7 +26,7 @@ inline CardDef CardDefOf(UnitType type)
     case UnitType::Infantry: name = "Infantry"; portrait = "assets/previews/soldier_infantry.png"; break;
     case UnitType::Rocketeer: name = "Rocketeer"; portrait = "assets/previews/soldier_rocket.png"; break;
     case UnitType::Engineer: name = "Engineer"; portrait = "assets/previews/soldier_engineer.png"; break;
-    case UnitType::AA: name = "AA"; portrait = "assets/previews/pvo.png"; break;
+    case UnitType::RL: name = "Rocket Launcher"; portrait = "assets/previews/pvo.png"; break;
     case UnitType::Tank: name = "Tank"; portrait = "assets/previews/tank.png"; break;
     case UnitType::Plane: name = "Plane"; portrait = "assets/previews/plane.png"; break;
     }

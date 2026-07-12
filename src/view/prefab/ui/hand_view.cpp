@@ -12,7 +12,7 @@ namespace view::ui
 {
 namespace
 {
-    constexpr float CardW = 100.0f;
+    constexpr float CardW = 130.0f;
     constexpr float CardH = 140.0f;
     constexpr float DegToRad = 0.0174532925f;
     constexpr float MergeCenterFrac = 0.5f;

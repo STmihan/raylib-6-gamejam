@@ -30,9 +30,9 @@ void AudioEvents::Observe(const logic::GameState& state)
         beamSeen_[i] = beam.startTick;
         if (beam.attackerSlot < 0 || beam.attackerSlot >= data::MaxEntities) continue;
         const logic::Entity& attacker = state.entities[beam.attackerSlot];
-        if (attacker.kind == logic::EntityKind::Unit &&
-            (attacker.type == data::UnitType::Infantry || attacker.type == data::UnitType::Plane))
-            audio::Play("gun-hit");
+        bool unitGun = attacker.kind == logic::EntityKind::Unit &&
+            (attacker.type == data::UnitType::Infantry || attacker.type == data::UnitType::Plane);
+        if (unitGun || attacker.kind == logic::EntityKind::Base) audio::Play("gun-hit");
     }
 
     for (int i = 0; i < data::MaxProjectiles; i++)
@@ -51,7 +51,9 @@ void AudioEvents::Observe(const logic::GameState& state)
         else if (projActive_[i])
         {
             projActive_[i] = false;
-            if (projType_[i] == static_cast<int>(data::UnitType::Rocketeer)) audio::Play("rocket-hit");
+            if (projType_[i] == static_cast<int>(data::UnitType::Rocketeer) ||
+                projType_[i] == static_cast<int>(data::UnitType::Tank))
+                audio::Play("rocket-hit");
             projType_[i] = -1;
         }
     }

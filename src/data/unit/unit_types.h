@@ -8,7 +8,7 @@ enum class UnitType
     Infantry,
     Rocketeer,
     Engineer,
-    AA,
+    RL,
     Tank,
     Plane,
 };
@@ -54,7 +54,7 @@ inline const char* UnitTypeName(UnitType type)
     case UnitType::Infantry: return "Infantry";
     case UnitType::Rocketeer: return "Rocketeer";
     case UnitType::Engineer: return "Engineer";
-    case UnitType::AA: return "AA";
+    case UnitType::RL: return "Rocket Launcher";
     case UnitType::Tank: return "Tank";
     case UnitType::Plane: return "Plane";
     }

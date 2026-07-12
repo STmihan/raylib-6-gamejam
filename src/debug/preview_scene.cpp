@@ -105,7 +105,7 @@ void PreviewScene::DrawGizmo() const
     {
         data::UnitType unitTypes[6] = {
             data::UnitType::Infantry, data::UnitType::Rocketeer, data::UnitType::Engineer,
-            data::UnitType::Plane, data::UnitType::Tank, data::UnitType::AA,
+            data::UnitType::Plane, data::UnitType::Tank, data::UnitType::RL,
         };
         data::UnitType type = unitTypes[selected_ - 12];
         float radius = data::UnitStatsOf(type).footprint * data::RenderScale;
@@ -152,7 +152,7 @@ void PreviewScene::Draw(const ModelRegistry& models) const
     case 16: DrawVehicle(models, data::UnitType::Tank, Vector3{0.0f, 0.0f, 0.0f}, 0.0f,
                          static_cast<float>(GetTime()), 0, true,
                          0.35f * std::sin(0.6f * static_cast<float>(GetTime())), tint); break;
-    case 17: DrawVehicle(models, data::UnitType::AA, Vector3{0.0f, 0.0f, 0.0f}, 0.0f,
+    case 17: DrawVehicle(models, data::UnitType::RL, Vector3{0.0f, 0.0f, 0.0f}, 0.0f,
                          static_cast<float>(GetTime()), 0, true,
                          0.35f * std::sin(0.6f * static_cast<float>(GetTime())), tint); break;
     case 18: DrawGrounded(models.TeamRing(data::Team::Top), 0.0f, tint); break;

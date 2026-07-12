@@ -39,8 +39,8 @@ void AnimController::Update(const logic::GameState& previous, const logic::GameS
                 AnimState state = DeriveState(prev, cur);
                 if (!tracked_[i] || state_[i] != state)
                 {
-                    TraceLog(LOG_INFO, "[anim] %s#%u: %s", data::UnitTypeName(cur.type), cur.id,
-                             AnimStateName(state));
+                    // TraceLog(LOG_INFO, "[anim] %s#%u: %s", data::UnitTypeName(cur.type), cur.id,
+                    //          AnimStateName(state));
                     state_[i] = state;
                 }
             }
@@ -53,12 +53,12 @@ void AnimController::Update(const logic::GameState& previous, const logic::GameS
         {
             if (prev.kind == logic::EntityKind::Unit)
             {
-                TraceLog(LOG_INFO, "[anim] %s#%u: %s", data::UnitTypeName(prev.type), prev.id,
-                         AnimStateName(AnimState::Death));
+                // TraceLog(LOG_INFO, "[anim] %s#%u: %s", data::UnitTypeName(prev.type), prev.id,
+                //          AnimStateName(AnimState::Death));
             }
             else
             {
-                TraceLog(LOG_INFO, "[anim] %s#%u: destroy", StructureName(prev.kind), prev.id);
+                // TraceLog(LOG_INFO, "[anim] %s#%u: destroy", StructureName(prev.kind), prev.id);
             }
         }
         tracked_[i] = false;

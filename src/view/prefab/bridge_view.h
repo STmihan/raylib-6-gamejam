@@ -10,12 +10,12 @@ class BridgeView
 public:
     void Appear(Vector3 position)
     {
-        TraceLog(LOG_INFO, "[anim] Bridge (%.1f, %.1f): appear", position.x, position.z);
+        // TraceLog(LOG_INFO, "[anim] Bridge (%.1f, %.1f): appear", position.x, position.z);
     }
 
     void Destroy(Vector3 position)
     {
-        TraceLog(LOG_INFO, "[anim] Bridge (%.1f, %.1f): destroy", position.x, position.z);
+        // TraceLog(LOG_INFO, "[anim] Bridge (%.1f, %.1f): destroy", position.x, position.z);
     }
 };
 }

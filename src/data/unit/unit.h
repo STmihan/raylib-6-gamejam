@@ -27,7 +27,7 @@ inline UnitStats MergedStats(UnitType type, int donor)
             s.aggroRange += 2;
         }
     }
-    else if (donor == static_cast<int>(UnitType::AA))
+    else if (donor == static_cast<int>(UnitType::RL))
     {
         s.stationary = true;
         s.attackRange += 1;
@@ -41,7 +41,7 @@ inline int MuzzleCount(UnitType type)
 {
     switch (type)
     {
-    case UnitType::AA: return 4;
+    case UnitType::RL: return 4;
     case UnitType::Plane: return 2;
     case UnitType::Engineer: return 0;
     default: return 1;

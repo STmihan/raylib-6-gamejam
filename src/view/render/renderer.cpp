@@ -303,7 +303,7 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
 
             if (newUi_ && ui_.Atlas().Ready())
             {
-                Rectangle details = {16.0f, 92.0f, 300.0f, 404.0f};
+                Rectangle details = {20.0f, 224.0f, 200.0f, 314.0f};
                 if (hand_.Hovering())
                     ui::DrawDetailsPanel(ui_, textures_, details, hand_.HoveredType(), -1);
                 else if (hand_.MergePreview())
@@ -311,18 +311,7 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
                                          static_cast<int>(hand_.MergeDonorType()));
             }
         }
-        if (current.winner >= 0)
-        {
-            const char* text = current.winner == 0 ? "TOP WINS" : "BOTTOM WINS";
-            int fontSize = 60;
-            int width = MeasureText(text, fontSize);
-            DrawText(text, (GetScreenWidth() - width) / 2, GetScreenHeight() / 2 - fontSize / 2, fontSize, RAYWHITE);
-            const char* sub = "Press R to restart";
-            int subSize = 26;
-            int subWidth = MeasureText(sub, subSize);
-            DrawText(sub, (GetScreenWidth() - subWidth) / 2, GetScreenHeight() / 2 + fontSize / 2 + 12, subSize,
-                     Color{210, 210, 210, 255});
-        }
+        if (current.winner >= 0) ui::DrawGameOver(ui_, current);
 #if defined(DEBUG_BUILD)
         DrawFPS(18, 70);
 #endif

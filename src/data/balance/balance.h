@@ -51,13 +51,13 @@ inline Balance DefaultBalance()
     b.units[static_cast<int>(UnitType::Infantry)] =
         {60, 110.0f, true, false, false, false, 15.0f, 2, 1.0f, 15, false, 0, 0, 4};
     b.units[static_cast<int>(UnitType::Rocketeer)] =
-        {50, 100.0f, true, false, false, true, 15.0f, 4, 1.5f, 15, false, 0, 1, 5};
+        {50, 100.0f, true, false, false, true, 15.0f, 4, 1.5f, 22, false, 0, 1, 5};
     b.units[static_cast<int>(UnitType::Engineer)] =
-        {70, 100.0f, true, false, false, false, 15.0f, 1, 1.0f, 0, false, 0, 0, 1};
-    b.units[static_cast<int>(UnitType::AA)] =
-        {140, 80.0f, false, false, true, true, 55.0f, 3, 0.8f, 20, true, 0, 0, 5};
+        {50, 100.0f, true, false, false, false, 15.0f, 1, 1.0f, 0, false, 0, 0, 1};
+    b.units[static_cast<int>(UnitType::RL)] =
+        {140, 80.0f, false, false, true, true, 55.0f, 5, 0.8f, 20, true, 0, 0, 8};
     b.units[static_cast<int>(UnitType::Tank)] =
-        {260, 90.0f, false, false, true, true, 60.0f, 2, 1.3f, 40, false, 3, 0, 4};
+        {260, 100.0f, false, false, true, true, 60.0f, 2, 1.1f, 40, false, 3, 0, 4};
     b.units[static_cast<int>(UnitType::Plane)] =
         {120, 180.0f, false, true, true, true, 0.0f, 1, 1.0f, 30, false, 0, 0, 3};
 
@@ -78,7 +78,7 @@ inline Balance DefaultBalance()
         "No [stat-attack] damage.",
         "Heals vehicles.",
     };
-    b.cardDescription[static_cast<int>(UnitType::AA)] = {
+    b.cardDescription[static_cast<int>(UnitType::RL)] = {
         "Hits planes.",
         "Long [stat-range] range.",
         "Can move anywhere.",
@@ -94,10 +94,10 @@ inline Balance DefaultBalance()
         "Flies over terrain.",
     };
 
-    b.cardMergeGrant[static_cast<int>(UnitType::Infantry)] = "";
+    b.cardMergeGrant[static_cast<int>(UnitType::Infantry)] = "+1 [charge-fill] charge.";
     b.cardMergeGrant[static_cast<int>(UnitType::Rocketeer)] = "More [stat-range] range.";
     b.cardMergeGrant[static_cast<int>(UnitType::Engineer)] = "Heals when placed.";
-    b.cardMergeGrant[static_cast<int>(UnitType::AA)] = "Stays put, more [stat-range] range.";
+    b.cardMergeGrant[static_cast<int>(UnitType::RL)] = "Redeploys anywhere, more [stat-range] range.";
     b.cardMergeGrant[static_cast<int>(UnitType::Tank)] = "Stronger [stat-shield] armor.";
     b.cardMergeGrant[static_cast<int>(UnitType::Plane)] = "Place it anywhere.";
 
@@ -136,7 +136,7 @@ inline Balance DefaultBalance()
         {UnitType::Infantry, 2},
         {UnitType::Rocketeer, 2},
         {UnitType::Engineer, 2},
-        {UnitType::AA, 2},
+        {UnitType::RL, 2},
         {UnitType::Tank, 2},
         {UnitType::Plane, 2},
     }};

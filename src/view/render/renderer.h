@@ -32,6 +32,7 @@
 #include "view/prefab/water.h"
 #include "view/prefab/ui/card_view.h"
 #include "view/prefab/ui/details_panel.h"
+#include "view/prefab/ui/game_over.h"
 #include "view/prefab/ui/hand_view.h"
 #include "view/prefab/ui/hud_controls.h"
 #include "view/prefab/ui/match_timer.h"

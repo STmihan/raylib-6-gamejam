@@ -98,9 +98,12 @@ void StepApp(App& app)
         app.lastAiTick = 0;
     }
 
+    bool matchOver = app.currentState.winner >= 0;
+
     app.renderer.Ui().BeginFrame();
     app.renderer.Controls().Update(app.renderer.Ui(), GetFrameTime());
-    app.renderer.Hand().Update(app.renderer.Ui().Input(), GetFrameTime(), app.currentState);
+    if (!matchOver)
+        app.renderer.Hand().Update(app.renderer.Ui().Input(), GetFrameTime(), app.currentState);
 
     float delta = GetFrameTime() * speed;
 
@@ -137,9 +140,12 @@ void StepApp(App& app)
     cheats.ApplyFreeCamera(camera, GetFrameTime());
 #endif
 
-    ProcessMerge(app);
-    ProcessDeploy(app, camera);
-    app.unitControl.Update(app, camera);
+    if (!matchOver)
+    {
+        ProcessMerge(app);
+        ProcessDeploy(app, camera);
+        app.unitControl.Update(app, camera);
+    }
 
     auto alpha = static_cast<float>(app.accumulator / data::TickDelta);
     auto overlay = [&app]() {

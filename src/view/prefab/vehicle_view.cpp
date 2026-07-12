@@ -28,7 +28,7 @@ namespace
 
     TrackSpec SpecFor(data::UnitType type)
     {
-        if (type == data::UnitType::AA)
+        if (type == data::UnitType::RL)
         {
             return {0.44f, 0.46f, -0.46f, 0.10f, 0.14f, 0.11f};
         }

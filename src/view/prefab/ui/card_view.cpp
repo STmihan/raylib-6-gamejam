@@ -93,7 +93,7 @@ void DrawCardSprite(UiContext& ui, Rectangle rect, const data::CardDef& def, con
 
     Rectangle name = {rect.x + pad, preview.y + preview.height + 8.0f, rect.width - 2.0f * pad, 26.0f};
     atlas.DrawNPatch("panel-base", name);
-    LabelCentered(ui, def.name, name, 15.0f, LightInk, true);
+    LabelCentered(ui, def.name, name, 14.0f, LightInk, true);
 
     int remaining = chargesLeft;
     int n = remaining > def.charges ? remaining : def.charges;
