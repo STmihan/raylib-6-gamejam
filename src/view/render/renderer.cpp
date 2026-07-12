@@ -78,6 +78,7 @@ void Renderer::DrawVignette()
 
 void Renderer::Shutdown()
 {
+    controls_.Unload();
     ui_.Unload();
     UnloadRenderTexture(cardTarget_);
     UnloadRenderTexture(colorTarget_);
@@ -327,7 +328,9 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
                                          static_cast<int>(hand_.MergeDonorType()));
             }
         }
-        if (current.winner >= 0) ui::DrawGameOver(ui_, current);
+        if (current.winner >= 0) ui::DrawGameOver(ui_, current, current.winner);
+        else if (showVictory_) ui::DrawGameOver(ui_, current, data::TeamIndex(data::PlayerTeam));
+        else if (showDefeat_) ui::DrawGameOver(ui_, current, 1 - data::TeamIndex(data::PlayerTeam));
 #if defined(DEBUG_BUILD)
         DrawFPS(18, 70);
 #endif

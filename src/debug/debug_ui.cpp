@@ -268,6 +268,8 @@ void DrawDebugOverlay(float& cameraBoundsRadius, view::Renderer& renderer,
     {
         ImGui::Checkbox("Hide HUD", &renderer.HudHiddenRef());
         ImGui::Checkbox("New UI", &renderer.NewUiRef());
+        ImGui::Checkbox("Show Victory", &renderer.ShowVictoryRef());
+        ImGui::Checkbox("Show Defeat", &renderer.ShowDefeatRef());
         if (ImGui::CollapsingHeader("Vignette", ImGuiTreeNodeFlags_DefaultOpen))
         {
             data::VignetteParams& vp = renderer.VignetteParamsRef();

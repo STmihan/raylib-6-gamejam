@@ -65,6 +65,8 @@ public:
     bool& DragZoneRef() { return dragZone_; }
     bool& NewUiRef() { return newUi_; }
     data::VignetteParams& VignetteParamsRef() { return vignette_; }
+    bool& ShowVictoryRef() { return showVictory_; }
+    bool& ShowDefeatRef() { return showDefeat_; }
     int& HudResourceHighlightRef() { return resourceHighlight_; }
     data::CrystalStyle& CrystalStyleRef() { return crystalStyle_; }
     ui::HandView& Hand() { return hand_; }
@@ -120,6 +122,8 @@ private:
     bool dragZone_ = false;
     bool newUi_ = true;
     data::VignetteParams vignette_;
+    bool showVictory_ = false;
+    bool showDefeat_ = false;
     int resourceHighlight_ = 0;
     data::CrystalStyle crystalStyle_;
     bool hexGridLoaded_ = false;

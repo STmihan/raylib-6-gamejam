@@ -12,6 +12,7 @@ class HudControls
 public:
     void Update(UiContext& ui, float dt);
     void Draw(UiContext& ui);
+    void Unload();
 
     bool Paused() const { return paused_; }
     bool HelpOpen() const { return helpOpen_; }
@@ -36,6 +37,8 @@ private:
     float lastVolume_ = 1.0f;
     float panelOpen_ = 0.0f;
     bool draggingVolume_ = false;
+    Texture2D helpArt_{};
+    bool helpArtLoaded_ = false;
 };
 }
 

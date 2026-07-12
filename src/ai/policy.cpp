@@ -204,6 +204,42 @@ void RunMicro(logic::GameState& state, const logic::Map& map, data::Team team)
 {
     for (int i = 0; i < data::MaxEntities; i++)
     {
+        logic::Entity& engineer = state.entities[i];
+        if (!engineer.active || engineer.kind != logic::EntityKind::Unit || engineer.team != team) continue;
+        if (engineer.type != data::UnitType::Engineer || engineer.deployTimer > 0.0f) continue;
+
+        bool escorted = false;
+        if (engineer.forcedTarget >= 0 && engineer.forcedTarget < data::MaxEntities)
+        {
+            const logic::Entity& escort = state.entities[engineer.forcedTarget];
+            escorted = escort.active && escort.kind == logic::EntityKind::Unit && escort.team == team
+                && escort.type != data::UnitType::Engineer;
+        }
+        if (escorted) continue;
+
+        int best = -1;
+        int bestRank = -1;
+        int bestDist = INT_MAX;
+        for (int j = 0; j < data::MaxEntities; j++)
+        {
+            if (j == i) continue;
+            const logic::Entity& unit = state.entities[j];
+            if (!unit.active || unit.kind != logic::EntityKind::Unit || unit.team != team) continue;
+            if (unit.type == data::UnitType::Engineer) continue;
+            int rank = data::UnitStatsOf(unit.type).isVehicle ? 2 : 1;
+            int dist = data::HexDistance({engineer.col, engineer.row}, {unit.col, unit.row});
+            if (rank > bestRank || (rank == bestRank && dist < bestDist))
+            {
+                bestRank = rank;
+                bestDist = dist;
+                best = j;
+            }
+        }
+        if (best >= 0) logic::Simulation::CommandTarget(state, i, best);
+    }
+
+    for (int i = 0; i < data::MaxEntities; i++)
+    {
         logic::Entity& e = state.entities[i];
         if (!e.active || e.kind != logic::EntityKind::Unit || e.team != team) continue;
         if (e.type != data::UnitType::RL || e.deployTimer > 0.0f || e.hasMoveOrder) continue;

@@ -7,7 +7,7 @@ namespace logic { struct GameState; }
 
 namespace view::ui
 {
-void DrawGameOver(UiContext& ui, const logic::GameState& state);
+void DrawGameOver(UiContext& ui, const logic::GameState& state, int winner);
 }
 
 #endif

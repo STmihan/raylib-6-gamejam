@@ -18,7 +18,7 @@ namespace
     const Color LoseColor = {230, 96, 84, 255};
 }
 
-void DrawGameOver(UiContext& ui, const logic::GameState& state)
+void DrawGameOver(UiContext& ui, const logic::GameState& state, int winner)
 {
     float sw = static_cast<float>(GetScreenWidth());
     float sh = static_cast<float>(GetScreenHeight());
@@ -30,7 +30,7 @@ void DrawGameOver(UiContext& ui, const logic::GameState& state)
     if (ui.Atlas().Ready()) ui.Atlas().DrawNPatch("panel-base", panel);
     else ui.Theme().Panel(panel, Color{28, 32, 24, 245});
 
-    bool playerWon = state.winner == data::TeamIndex(data::PlayerTeam);
+    bool playerWon = winner == data::TeamIndex(data::PlayerTeam);
     const float pad = 28.0f;
     float y = panel.y + pad;
 

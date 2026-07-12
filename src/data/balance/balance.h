@@ -137,7 +137,7 @@ inline Balance DefaultBalance()
     b.forestMissPercent = 10;
     b.baseHp = 1500;
     b.wallHp = 75;
-    b.aiDeployCooldownSeconds = 3.0f;
+    b.aiDeployCooldownSeconds = 3.5f;
 
     b.deck = {{
         {UnitType::Infantry, 2},

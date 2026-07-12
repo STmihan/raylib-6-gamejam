@@ -21,7 +21,7 @@ namespace
     constexpr float TrackHeight = 16.0f;
     constexpr float TrackBorderWidth = 2.0f;
 
-    constexpr float HelpPanelW = 500.0f;
+    constexpr float HelpPanelW = 540.0f;
     constexpr float HelpPanelH = 508.0f;
     constexpr float HelpOkW = 120.0f;
     constexpr float HelpOkH = 48.0f;
@@ -183,10 +183,26 @@ void HudControls::Draw(UiContext& ui)
     if (helpOpen_) DrawHelp(ui);
 }
 
+void HudControls::Unload()
+{
+    if (helpArtLoaded_)
+    {
+        UnloadTexture(helpArt_);
+        helpArtLoaded_ = false;
+    }
+}
+
 void HudControls::DrawHelp(UiContext& ui)
 {
     UiAtlas& atlas = ui.Atlas();
     UiInput& in = ui.Input();
+
+    if (!helpArtLoaded_)
+    {
+        helpArt_ = LoadTexture("assets/icons/ui/art-win.png");
+        SetTextureFilter(helpArt_, TEXTURE_FILTER_BILINEAR);
+        helpArtLoaded_ = true;
+    }
 
     float sw = static_cast<float>(GetScreenWidth());
     float sh = static_cast<float>(GetScreenHeight());
@@ -196,15 +212,25 @@ void HudControls::DrawHelp(UiContext& ui)
     atlas.DrawNPatch("panel-base", panel);
 
     const float pad = 32.0f;
-    Rectangle titleRect = {panel.x, panel.y + pad, panel.width, 44.0f};
-    LabelCentered(ui, "HOW TO PLAY", titleRect, 34.0f, Ink, true);
+    const float textW = panel.width * 0.58f;
+    const float titleH = 44.0f;
+    const float titleSize = 34.0f;
+
+    Rectangle titleRect = {panel.x + pad - 50.0f, panel.y + pad, textW, titleH};
+    LabelCentered(ui, "HOW TO PLAY", titleRect, titleSize, Ink, true);
+
+    Vector2 titleSz = ui.Text().Measure("HOW TO PLAY", titleSize);
+    float underlineW = titleSz.x + 24.0f;
+    float underlineX = titleRect.x + (titleRect.width - underlineW) * 0.5f;
+    float underlineY = titleRect.y + titleH + 6.0f;
+    ui.Theme().Fill(Rectangle{underlineX, underlineY, underlineW, 3.0f}, Ink);
 
     const std::vector<std::string>& lines = data::Rules().tutorialLines;
     const float bullet = 6.0f;
     const float indent = 20.0f;
     const float fontSize = 22.0f;
     float lineW = panel.width - pad * 2.0f - indent;
-    float y = panel.y + pad + 66.0f;
+    float y = underlineY + 36.0f;
     for (const std::string& line : lines)
     {
         ui.Theme().Fill(Rectangle{panel.x + pad, y + fontSize * 0.45f, bullet, bullet}, Dim);
@@ -214,6 +240,24 @@ void HudControls::DrawHelp(UiContext& ui)
     }
 
     Rectangle ok = HelpOkButton();
+    if (helpArtLoaded_ && helpArt_.width > 0)
+    {
+        float artX = panel.x + panel.width * 0.60f;
+        float artRight = panel.x + panel.width - pad;
+        float artTop = panel.y + pad;
+        float artBottom = ok.y - 16.0f;
+        float artW = artRight - artX;
+        float artH = artBottom - artTop;
+        float tw = static_cast<float>(helpArt_.width);
+        float th = static_cast<float>(helpArt_.height);
+        float scale = artW / tw;
+        if (artH / th < scale) scale = artH / th;
+        float dw = tw * scale;
+        float dh = th * scale;
+        Rectangle dst = {artX + (artW - dw) * 0.5f, artBottom - dh - 180.0f, dw, dh};
+        DrawTexturePro(helpArt_, Rectangle{0.0f, 0.0f, tw, th}, dst, Vector2{0.0f, 0.0f}, 0.0f, WHITE);
+    }
+
     bool okHover = in.Hover(ok);
     bool okDown = okHover && in.Down();
     Color okTint = okDown ? Color{56, 62, 48, 255} : (okHover ? Color{96, 106, 82, 255} : Color{70, 78, 60, 255});
