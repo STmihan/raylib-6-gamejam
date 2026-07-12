@@ -59,6 +59,7 @@ struct Projectile {
     std::uint64_t launchTick;
     std::uint64_t impactTick;
     int damage;
+    int aoeRadius;
 };
 
 struct HealPulse {

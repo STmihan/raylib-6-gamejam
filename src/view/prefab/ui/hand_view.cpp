@@ -15,6 +15,7 @@ namespace
     constexpr float CardW = 118.0f;
     constexpr float CardH = 166.0f;
     constexpr float DegToRad = 0.0174532925f;
+    constexpr float MergeCenterFrac = 0.5f;
 
     bool HitCard(Vector2 m, Vector2 center, float angleDeg, float w, float h)
     {
@@ -309,7 +310,7 @@ int HandView::HostUnderCursor(Vector2 m, int exclude) const
         float ang;
         float sc;
         Transform(i, c, ang, sc);
-        if (HitCard(m, c, ang, CardW * sc, CardH * sc)) return i;
+        if (HitCard(m, c, ang, CardW * sc * MergeCenterFrac, CardH * sc * MergeCenterFrac)) return i;
     }
     return -1;
 }

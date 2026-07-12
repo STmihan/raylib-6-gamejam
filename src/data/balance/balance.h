@@ -45,17 +45,17 @@ inline Balance DefaultBalance()
 {
     Balance b{};
     b.units[static_cast<int>(UnitType::Infantry)] =
-        {60, 55.0f, true, false, false, false, 15.0f, 2, 1.0f, 15, false, 0};
+        {60, 55.0f, true, false, false, false, 15.0f, 2, 1.0f, 15, false, 0, 0};
     b.units[static_cast<int>(UnitType::Rocketeer)] =
-        {50, 50.0f, true, false, false, true, 15.0f, 4, 1.5f, 15, false, 0};
+        {50, 50.0f, true, false, false, true, 15.0f, 4, 1.5f, 15, false, 0, 1};
     b.units[static_cast<int>(UnitType::Engineer)] =
-        {70, 50.0f, true, false, false, false, 15.0f, 1, 1.0f, 0, false, 0};
+        {70, 50.0f, true, false, false, false, 15.0f, 1, 1.0f, 0, false, 0, 0};
     b.units[static_cast<int>(UnitType::AA)] =
-        {140, 40.0f, false, false, true, true, 55.0f, 3, 0.8f, 20, true, 0};
+        {140, 40.0f, false, false, true, true, 55.0f, 3, 0.8f, 20, true, 0, 0};
     b.units[static_cast<int>(UnitType::Tank)] =
-        {260, 45.0f, false, false, true, true, 60.0f, 2, 1.3f, 40, false, 3};
+        {260, 45.0f, false, false, true, true, 60.0f, 2, 1.3f, 40, false, 3, 0};
     b.units[static_cast<int>(UnitType::Plane)] =
-        {120, 90.0f, false, true, true, true, 0.0f, 1, 1.0f, 30, false, 0};
+        {120, 90.0f, false, true, true, true, 0.0f, 1, 1.0f, 30, false, 0, 0};
 
     b.cardCost = {1, 2, 2, 3, 4, 5};
     b.cardCharges = {3, 2, 1, 1, 1, 1};

@@ -43,6 +43,7 @@ struct UnitStats
     int baseDamage;
     bool stationary;
     int armorHits;
+    int aoeRadius;
 };
 
 inline const char* UnitTypeName(UnitType type)

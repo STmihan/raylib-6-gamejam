@@ -37,6 +37,7 @@ void ApplyUnit(Balance& b, int idx, const json& u)
     s.baseDamage = u.value("baseDamage", s.baseDamage);
     s.stationary = u.value("stationary", s.stationary);
     s.armorHits = u.value("armorHits", s.armorHits);
+    s.aoeRadius = u.value("aoeRadius", s.aoeRadius);
 
     b.cardCost[static_cast<std::size_t>(idx)] = u.value("cost", b.cardCost[static_cast<std::size_t>(idx)]);
     b.cardCharges[static_cast<std::size_t>(idx)] =

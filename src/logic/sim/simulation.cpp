@@ -241,6 +241,7 @@ void FireProjectile(GameState &state, int attackerIndex, int targetSlot, int muz
     p.launchTick = state.tick;
     p.impactTick = state.tick + static_cast<std::uint64_t>(flightTicks);
     p.damage = perShell;
+    p.aoeRadius = data::UnitStatsOf(attacker.type).aoeRadius;
 }
 
 int AcquireTarget(const GameState &state, int index) {
@@ -707,8 +708,20 @@ void Simulation::Step(GameState &state, float dt) {
         if (!p.active || state.tick < p.impactTick) continue;
         Entity &victim = state.entities[p.targetSlot];
         if (victim.active && !DamageBlockedByWall(state, state.entities[p.attackerSlot], victim)) {
-            if (ShotMisses(state, *map_, p)) SpawnMiss(state, victim.position);
-            else ApplyHit(victim, p.damage);
+            if (ShotMisses(state, *map_, p)) {
+                SpawnMiss(state, victim.position);
+            } else {
+                data::Offset center = {victim.col, victim.row};
+                ApplyHit(victim, p.damage);
+                if (p.aoeRadius > 0) {
+                    for (int k = 0; k < data::MaxEntities; k++) {
+                        if (k == p.targetSlot) continue;
+                        Entity &other = state.entities[k];
+                        if (!other.active || other.kind != EntityKind::Unit || other.team == p.team) continue;
+                        if (data::HexDistance(center, {other.col, other.row}) <= p.aoeRadius) ApplyHit(other, p.damage);
+                    }
+                }
+            }
         }
         p.active = false;
     }
