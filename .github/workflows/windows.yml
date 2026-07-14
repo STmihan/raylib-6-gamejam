@@ -23,10 +23,9 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force dist | Out-Null
-          Copy-Item build/Release/raylib-game.exe dist/
-          Copy-Item build/Release/assets dist/assets -Recurse
+          Copy-Item build/Release/SWO.exe dist/
 
       - uses: actions/upload-artifact@v7
         with:
-          name: raylib-game-windows
+          name: SWO-windows
           path: dist/

@@ -29,10 +29,9 @@ jobs:
       - name: Stage artifact
         run: |
           mkdir -p dist
-          cp build/raylib-game dist/
-          cp -r build/assets dist/assets
+          cp build/SWO dist/
 
       - uses: actions/upload-artifact@v7
         with:
-          name: raylib-game-linux
+          name: swo-linux
           path: dist/

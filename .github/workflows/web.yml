@@ -35,7 +35,7 @@ jobs:
 
       - uses: actions/upload-artifact@v7
         with:
-          name: raylib-game-web
+          name: swo-web
           path: dist/
 
   deploy-pages:
@@ -55,7 +55,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v8
         with:
-          name: raylib-game-web
+          name: swo-web
           path: dist
 
       - uses: actions/configure-pages@v6
