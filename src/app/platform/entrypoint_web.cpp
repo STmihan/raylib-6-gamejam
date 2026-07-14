@@ -6,6 +6,7 @@
 
 #include "raylib.h"
 
+#include "assets/pack.h"
 #include "app/core/app.h"
 #include "data/app/app_config.h"
 #include "data/balance/balance.h"
@@ -24,8 +25,11 @@ void FrameTrampoline() {
 
 int RunWeb() {
     InitWindow(data::ScreenWidth, data::ScreenHeight, data::WindowTitle);
+    assets::MountPack();
 
-    data::LoadRules("assets/config.json");
+    char* config = LoadFileText("assets/config.json");
+    data::LoadRulesFromString(config);
+    UnloadFileText(config);
 
     static App app;
     g_app = &app;

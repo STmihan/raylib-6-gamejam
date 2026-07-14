@@ -22,7 +22,7 @@
     "doubleEverySeconds": 30
   },
   "ai": {
-    "deployCooldownSeconds": 3.5
+    "deployCooldownSeconds": 12.5
   },
   "forestMissPercent": 10,
   "structureDamageMultiplier": 1.0,

@@ -4,6 +4,7 @@
 
 #include "ai/policy.h"
 #include "app/input/cursor.h"
+#include "app/platform/window_chrome.h"
 #include "audio/sound.h"
 #include "data/economy/economy.h"
 #include "data/space/hex.h"
@@ -162,6 +163,9 @@ void StepApp(App& app)
             app.currentState.resource = {0.0f, 0.0f};
             app.previousState.resource = {0.0f, 0.0f};
         });
+#if !defined(__EMSCRIPTEN__)
+        platform::DrawTitleBar();
+#endif
     };
     app.renderer.Draw(app.previousState, app.currentState, alpha, static_cast<float>(viewClock), camera, app.map,
                       overlay);

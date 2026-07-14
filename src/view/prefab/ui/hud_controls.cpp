@@ -1,6 +1,7 @@
 #include "view/prefab/ui/hud_controls.h"
 
 #include "audio/sound.h"
+#include "data/app/app_config.h"
 #include "data/balance/balance.h"
 #include "view/prefab/ui/ui_widgets.h"
 
@@ -11,7 +12,7 @@ namespace
     constexpr float ButtonSize = 44.0f;
     constexpr float Gap = 8.0f;
     constexpr float OriginX = 146.0f;
-    constexpr float OriginY = 12.0f;
+    constexpr float OriginY = 12.0f + data::TitleBarHeight;
     constexpr float PanelWidth = 184.0f;
     constexpr float Overlap = 42.0f;
     constexpr float OpenSpeed = 18.0f;

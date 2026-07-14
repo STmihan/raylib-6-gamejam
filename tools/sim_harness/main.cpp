@@ -59,6 +59,7 @@ void RunMatchVerbose(const logic::Map& map, std::uint32_t seed)
     std::printf("=== match seed=%u ===\n", seed);
 
     std::uint64_t decisionEvery = static_cast<std::uint64_t>(data::AiDeployCooldownSeconds() * data::TickRate);
+
     if (decisionEvery < 1) decisionEvery = 1;
     const std::uint64_t snapshotEvery = static_cast<std::uint64_t>(data::TickRate) * 5;
     const std::uint64_t maxTicks = static_cast<std::uint64_t>(data::MatchDurationSeconds() + 180) * data::TickRate;

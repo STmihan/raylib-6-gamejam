@@ -1,7 +1,5 @@
 #include "view/prefab/ui/ui_atlas.h"
 
-#include <fstream>
-
 #include <nlohmann/json.hpp>
 
 namespace view::ui
@@ -11,18 +9,20 @@ void UiAtlas::Load(const char* pngPath, const char* jsonPath)
     texture_ = LoadTexture(pngPath);
     SetTextureFilter(texture_, TEXTURE_FILTER_POINT);
 
-    std::ifstream file(jsonPath);
-    if (!file) return;
+    char* jsonText = LoadFileText(jsonPath);
+    if (jsonText == nullptr) return;
 
     nlohmann::json root;
     try
     {
-        file >> root;
+        root = nlohmann::json::parse(jsonText);
     }
     catch (const nlohmann::json::exception&)
     {
+        UnloadFileText(jsonText);
         return;
     }
+    UnloadFileText(jsonText);
 
     if (!root.contains("meta") || !root["meta"].contains("slices")) return;
     for (const nlohmann::json& s : root["meta"]["slices"])

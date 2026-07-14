@@ -1,0 +1,17 @@
+Hits to kill,Infantry,Rocketeer,Engineer,Rocket Launcher,Tank,Plane
+Infantry,4,4,4,35,68,-
+Rocketeer,9,8,8,6,9,5
+Engineer,-,-,-,-,-,-
+Rocket Launcher,12,10,4,11,23,5
+Tank,2,2,2,5,11,12
+Plane,4,4,2,4,11,4
+Hits to kill,Infantry,Rocketeer,Engineer,Rocket Launcher,Tank,Plane
+
+Time to kill (s),Infantry,Rocketeer,Engineer,Rocket Launcher,Tank,Plane
+Infantry,4.0,4.0,4.0,35.0,68.0,-
+Rocketeer,10.8,9.6,9.6,7.2,10.8,6.0
+Engineer,-,-,-,-,-,-
+Rocket Launcher,9.6,8.0,3.2,8.8,18.4,4.0
+Tank,2.2,2.2,2.2,5.5,12.1,13.2
+Plane,4.0,4.0,2.0,4.0,11.0,4.0
+Time to kill (s),Infantry,Rocketeer,Engineer,Rocket Launcher,Tank,Plane

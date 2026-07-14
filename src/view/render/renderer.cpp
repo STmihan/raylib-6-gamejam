@@ -4,6 +4,7 @@
 
 #include "rlgl.h"
 
+#include "data/app/app_config.h"
 #include "data/card/card.h"
 #include "data/economy/economy.h"
 #include "data/render/render_params.h"
@@ -295,7 +296,7 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
         {
             const Color panelTint = {28, 32, 24, 235};
 
-            Rectangle timer = {14.0f, 12.0f, 120.0f, 48.0f};
+            Rectangle timer = {14.0f, 12.0f + data::TitleBarHeight, 120.0f, 48.0f};
             ui::DrawMatchTimer(ui_, timer, current.tick, newUi_);
 
             int player = data::TeamIndex(data::PlayerTeam);
@@ -303,7 +304,7 @@ void Renderer::Draw(const logic::GameState& previous, const logic::GameState& cu
             int highlight = hand_.HasHighlight() ? hand_.HighlightCost() : resourceHighlight_;
             if (newUi_ && ui_.Atlas().Ready())
             {
-                ui::DrawResourceBarSprite(ui_, Rectangle{486.0f, 12.0f, 220.0f, 40.0f}, res,
+                ui::DrawResourceBarSprite(ui_, Rectangle{486.0f, 12.0f + data::TitleBarHeight, 220.0f, 40.0f}, res,
                                           static_cast<int>(data::ResourceCap()), highlight, animTime);
             }
             else

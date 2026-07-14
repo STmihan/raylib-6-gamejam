@@ -54,21 +54,8 @@ void ApplyUnit(Balance& b, int idx, const json& u)
 }
 }
 
-void LoadRules(const char* path)
+static void ApplyRules(const json& root)
 {
-    std::ifstream file(path);
-    if (!file) return;
-
-    json root;
-    try
-    {
-        file >> root;
-    }
-    catch (const json::exception&)
-    {
-        return;
-    }
-
     Balance b = DefaultBalance();
 
     const json units = root.value("units", json::object());
@@ -145,5 +132,32 @@ void LoadRules(const char* path)
     }
 
     SetRules(b);
+}
+
+void LoadRules(const char* path)
+{
+    std::ifstream file(path);
+    if (!file) return;
+    try
+    {
+        json root;
+        file >> root;
+        ApplyRules(root);
+    }
+    catch (const json::exception&)
+    {
+    }
+}
+
+void LoadRulesFromString(const char* text)
+{
+    if (text == nullptr || text[0] == '\0') return;
+    try
+    {
+        ApplyRules(json::parse(text));
+    }
+    catch (const json::exception&)
+    {
+    }
 }
 }

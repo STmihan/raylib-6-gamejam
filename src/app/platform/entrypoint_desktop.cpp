@@ -4,7 +4,10 @@
 
 #include "raylib.h"
 
+#include "assets/pack.h"
+
 #include "app/core/app.h"
+#include "app/platform/window_chrome.h"
 #include "data/app/app_config.h"
 #include "data/balance/balance.h"
 #include "debug/debug_ui.h"
@@ -13,8 +16,10 @@ namespace app
 {
 int RunDesktop()
 {
+    SetConfigFlags(FLAG_WINDOW_UNDECORATED); // borderless: we draw our own title bar
     InitWindow(data::ScreenWidth, data::ScreenHeight, data::WindowTitle);
     ChangeDirectory(GetApplicationDirectory());
+    assets::MountPack();
 
     Image icon = LoadImage("assets/icons/ui/icon.png");
     if (icon.data != nullptr)
@@ -26,12 +31,14 @@ int RunDesktop()
     SetTargetFPS(data::TargetFps);
     debug::DebugUiSetup();
 
-    data::LoadRules("assets/config.json");
+    char* config = LoadFileText("assets/config.json");
+    data::LoadRulesFromString(config);
+    UnloadFileText(config);
 
     App app{};
     InitApp(app);
 
-    while (!WindowShouldClose())
+    while (!WindowShouldClose() && !platform::CloseRequested())
     {
         StepApp(app);
     }

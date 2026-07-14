@@ -137,7 +137,7 @@ inline Balance DefaultBalance()
     b.forestMissPercent = 10;
     b.baseHp = 1500;
     b.wallHp = 75;
-    b.aiDeployCooldownSeconds = 3.5f;
+    b.aiDeployCooldownSeconds = 12.5f;
 
     b.deck = {{
         {UnitType::Infantry, 2},
@@ -157,6 +157,7 @@ inline const Balance& Rules() { return g_rules; }
 inline void SetRules(const Balance& balance) { g_rules = balance; }
 
 void LoadRules(const char* path);
+void LoadRulesFromString(const char* text);
 }
 
 #endif

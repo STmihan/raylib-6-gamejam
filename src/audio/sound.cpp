@@ -6,6 +6,8 @@
 
 #include "raylib.h"
 
+#include "assets/pack.h"
+
 namespace audio
 {
 namespace
@@ -31,6 +33,7 @@ namespace
     bool g_musicOvertime = false;
     float g_master = 1.0f;
     ::Music g_music{};
+    unsigned char* g_musicData = nullptr; // kept alive: music streams from memory
     std::unordered_map<std::string, SoundBank> g_sounds;
 
     int ActiveVoices()
@@ -54,7 +57,7 @@ namespace
         if (it != g_sounds.end()) return it->second;
 
         std::string path = std::string(SoundDir) + key + ".wav";
-        if (!FileExists(path.c_str())) path = std::string(SoundDir) + key + ".ogg";
+        if (!assets::Exists(path.c_str())) path = std::string(SoundDir) + key + ".ogg";
 
         SoundBank bank;
         bank.base = LoadSound(path.c_str());
@@ -71,16 +74,13 @@ namespace
 
     void RegisterAll()
     {
-        FilePathList files = LoadDirectoryFiles(SoundDir);
-        for (unsigned int i = 0; i < files.count; i++)
+        for (const std::string& path : assets::List(SoundDir))
         {
-            const char* ext = GetFileExtension(files.paths[i]);
-            if (ext == nullptr) continue;
-            if (!IsFileExtension(files.paths[i], ".wav") && !IsFileExtension(files.paths[i], ".ogg")) continue;
-            if (TextIsEqual(GetFileName(files.paths[i]), "music.ogg")) continue;
-            AcquireBank(GetFileNameWithoutExt(files.paths[i]));
+            const char* p = path.c_str();
+            if (!IsFileExtension(p, ".wav") && !IsFileExtension(p, ".ogg")) continue;
+            if (TextIsEqual(GetFileName(p), "music.ogg")) continue;
+            AcquireBank(GetFileNameWithoutExt(p));
         }
-        UnloadDirectoryFiles(files);
     }
 }
 
@@ -109,6 +109,11 @@ void Shutdown()
         StopMusicStream(g_music);
         UnloadMusicStream(g_music);
         g_musicLoaded = false;
+    }
+    if (g_musicData != nullptr)
+    {
+        UnloadFileData(g_musicData);
+        g_musicData = nullptr;
     }
     for (auto& entry : g_sounds)
     {
@@ -159,8 +164,18 @@ void PlayMusic()
     if (!g_ready) return;
     if (!g_musicLoaded)
     {
-        g_music = LoadMusicStream(MusicPath);
-        if (g_music.frameCount == 0) return;
+        // Music streams from memory: LoadMusicStream() opens the file directly
+        // and bypasses the pack callback, so feed it the packed bytes instead.
+        int size = 0;
+        g_musicData = LoadFileData(MusicPath, &size);
+        if (g_musicData == nullptr || size == 0) return;
+        g_music = LoadMusicStreamFromMemory(GetFileExtension(MusicPath), g_musicData, size);
+        if (g_music.frameCount == 0)
+        {
+            UnloadFileData(g_musicData);
+            g_musicData = nullptr;
+            return;
+        }
         g_music.looping = true;
         g_musicLoaded = true;
         SetMusicVolume(g_music, MusicVolume * (g_musicOvertime ? MusicOvertimeMultiplier : 1.0f));
